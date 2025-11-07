@@ -1,0 +1,1773 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KT Smart Health Care</title>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary-color: #DC000C;
+            --secondary-color: #FF1744;
+            --bg-color: #FFFFFF;
+            --card-bg: #F8F9FA;
+            --text-primary: #212121;
+            --text-secondary: #757575;
+            --border-color: #E0E0E0;
+            --success-color: #4CAF50;
+            --warning-color: #FF9800;
+            --danger-color: #F44336;
+            --shadow: 0 2px 12px rgba(0,0,0,0.08);
+            --header-bg: #F5F5F5;
+            --nav-bg: #000000;
+        }
+
+        body.dark-mode {
+            --bg-color: #121212;
+            --card-bg: #1E1E1E;
+            --text-primary: #FFFFFF;
+            --text-secondary: #B0B0B0;
+            --border-color: #333333;
+            --shadow: 0 2px 12px rgba(0,0,0,0.4);
+            --header-bg: #1E1E1E;
+            --nav-bg: #000000;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            padding-bottom: 85px;
+            transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
+                        color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .material-icons {
+            font-family: 'Material Icons';
+            font-weight: normal;
+            font-style: normal;
+            font-size: 24px;
+            display: inline-block;
+            line-height: 1;
+            text-transform: none;
+            letter-spacing: normal;
+            word-wrap: normal;
+            white-space: nowrap;
+            direction: ltr;
+        }
+
+        .header {
+            background-color: var(--header-bg);
+            color: var(--text-primary);
+            padding: 16px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .header-title {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .header h1 {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.5px;
+        }
+
+        .header .subtitle {
+            font-size: 11px;
+            color: var(--text-secondary);
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        .theme-toggle {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .theme-toggle:hover {
+            transform: scale(1.05);
+        }
+
+        .theme-toggle:active {
+            transform: scale(0.95);
+        }
+
+        .theme-toggle .material-icons {
+            font-size: 22px;
+        }
+
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 24px 20px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(220, 0, 12, 0.05), rgba(255, 23, 68, 0.05));
+            opacity: 0;
+            transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card:hover::before {
+            opacity: 1;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 12px 28px rgba(220, 0, 12, 0.15);
+            border-color: rgba(220, 0, 12, 0.3);
+        }
+
+        .stat-card:active {
+            transform: scale(0.97);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-card .icon {
+            font-size: 36px;
+            margin-bottom: 12px;
+        }
+
+        .stat-card .label {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .stat-card .value {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--primary-color);
+            letter-spacing: -1px;
+        }
+
+        .stat-card .unit {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-left: 4px;
+            font-weight: 500;
+        }
+
+        .section {
+            margin-bottom: 32px;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 24px;
+        }
+
+        .see-more {
+            color: var(--primary-color);
+            font-size: 15px;
+            text-decoration: none;
+            cursor: pointer;
+            font-weight: 700;
+            transition: transform 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .see-more:active {
+            transform: scale(0.95);
+        }
+
+        .list-item {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 18px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .list-item::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(220, 0, 12, 0.1);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .list-item:hover {
+            transform: translateY(-4px) translateX(2px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+            border-color: rgba(220, 0, 12, 0.2);
+        }
+
+        .list-item:hover::before {
+            width: 300%;
+            height: 300%;
+        }
+
+        .list-item:active {
+            transform: scale(0.98);
+            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .list-item .icon {
+            font-size: 32px;
+            width: 48px;
+            height: 48px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(220, 0, 12, 0.08);
+            border-radius: 14px;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            z-index: 1;
+        }
+
+        .list-item:hover .icon {
+            background: rgba(220, 0, 12, 0.15);
+            transform: scale(1.15) rotate(5deg);
+            box-shadow: 0 4px 12px rgba(220, 0, 12, 0.2);
+        }
+
+        .list-item .content {
+            flex: 1;
+        }
+
+        .list-item .title {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 4px;
+            letter-spacing: -0.3px;
+        }
+
+        .list-item .subtitle {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .list-item .time {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .tip-card {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 24px rgba(220, 0, 12, 0.25);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+        }
+
+        .tip-card:hover {
+            transform: translateY(-6px) scale(1.02);
+            box-shadow: 0 16px 36px rgba(220, 0, 12, 0.4);
+        }
+
+        .tip-card:active {
+            transform: scale(0.98);
+        }
+
+        .tip-card .tip-icon {
+            font-size: 28px;
+            margin-bottom: 12px;
+        }
+
+        .tip-card .tip-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.5px;
+        }
+
+        .tip-card .tip-content {
+            font-size: 15px;
+            line-height: 1.7;
+            opacity: 0.95;
+            font-weight: 500;
+        }
+
+        .btn {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 16px 24px;
+            border-radius: 14px;
+            font-size: 17px;
+            font-weight: 700;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            margin-top: 12px;
+            box-shadow: 0 4px 12px rgba(220, 0, 12, 0.2);
+            letter-spacing: -0.3px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(220, 0, 12, 0.35);
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+            background: #B00009;
+            transition: all 0.1s;
+        }
+
+        .btn-secondary {
+            background: var(--card-bg);
+            color: var(--text-primary);
+            border: 2px solid var(--border-color);
+            box-shadow: none;
+        }
+
+        .btn-secondary:active {
+            background: var(--border-color);
+        }
+
+        /* iOS 스타일 하단 네비게이션 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--nav-bg);
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+            padding: 10px 0 22px 0;
+            z-index: 100;
+            box-shadow: 0 -2px 20px rgba(0,0,0,0.3);
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            cursor: pointer;
+            color: #8E8E93;
+            text-decoration: none;
+            padding: 8px 20px;
+            border-radius: 16px;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            min-width: 70px;
+            position: relative;
+        }
+
+        .nav-item:active {
+            transform: scale(0.85);
+        }
+
+        .nav-item.active {
+            color: var(--primary-color);
+        }
+
+        .nav-item .nav-icon-wrapper {
+            width: 56px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 14px;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+        }
+
+        .nav-item.active .nav-icon-wrapper {
+            background: rgba(220, 0, 12, 0.18);
+            box-shadow: 0 4px 12px rgba(220, 0, 12, 0.25);
+        }
+
+        .nav-item .material-icons {
+            font-size: 30px;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .nav-item.active .material-icons {
+            transform: scale(1.15) translateY(-2px);
+        }
+
+        .nav-item:hover .material-icons {
+            transform: scale(1.1);
+        }
+
+        .nav-item .nav-label {
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: -0.2px;
+            transition: all 0.3s;
+        }
+
+        .nav-item.active .nav-label {
+            transform: scale(1.05);
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1000;
+            animation: fadeIn 0.3s;
+        }
+
+        .modal.active {
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); }
+            to { transform: translateY(0); }
+        }
+
+        .modal-content {
+            background: var(--bg-color);
+            border-radius: 24px 24px 0 0;
+            padding: 24px;
+            width: 100%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .modal-close {
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: var(--text-secondary);
+            width: 44px;
+            height: 44px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s;
+        }
+
+        .modal-close:active {
+            background: var(--border-color);
+            transform: scale(0.95);
+        }
+
+        .modal-close .material-icons {
+            font-size: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-label {
+            font-size: 17px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            display: block;
+            letter-spacing: -0.3px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 17px;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 4px rgba(220, 0, 12, 0.1);
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+
+        .page.active {
+            display: block;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-state .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.3;
+        }
+
+        .empty-state .empty-text {
+            font-size: 16px;
+            color: var(--text-secondary);
+            font-weight: 500;
+        }
+
+        .status-badge {
+            display: inline-block;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        .status-normal {
+            background: rgba(76, 175, 80, 0.1);
+            color: var(--success-color);
+        }
+
+        .status-warning {
+            background: rgba(255, 152, 0, 0.1);
+            color: var(--warning-color);
+        }
+
+        .status-danger {
+            background: rgba(244, 67, 54, 0.1);
+            color: var(--danger-color);
+        }
+
+        .chart-container {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .chart-placeholder {
+            font-size: 80px;
+            opacity: 0.3;
+            margin: 40px 0;
+        }
+
+        /* 건강팁 페이지 스타일 */
+        .tip-list-item {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .tip-list-item::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(220, 0, 12, 0.05), transparent);
+            transition: left 0.6s;
+        }
+
+        .tip-list-item:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.15);
+            border-color: rgba(220, 0, 12, 0.3);
+        }
+
+        .tip-list-item:hover::after {
+            left: 100%;
+        }
+
+        .tip-list-item:active {
+            transform: scale(0.98);
+        }
+
+        .tip-list-item .tip-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .tip-list-item .tip-category {
+            font-size: 32px;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .tip-list-item:hover .tip-category {
+            transform: scale(1.2) rotate(10deg);
+        }
+
+        .tip-list-item .tip-meta {
+            flex: 1;
+        }
+
+        .tip-list-item .tip-meta .category-name {
+            font-size: 14px;
+            color: var(--primary-color);
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .tip-list-item .tip-meta .tip-headline {
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--text-primary);
+            letter-spacing: -0.3px;
+        }
+
+        .tip-list-item .tip-description {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            font-weight: 500;
+        }
+
+        /* 설정 페이지 스타일 */
+        .settings-group {
+            margin-bottom: 32px;
+        }
+
+        .settings-group-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            margin-bottom: 12px;
+            padding-left: 4px;
+            letter-spacing: -0.2px;
+        }
+
+        .settings-item {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px 18px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: 1px solid var(--border-color);
+            position: relative;
+        }
+
+        .settings-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 0;
+            background: linear-gradient(90deg, rgba(220, 0, 12, 0.1), transparent);
+            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-radius: 12px 0 0 12px;
+        }
+
+        .settings-item:hover {
+            transform: translateX(8px);
+            box-shadow: -4px 0 12px rgba(220, 0, 12, 0.1);
+            border-color: rgba(220, 0, 12, 0.2);
+        }
+
+        .settings-item:hover::before {
+            width: 4px;
+        }
+
+        .settings-item:active {
+            transform: scale(0.98) translateX(8px);
+        }
+
+        .settings-item-left {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .settings-item-icon {
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            background: rgba(220, 0, 12, 0.1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .settings-item:hover .settings-item-icon {
+            transform: scale(1.1) rotate(5deg);
+            background: rgba(220, 0, 12, 0.15);
+        }
+
+        .settings-item-icon .material-icons {
+            font-size: 20px;
+            color: var(--primary-color);
+            transition: all 0.3s;
+        }
+
+        .settings-item-text {
+            font-size: 16px;
+            font-weight: 700;
+            letter-spacing: -0.3px;
+        }
+
+        .settings-item-right {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .settings-item-value {
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .settings-item-arrow .material-icons {
+            font-size: 20px;
+            color: var(--text-secondary);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-title">
+            <h1>KT Smart Health Care</h1>
+            <div class="subtitle">스마트 헬스케어</div>
+        </div>
+        <button class="theme-toggle" onclick="toggleTheme()">
+            <span class="material-icons">dark_mode</span>
+        </button>
+    </div>
+
+    <!-- 홈 페이지 -->
+    <div class="page active" id="home-page">
+        <div class="container">
+            <div class="tip-card">
+                <div class="tip-icon">💡</div>
+                <div class="tip-title">오늘의 건강 팁</div>
+                <div class="tip-content">
+                    아침 식사 30분 전 물 한 잔을 마시면 신진대사가 활발해지고 소화에 도움이 됩니다. 하루를 건강하게 시작하세요!
+                </div>
+            </div>
+
+            <div class="dashboard-grid">
+                <div class="stat-card" onclick="showPage('blood-pressure-page')">
+                    <div class="icon">❤️</div>
+                    <div class="label">혈압</div>
+                    <div>
+                        <span class="value">120</span>
+                        <span class="unit">/80</span>
+                    </div>
+                </div>
+                <div class="stat-card" onclick="showPage('blood-sugar-page')">
+                    <div class="icon">🩸</div>
+                    <div class="label">혈당</div>
+                    <div>
+                        <span class="value">95</span>
+                        <span class="unit">mg/dL</span>
+                    </div>
+                </div>
+                <div class="stat-card" onclick="showPage('medicine-page')">
+                    <div class="icon">💊</div>
+                    <div class="label">복용약</div>
+                    <div>
+                        <span class="value">3</span>
+                        <span class="unit">개</span>
+                    </div>
+                </div>
+                <div class="stat-card" onclick="showPage('exercise-page')">
+                    <div class="icon">🚶</div>
+                    <div class="label">걸음 수</div>
+                    <div>
+                        <span class="value">5,234</span>
+                        <span class="unit">보</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="section">
+                <div class="section-header">
+                    <h2 class="section-title">최근 기록</h2>
+                    <a class="see-more" onclick="showPage('records-page')">전체보기 →</a>
+                </div>
+                
+                <div class="list-item">
+                    <div class="icon">❤️</div>
+                    <div class="content">
+                        <div class="title">혈압 측정</div>
+                        <div class="subtitle">120/80 mmHg <span class="status-badge status-normal">정상</span></div>
+                    </div>
+                    <div class="time">오늘 08:30</div>
+                </div>
+
+                <div class="list-item">
+                    <div class="icon">💊</div>
+                    <div class="content">
+                        <div class="title">약 복용</div>
+                        <div class="subtitle">고혈압약 복용 완료</div>
+                    </div>
+                    <div class="time">오늘 09:00</div>
+                </div>
+
+                <div class="list-item">
+                    <div class="icon">🩸</div>
+                    <div class="content">
+                        <div class="title">혈당 측정</div>
+                        <div class="subtitle">95 mg/dL <span class="status-badge status-normal">정상</span></div>
+                    </div>
+                    <div class="time">어제 07:30</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 혈압 페이지 -->
+    <div class="page" id="blood-pressure-page">
+        <div class="container">
+            <div class="section">
+                <h2 class="section-title">혈압 기록</h2>
+                
+                <div class="chart-container">
+                    <h3 style="margin-bottom: 16px; font-size: 19px; font-weight: 800;">혈압 추이</h3>
+                    <div class="chart-placeholder">📊</div>
+                    <p style="color: var(--text-secondary); font-size: 14px; font-weight: 500;">최근 7일간의 혈압 변화를 보여줍니다</p>
+                </div>
+
+                <button class="btn" onclick="openModal('add-blood-pressure')">
+                    혈압 기록하기
+                </button>
+
+                <div style="margin-top: 24px;">
+                    <h3 style="font-size: 19px; margin-bottom: 16px; font-weight: 800;">최근 측정 기록</h3>
+                    
+                    <div class="list-item">
+                        <div class="icon">❤️</div>
+                        <div class="content">
+                            <div class="title">120/80 mmHg</div>
+                            <div class="subtitle"><span class="status-badge status-normal">정상 범위</span></div>
+                        </div>
+                        <div class="time">오늘 08:30</div>
+                    </div>
+
+                    <div class="list-item">
+                        <div class="icon">❤️</div>
+                        <div class="content">
+                            <div class="title">125/82 mmHg</div>
+                            <div class="subtitle"><span class="status-badge status-normal">정상 범위</span></div>
+                        </div>
+                        <div class="time">어제 08:15</div>
+                    </div>
+
+                    <div class="list-item">
+                        <div class="icon">❤️</div>
+                        <div class="content">
+                            <div class="title">135/85 mmHg</div>
+                            <div class="subtitle"><span class="status-badge status-warning">주의 필요</span></div>
+                        </div>
+                        <div class="time">2일 전</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 혈당 페이지 -->
+    <div class="page" id="blood-sugar-page">
+        <div class="container">
+            <div class="section">
+                <h2 class="section-title">혈당 기록</h2>
+                
+                <div class="chart-container">
+                    <h3 style="margin-bottom: 16px; font-size: 19px; font-weight: 800;">혈당 추이</h3>
+                    <div class="chart-placeholder">📈</div>
+                    <p style="color: var(--text-secondary); font-size: 14px; font-weight: 500;">최근 7일간의 혈당 변화를 보여줍니다</p>
+                </div>
+
+                <button class="btn" onclick="openModal('add-blood-sugar')">
+                    혈당 기록하기
+                </button>
+
+                <div style="margin-top: 24px;">
+                    <h3 style="font-size: 19px; margin-bottom: 16px; font-weight: 800;">최근 측정 기록</h3>
+                    
+                    <div class="list-item">
+                        <div class="icon">🩸</div>
+                        <div class="content">
+                            <div class="title">95 mg/dL (공복)</div>
+                            <div class="subtitle"><span class="status-badge status-normal">정상 범위</span></div>
+                        </div>
+                        <div class="time">오늘 07:30</div>
+                    </div>
+
+                    <div class="list-item">
+                        <div class="icon">🩸</div>
+                        <div class="content">
+                            <div class="title">110 mg/dL (식후 2시간)</div>
+                            <div class="subtitle"><span class="status-badge status-normal">정상 범위</span></div>
+                        </div>
+                        <div class="time">어제 20:00</div>
+                    </div>
+
+                    <div class="list-item">
+                        <div class="icon">🩸</div>
+                        <div class="content">
+                            <div class="title">98 mg/dL (공복)</div>
+                            <div class="subtitle"><span class="status-badge status-normal">정상 범위</span></div>
+                        </div>
+                        <div class="time">어제 07:30</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 복용약 페이지 -->
+    <div class="page" id="medicine-page">
+        <div class="container">
+            <div class="section">
+                <h2 class="section-title">복용약 관리</h2>
+
+                <button class="btn" onclick="openModal('add-medicine')">
+                    복용약 추가하기
+                </button>
+
+                <div style="margin-top: 24px;">
+                    <h3 style="font-size: 19px; margin-bottom: 16px; font-weight: 800;">현재 복용 중인 약</h3>
+                    
+                    <div class="list-item">
+                        <div class="icon">💊</div>
+                        <div class="content">
+                            <div class="title">고혈압약</div>
+                            <div class="subtitle">매일 아침 8시 • 식후 복용</div>
+                        </div>
+                        <button class="btn" style="width: auto; padding: 8px 16px; font-size: 14px; margin: 0;" onclick="alert('복용 완료!')">
+                            복용완료
+                        </button>
+                    </div>
+
+                    <div class="list-item">
+                        <div class="icon">💊</div>
+                        <div class="content">
+                            <div class="title">당뇨약</div>
+                            <div class="subtitle">매일 저녁 7시 • 식후 복용</div>
+                        </div>
+                        <button class="btn" style="width: auto; padding: 8px 16px; font-size: 14px; margin: 0;" onclick="alert('복용 완료!')">
+                            복용완료
+                        </button>
+                    </div>
+
+                    <div class="list-item">
+                        <div class="icon">💊</div>
+                        <div class="content">
+                            <div class="title">영양제</div>
+                            <div class="subtitle">매일 아침 8시 • 식후 복용</div>
+                        </div>
+                        <button class="btn" style="width: auto; padding: 8px 16px; font-size: 14px; margin: 0;" onclick="alert('복용 완료!')">
+                            복용완료
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 32px;">
+                    <h3 style="font-size: 19px; margin-bottom: 16px; font-weight: 800;">복용 기록</h3>
+                    
+                    <div class="list-item">
+                        <div class="icon">✅</div>
+                        <div class="content">
+                            <div class="title">고혈압약 복용 완료</div>
+                            <div class="subtitle">정시 복용</div>
+                        </div>
+                        <div class="time">오늘 08:30</div>
+                    </div>
+
+                    <div class="list-item">
+                        <div class="icon">✅</div>
+                        <div class="content">
+                            <div class="title">당뇨약 복용 완료</div>
+                            <div class="subtitle">정시 복용</div>
+                        </div>
+                        <div class="time">어제 19:05</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 운동 페이지 -->
+    <div class="page" id="exercise-page">
+        <div class="container">
+            <div class="section">
+                <h2 class="section-title">운동 기록</h2>
+                
+                <div class="chart-container">
+                    <h3 style="margin-bottom: 16px; font-size: 19px; font-weight: 800;">일일 걸음 수</h3>
+                    <div style="font-size: 52px; font-weight: 900; color: var(--primary-color); margin: 20px 0; letter-spacing: -2px;">
+                        5,234
+                    </div>
+                    <p style="color: var(--text-secondary); font-size: 14px; font-weight: 600;">목표: 6,000보</p>
+                    <div style="background: var(--border-color); height: 8px; border-radius: 4px; margin-top: 16px; overflow: hidden;">
+                        <div style="background: var(--primary-color); height: 100%; width: 87%; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+                    </div>
+                </div>
+
+                <button class="btn" onclick="openModal('add-exercise')">
+                    운동 기록하기
+                </button>
+
+                <div style="margin-top: 24px;">
+                    <h3 style="font-size: 19px; margin-bottom: 16px; font-weight: 800;">최근 운동 기록</h3>
+                    
+                    <div class="list-item">
+                        <div class="icon">🚶</div>
+                        <div class="content">
+                            <div class="title">산책</div>
+                            <div class="subtitle">30분 • 2.5km</div>
+                        </div>
+                        <div class="time">오늘 18:00</div>
+                    </div>
+
+                    <div class="list-item">
+                        <div class="icon">🏃</div>
+                        <div class="content">
+                            <div class="title">빠르게 걷기</div>
+                            <div class="subtitle">20분 • 1.8km</div>
+                        </div>
+                        <div class="time">어제 17:30</div>
+                    </div>
+
+                    <div class="list-item">
+                        <div class="icon">🧘</div>
+                        <div class="content">
+                            <div class="title">스트레칭</div>
+                            <div class="subtitle">15분</div>
+                        </div>
+                        <div class="time">2일 전</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 전체 기록 페이지 -->
+    <div class="page" id="records-page">
+        <div class="container">
+            <div class="section">
+                <h2 class="section-title">전체 기록</h2>
+
+                <div class="list-item">
+                    <div class="icon">❤️</div>
+                    <div class="content">
+                        <div class="title">혈압 측정</div>
+                        <div class="subtitle">120/80 mmHg <span class="status-badge status-normal">정상</span></div>
+                    </div>
+                    <div class="time">오늘 08:30</div>
+                </div>
+
+                <div class="list-item">
+                    <div class="icon">💊</div>
+                    <div class="content">
+                        <div class="title">약 복용</div>
+                        <div class="subtitle">고혈압약 복용 완료</div>
+                    </div>
+                    <div class="time">오늘 09:00</div>
+                </div>
+
+                <div class="list-item">
+                    <div class="icon">🚶</div>
+                    <div class="content">
+                        <div class="title">산책</div>
+                        <div class="subtitle">30분 • 2.5km</div>
+                    </div>
+                    <div class="time">오늘 18:00</div>
+                </div>
+
+                <div class="list-item">
+                    <div class="icon">🩸</div>
+                    <div class="content">
+                        <div class="title">혈당 측정</div>
+                        <div class="subtitle">95 mg/dL <span class="status-badge status-normal">정상</span></div>
+                    </div>
+                    <div class="time">어제 07:30</div>
+                </div>
+
+                <div class="list-item">
+                    <div class="icon">💊</div>
+                    <div class="content">
+                        <div class="title">약 복용</div>
+                        <div class="subtitle">당뇨약 복용 완료</div>
+                    </div>
+                    <div class="time">어제 19:05</div>
+                </div>
+
+                <div class="list-item">
+                    <div class="icon">❤️</div>
+                    <div class="content">
+                        <div class="title">혈압 측정</div>
+                        <div class="subtitle">125/82 mmHg <span class="status-badge status-normal">정상</span></div>
+                    </div>
+                    <div class="time">어제 08:15</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 건강팁 페이지 -->
+    <div class="page" id="health-tips-page">
+        <div class="container">
+            <div class="section">
+                <h2 class="section-title">건강 팁</h2>
+
+                <div class="tip-list-item">
+                    <div class="tip-header">
+                        <div class="tip-category">💧</div>
+                        <div class="tip-meta">
+                            <div class="category-name">수분 섭취</div>
+                            <div class="tip-headline">하루 물 8잔의 중요성</div>
+                        </div>
+                    </div>
+                    <div class="tip-description">
+                        하루에 1.5~2리터의 물을 마시면 신진대사를 활발하게 하고 노폐물 배출을 돕습니다. 특히 아침 공복에 마시는 물 한 잔은 위장 운동을 촉진시킵니다.
+                    </div>
+                </div>
+
+                <div class="tip-list-item">
+                    <div class="tip-header">
+                        <div class="tip-category">🥗</div>
+                        <div class="tip-meta">
+                            <div class="category-name">식습관</div>
+                            <div class="tip-headline">균형잡힌 식단 관리</div>
+                        </div>
+                    </div>
+                    <div class="tip-description">
+                        탄수화물, 단백질, 지방을 균형있게 섭취하세요. 특히 채소와 과일을 충분히 먹으면 비타민과 미네랄을 공급받을 수 있습니다.
+                    </div>
+                </div>
+
+                <div class="tip-list-item">
+                    <div class="tip-header">
+                        <div class="tip-category">🚶</div>
+                        <div class="tip-meta">
+                            <div class="category-name">운동</div>
+                            <div class="tip-headline">규칙적인 걷기 운동</div>
+                        </div>
+                    </div>
+                    <div class="tip-description">
+                        하루 30분 이상 걷기는 심혈관 건강을 개선하고 스트레스를 해소합니다. 빠르게 걷기는 더 많은 칼로리를 소모하게 합니다.
+                    </div>
+                </div>
+
+                <div class="tip-list-item">
+                    <div class="tip-header">
+                        <div class="tip-category">😴</div>
+                        <div class="tip-meta">
+                            <div class="category-name">수면</div>
+                            <div class="tip-headline">충분한 수면의 중요성</div>
+                        </div>
+                    </div>
+                    <div class="tip-description">
+                        하루 7-8시간의 수면은 면역력 강화와 피로 회복에 필수적입니다. 규칙적인 수면 패턴을 유지하는 것이 중요합니다.
+                    </div>
+                </div>
+
+                <div class="tip-list-item">
+                    <div class="tip-header">
+                        <div class="tip-category">🧘</div>
+                        <div class="tip-meta">
+                            <div class="category-name">스트레칭</div>
+                            <div class="tip-headline">일상 속 간단한 스트레칭</div>
+                        </div>
+                    </div>
+                    <div class="tip-description">
+                        아침, 점심, 저녁 각 10분씩 스트레칭을 하면 근육의 긴장을 풀고 혈액순환을 개선할 수 있습니다. 특히 목과 어깨 스트레칭이 중요합니다.
+                    </div>
+                </div>
+
+                <div class="tip-list-item">
+                    <div class="tip-header">
+                        <div class="tip-category">🌞</div>
+                        <div class="tip-meta">
+                            <div class="category-name">비타민 D</div>
+                            <div class="tip-headline">햇빛 쬐기의 효과</div>
+                        </div>
+                    </div>
+                    <div class="tip-description">
+                        하루 15-20분 정도 햇빛을 쬐면 비타민 D가 생성되어 뼈 건강과 면역력 향상에 도움이 됩니다. 오전 10시~오후 3시 사이가 가장 좋습니다.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 설정 페이지 -->
+    <div class="page" id="settings-page">
+        <div class="container">
+            <div class="section">
+                <h2 class="section-title">설정</h2>
+
+                <div class="settings-group">
+                    <div class="settings-group-title">개인 정보</div>
+                    <div class="settings-item" onclick="alert('프로필 수정 기능 개발 예정')">
+                        <div class="settings-item-left">
+                            <div class="settings-item-icon">
+                                <span class="material-icons">person</span>
+                            </div>
+                            <div class="settings-item-text">프로필 수정</div>
+                        </div>
+                        <div class="settings-item-right">
+                            <div class="settings-item-arrow">
+                                <span class="material-icons">chevron_right</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-item" onclick="alert('비밀번호 변경 기능 개발 예정')">
+                        <div class="settings-item-left">
+                            <div class="settings-item-icon">
+                                <span class="material-icons">lock</span>
+                            </div>
+                            <div class="settings-item-text">비밀번호 변경</div>
+                        </div>
+                        <div class="settings-item-right">
+                            <div class="settings-item-arrow">
+                                <span class="material-icons">chevron_right</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <div class="settings-group-title">알림</div>
+                    <div class="settings-item" onclick="alert('약 복용 알림 설정 기능 개발 예정')">
+                        <div class="settings-item-left">
+                            <div class="settings-item-icon">
+                                <span class="material-icons">notifications</span>
+                            </div>
+                            <div class="settings-item-text">약 복용 알림</div>
+                        </div>
+                        <div class="settings-item-right">
+                            <div class="settings-item-value">켜짐</div>
+                            <div class="settings-item-arrow">
+                                <span class="material-icons">chevron_right</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-item" onclick="alert('건강 측정 알림 설정 기능 개발 예정')">
+                        <div class="settings-item-left">
+                            <div class="settings-item-icon">
+                                <span class="material-icons">alarm</span>
+                            </div>
+                            <div class="settings-item-text">건강 측정 알림</div>
+                        </div>
+                        <div class="settings-item-right">
+                            <div class="settings-item-value">켜짐</div>
+                            <div class="settings-item-arrow">
+                                <span class="material-icons">chevron_right</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <div class="settings-group-title">데이터</div>
+                    <div class="settings-item" onclick="alert('데이터 내보내기 기능 개발 예정')">
+                        <div class="settings-item-left">
+                            <div class="settings-item-icon">
+                                <span class="material-icons">file_download</span>
+                            </div>
+                            <div class="settings-item-text">데이터 내보내기</div>
+                        </div>
+                        <div class="settings-item-right">
+                            <div class="settings-item-arrow">
+                                <span class="material-icons">chevron_right</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-item" onclick="if(confirm('모든 데이터를 삭제하시겠습니까?')) alert('데이터가 삭제되었습니다.')">
+                        <div class="settings-item-left">
+                            <div class="settings-item-icon">
+                                <span class="material-icons">delete</span>
+                            </div>
+                            <div class="settings-item-text">데이터 초기화</div>
+                        </div>
+                        <div class="settings-item-right">
+                            <div class="settings-item-arrow">
+                                <span class="material-icons">chevron_right</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <div class="settings-group-title">정보</div>
+                    <div class="settings-item" onclick="alert('KT Smart Health Care v1.0.0')">
+                        <div class="settings-item-left">
+                            <div class="settings-item-icon">
+                                <span class="material-icons">info</span>
+                            </div>
+                            <div class="settings-item-text">앱 정보</div>
+                        </div>
+                        <div class="settings-item-right">
+                            <div class="settings-item-value">v1.0.0</div>
+                            <div class="settings-item-arrow">
+                                <span class="material-icons">chevron_right</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-item" onclick="alert('서비스 약관 페이지 개발 예정')">
+                        <div class="settings-item-left">
+                            <div class="settings-item-icon">
+                                <span class="material-icons">description</span>
+                            </div>
+                            <div class="settings-item-text">서비스 약관</div>
+                        </div>
+                        <div class="settings-item-right">
+                            <div class="settings-item-arrow">
+                                <span class="material-icons">chevron_right</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="settings-item" onclick="alert('개인정보 처리방침 페이지 개발 예정')">
+                        <div class="settings-item-left">
+                            <div class="settings-item-icon">
+                                <span class="material-icons">privacy_tip</span>
+                            </div>
+                            <div class="settings-item-text">개인정보 처리방침</div>
+                        </div>
+                        <div class="settings-item-right">
+                            <div class="settings-item-arrow">
+                                <span class="material-icons">chevron_right</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="settings-group">
+                    <div class="settings-group-title">계정</div>
+                    <div class="settings-item" onclick="if(confirm('로그아웃 하시겠습니까?')) alert('로그아웃되었습니다.')">
+                        <div class="settings-item-left">
+                            <div class="settings-item-icon">
+                                <span class="material-icons">logout</span>
+                            </div>
+                            <div class="settings-item-text">로그아웃</div>
+                        </div>
+                        <div class="settings-item-right">
+                            <div class="settings-item-arrow">
+                                <span class="material-icons">chevron_right</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 모달들 -->
+    <div class="modal" id="add-blood-pressure">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">혈압 기록하기</h3>
+                <button class="modal-close" onclick="closeModal('add-blood-pressure')">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <form onsubmit="event.preventDefault(); saveBloodPressure();">
+                <div class="form-group">
+                    <label class="form-label">수축기 혈압 (mmHg)</label>
+                    <input type="number" class="form-input" placeholder="120" min="70" max="200" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">이완기 혈압 (mmHg)</label>
+                    <input type="number" class="form-input" placeholder="80" min="40" max="130" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">측정 시간</label>
+                    <input type="datetime-local" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">메모 (선택)</label>
+                    <input type="text" class="form-input" placeholder="예: 운동 후 측정">
+                </div>
+                <button type="submit" class="btn">저장하기</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="add-blood-sugar">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">혈당 기록하기</h3>
+                <button class="modal-close" onclick="closeModal('add-blood-sugar')">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <form onsubmit="event.preventDefault(); saveBloodSugar();">
+                <div class="form-group">
+                    <label class="form-label">혈당 수치 (mg/dL)</label>
+                    <input type="number" class="form-input" placeholder="95" min="50" max="400" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">측정 시기</label>
+                    <select class="form-input" required>
+                        <option value="">선택하세요</option>
+                        <option value="fasting">공복</option>
+                        <option value="before-meal">식전</option>
+                        <option value="after-meal">식후 2시간</option>
+                        <option value="bedtime">취침 전</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">측정 시간</label>
+                    <input type="datetime-local" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">메모 (선택)</label>
+                    <input type="text" class="form-input" placeholder="예: 식사 내용">
+                </div>
+                <button type="submit" class="btn">저장하기</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="add-medicine">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">복용약 추가하기</h3>
+                <button class="modal-close" onclick="closeModal('add-medicine')">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <form onsubmit="event.preventDefault(); saveMedicine();">
+                <div class="form-group">
+                    <label class="form-label">약 이름</label>
+                    <input type="text" class="form-input" placeholder="예: 혈압약" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">복용 시간</label>
+                    <input type="time" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">복용 주기</label>
+                    <select class="form-input" required>
+                        <option value="">선택하세요</option>
+                        <option value="daily">매일</option>
+                        <option value="weekly">주 단위</option>
+                        <option value="monthly">월 단위</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">복용 방법</label>
+                    <select class="form-input" required>
+                        <option value="">선택하세요</option>
+                        <option value="before-meal">식전</option>
+                        <option value="after-meal">식후</option>
+                        <option value="anytime">식사와 무관</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">메모 (선택)</label>
+                    <input type="text" class="form-input" placeholder="예: 물과 함께 복용">
+                </div>
+                <button type="submit" class="btn">저장하기</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="add-exercise">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">운동 기록하기</h3>
+                <button class="modal-close" onclick="closeModal('add-exercise')">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <form onsubmit="event.preventDefault(); saveExercise();">
+                <div class="form-group">
+                    <label class="form-label">운동 종류</label>
+                    <select class="form-input" required>
+                        <option value="">선택하세요</option>
+                        <option value="walking">걷기/산책</option>
+                        <option value="running">달리기</option>
+                        <option value="stretching">스트레칭</option>
+                        <option value="gym">헬스/근력운동</option>
+                        <option value="swimming">수영</option>
+                        <option value="cycling">자전거</option>
+                        <option value="other">기타</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">운동 시간 (분)</label>
+                    <input type="number" class="form-input" placeholder="30" min="1" max="300" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">거리 (km, 선택)</label>
+                    <input type="number" class="form-input" placeholder="2.5" step="0.1" min="0">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">운동 시간</label>
+                    <input type="datetime-local" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">메모 (선택)</label>
+                    <input type="text" class="form-input" placeholder="예: 공원에서 산책">
+                </div>
+                <button type="submit" class="btn">저장하기</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- iOS 스타일 하단 네비게이션 -->
+    <div class="bottom-nav">
+        <a class="nav-item active" onclick="showPage('home-page')">
+            <div class="nav-icon-wrapper">
+                <span class="material-icons">home_filled</span>
+            </div>
+            <div class="nav-label">홈</div>
+        </a>
+        <a class="nav-item" onclick="showPage('records-page')">
+            <div class="nav-icon-wrapper">
+                <span class="material-icons">assignment</span>
+            </div>
+            <div class="nav-label">기록</div>
+        </a>
+        <a class="nav-item" onclick="showPage('health-tips-page')">
+            <div class="nav-icon-wrapper">
+                <span class="material-icons">tips_and_updates</span>
+            </div>
+            <div class="nav-label">건강팁</div>
+        </a>
+        <a class="nav-item" onclick="showPage('settings-page')">
+            <div class="nav-icon-wrapper">
+                <span class="material-icons">tune</span>
+            </div>
+            <div class="nav-label">설정</div>
+        </a>
+    </div>
+
+    <script>
+        function toggleTheme() {
+            const body = document.body;
+            const themeToggle = document.querySelector('.theme-toggle .material-icons');
+            
+            body.classList.toggle('dark-mode');
+            
+            if (body.classList.contains('dark-mode')) {
+                themeToggle.textContent = 'light_mode';
+                localStorage.setItem('theme', 'dark');
+            } else {
+                themeToggle.textContent = 'dark_mode';
+                localStorage.setItem('theme', 'light');
+            }
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            const themeToggle = document.querySelector('.theme-toggle .material-icons');
+            
+            if (savedTheme === 'dark') {
+                document.body.classList.add('dark-mode');
+                themeToggle.textContent = 'light_mode';
+            }
+
+            const now = new Date();
+            now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+            const dateTimeInputs = document.querySelectorAll('input[type="datetime-local"]');
+            dateTimeInputs.forEach(input => {
+                input.value = now.toISOString().slice(0, 16);
+            });
+        });
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(page => {
+                page.classList.remove('active');
+            });
+            
+            document.getElementById(pageId).classList.add('active');
+            
+            document.querySelectorAll('.nav-item').forEach(item => {
+                item.classList.remove('active');
+            });
+            
+            const navItems = document.querySelectorAll('.nav-item');
+            if (pageId === 'home-page') {
+                navItems[0].classList.add('active');
+            } else if (pageId === 'records-page') {
+                navItems[1].classList.add('active');
+            } else if (pageId === 'health-tips-page') {
+                navItems[2].classList.add('active');
+            } else if (pageId === 'settings-page') {
+                navItems[3].classList.add('active');
+            }
+
+            window.scrollTo(0, 0);
+        }
+
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
+            document.body.style.overflow = '';
+        }
+
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    modal.classList.remove('active');
+                    document.body.style.overflow = '';
+                }
+            });
+        });
+
+        function saveBloodPressure() {
+            alert('혈압 기록이 저장되었습니다!');
+            closeModal('add-blood-pressure');
+        }
+
+        function saveBloodSugar() {
+            alert('혈당 기록이 저장되었습니다!');
+            closeModal('add-blood-sugar');
+        }
+
+        function saveMedicine() {
+            alert('복용약이 추가되었습니다!');
+            closeModal('add-medicine');
+        }
+
+        function saveExercise() {
+            alert('운동 기록이 저장되었습니다!');
+            closeModal('add-exercise');
+        }
+    </script>
+</body>
+</html>
