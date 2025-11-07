@@ -1,0 +1,3973 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DateEye SQL Professional - v1.0 Advanced Validation Engine</title>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Outlined" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background-color: #f5f7fa;
+            color: #2d3748;
+            height: 100vh;
+            overflow: hidden;
+            animation: fadeIn 0.5s ease-out;
+        }
+
+        /* 애니메이션 키프레임 */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* 리플 효과 */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(33, 150, 243, 0.4);
+            transform: scale(0);
+            animation: ripple 0.6s ease-out;
+            pointer-events: none;
+        }
+
+        /* 다크모드 스타일 - 완벽한 반전 */
+        body.dark-mode {
+            background-color: #000000;
+            color: #ffffff;
+        }
+
+        body.dark-mode .menu-bar,
+        body.dark-mode .toolbar,
+        body.dark-mode .sidebar,
+        body.dark-mode .editor-area,
+        body.dark-mode .result-panel,
+        body.dark-mode .properties-panel,
+        body.dark-mode .status-bar {
+            background: #000000;
+            color: #ffffff;
+            border-color: #3a3a3a;
+        }
+
+        body.dark-mode .menu-item,
+        body.dark-mode .dropdown-item,
+        body.dark-mode .tree-item {
+            color: #ffffff;
+        }
+
+        body.dark-mode .menu-item:hover,
+        body.dark-mode .dropdown-item:hover,
+        body.dark-mode .tree-item:hover {
+            background: #1a1a1a;
+        }
+
+        body.dark-mode .toolbar-btn {
+            background: #0a0a0a;
+            border-color: #3a3a3a;
+            color: #ffffff;
+        }
+
+        body.dark-mode .toolbar-btn:hover {
+            background: #1a1a1a;
+            border-color: #2196F3;
+        }
+
+        body.dark-mode .editor,
+        body.dark-mode .result-grid,
+        body.dark-mode input,
+        body.dark-mode select,
+        body.dark-mode textarea {
+            background: #000000;
+            color: #ffffff;
+            border-color: #3a3a3a;
+        }
+
+        body.dark-mode .tab {
+            background: #000000;
+            color: #999999;
+            border-color: #3a3a3a;
+        }
+
+        body.dark-mode .tab.active {
+            background: #0a0a0a;
+            color: #2196F3;
+            border-bottom-color: #2196F3;
+        }
+
+        body.dark-mode .tab:hover {
+            background: #0a0a0a;
+        }
+
+        body.dark-mode .tab-bar {
+            background: #000000;
+            border-color: #3a3a3a;
+        }
+
+        body.dark-mode .line-numbers {
+            background: #0a0a0a;
+            color: #666666;
+            border-color: #3a3a3a;
+        }
+
+        body.dark-mode .result-grid th {
+            background: #0a0a0a;
+            color: #ffffff;
+        }
+
+        body.dark-mode .result-grid td,
+        body.dark-mode .result-grid th {
+            border-color: #3a3a3a;
+        }
+
+        body.dark-mode .result-grid tr:hover {
+            background: #0a0a0a;
+        }
+
+        body.dark-mode .result-tabs {
+            background: #000000;
+            border-color: #3a3a3a;
+        }
+
+        body.dark-mode .result-tab {
+            color: #999999;
+        }
+
+        body.dark-mode .result-tab.active {
+            color: #2196F3;
+            border-bottom-color: #2196F3;
+        }
+
+        body.dark-mode .result-content {
+            background: #000000;
+        }
+
+        body.dark-mode .sidebar-header,
+        body.dark-mode .properties-header {
+            background: #0a0a0a;
+            border-color: #3a3a3a;
+            color: #ffffff;
+        }
+
+        body.dark-mode .search-container {
+            background: #000000;
+            border-color: #3a3a3a;
+        }
+
+        body.dark-mode .search-input {
+            background: #0a0a0a;
+            border-color: #3a3a3a;
+            color: #ffffff;
+        }
+
+        body.dark-mode .search-icon,
+        body.dark-mode .clear-search {
+            color: #666666;
+        }
+
+        body.dark-mode .tree-item.selected {
+            background: #1a1a1a;
+            color: #2196F3;
+        }
+
+        body.dark-mode .dropdown-menu {
+            background: #000000;
+            border-color: #3a3a3a;
+        }
+
+        body.dark-mode .context-menu {
+            background: #000000;
+            border-color: #3a3a3a;
+        }
+
+        body.dark-mode .context-menu-item {
+            color: #ffffff;
+        }
+
+        body.dark-mode .context-menu-item:hover {
+            background: #1a1a1a;
+        }
+
+        body.dark-mode .context-menu-separator {
+            background: #3a3a3a;
+        }
+
+        body.dark-mode .property-label {
+            color: #999999;
+        }
+
+        body.dark-mode .property-value {
+            color: #ffffff;
+        }
+
+        body.dark-mode .property-item {
+            border-color: #1a1a1a;
+        }
+
+        body.dark-mode .dark-mode-toggle {
+            background: #0a0a0a;
+            border-color: #3a3a3a;
+            color: #ffffff;
+        }
+
+        body.dark-mode .dark-mode-toggle:hover {
+            background: #1a1a1a;
+        }
+
+        body.dark-mode .modal-content {
+            background: #000000;
+            color: #ffffff;
+        }
+
+        body.dark-mode .modal-header,
+        body.dark-mode .modal-footer {
+            border-color: #3a3a3a;
+        }
+
+        body.dark-mode .modal-title {
+            color: #ffffff;
+        }
+
+        body.dark-mode .modal-close {
+            color: #999999;
+        }
+
+        body.dark-mode .modal-close:hover {
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+
+        body.dark-mode .form-label {
+            color: #ffffff;
+        }
+
+        body.dark-mode .form-control {
+            background: #0a0a0a;
+            border-color: #3a3a3a;
+            color: #ffffff;
+        }
+
+        body.dark-mode .designer-table th {
+            background: #0a0a0a;
+            color: #ffffff;
+        }
+
+        body.dark-mode .designer-table td,
+        body.dark-mode .designer-table th {
+            border-color: #3a3a3a;
+        }
+
+        body.dark-mode .designer-table input[type="text"],
+        body.dark-mode .designer-table select {
+            background: #000000;
+            border-color: #3a3a3a;
+            color: #ffffff;
+        }
+
+        body.dark-mode .btn-secondary {
+            background: #0a0a0a;
+            color: #ffffff;
+            border-color: #3a3a3a;
+        }
+
+        body.dark-mode .btn-secondary:hover {
+            background: #1a1a1a;
+        }
+
+        body.dark-mode .dropdown-separator {
+            background: #3a3a3a;
+        }
+
+        body.dark-mode .toolbar-separator {
+            background: #3a3a3a;
+        }
+
+        body.dark-mode .shortcut {
+            color: #666666;
+        }
+
+        body.dark-mode .tab-close {
+            color: #666666;
+        }
+
+        body.dark-mode .tab-close:hover {
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+
+        body.dark-mode .folder-icon {
+            color: #2196F3;
+        }
+
+        /* 메인 컨테이너 */
+        .main-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* 상단 메뉴바 */
+        .menu-bar {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0;
+            display: flex;
+            align-items: center;
+            height: 30px;
+            position: relative;
+            z-index: 9999;
+        }
+
+        .menu-item {
+            padding: 5px 15px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 13px;
+            position: relative;
+            color: #4a5568;
+            z-index: 10000;
+        }
+
+        .menu-item:hover {
+            background: #f7fafc;
+            color: #2b6cb0;
+            transform: translateY(-1px);
+        }
+
+        /* 드롭다운 메뉴 */
+        .dropdown-menu {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            background: white;
+            border: 1px solid #cbd5e0;
+            min-width: 200px;
+            display: none;
+            z-index: 99999;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            animation: slideDown 0.2s ease-out;
+        }
+
+        .menu-item:hover .dropdown-menu {
+            display: block;
+        }
+
+        .dropdown-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #2d3748;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background: #f7fafc;
+            color: #2b6cb0;
+            padding-left: 20px;
+        }
+
+        .shortcut {
+            font-size: 11px;
+            color: #a0aec0;
+            margin-left: 20px;
+        }
+
+        .dropdown-separator {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 5px 0;
+        }
+
+        /* 툴바 */
+        .toolbar {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 8px 10px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            flex-wrap: wrap;
+            position: relative;
+            z-index: 10;
+        }
+
+        .toolbar-btn {
+            background: white;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            color: #4a5568;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .toolbar-btn:hover {
+            background: #f7fafc;
+            border-color: #2b6cb0;
+            color: #2b6cb0;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .toolbar-btn:active {
+            transform: translateY(0);
+        }
+
+        .toolbar-separator {
+            width: 1px;
+            height: 24px;
+            background: #e2e8f0;
+            margin: 0 5px;
+        }
+
+        .dark-mode-toggle {
+            background: white;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            padding: 6px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            margin-left: auto;
+        }
+
+        body.dark-mode .dark-mode-toggle {
+            background: #000000;
+            border-color: #3a3a3a;
+            color: #ffffff;
+        }
+
+        /* 메인 컨텐츠 영역 */
+        .workspace {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+
+        /* 사이드바 */
+        .sidebar {
+            width: 280px;
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-header {
+            padding: 12px 15px;
+            background: #f7fafc;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 600;
+            font-size: 13px;
+            color: #2d3748;
+        }
+
+        .search-container {
+            padding: 10px;
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .search-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 10px;
+            color: #a0aec0;
+            font-size: 18px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 6px 30px 6px 35px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 13px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            border-color: #2196F3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+            transform: scale(1.01);
+        }
+
+        .clear-search {
+            position: absolute;
+            right: 10px;
+            cursor: pointer;
+            color: #a0aec0;
+            font-size: 18px;
+            transition: all 0.2s ease;
+        }
+
+        .clear-search:hover {
+            color: #4a5568;
+            transform: scale(1.2);
+        }
+
+        .tree-view {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+
+        .tree-item {
+            padding: 8px 12px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 13px;
+            user-select: none;
+            border-radius: 6px;
+            margin-bottom: 2px;
+            color: #2d3748;
+            transition: all 0.2s ease;
+        }
+
+        .tree-item:hover {
+            background: #f7f7f7;
+            padding-left: 16px;
+            transform: translateX(2px);
+        }
+
+        .tree-item.selected {
+            background: #f7f7f7;
+            color: #2b6cb0;
+            font-weight: 500;
+        }
+
+        .folder-icon {
+            width: 22px;
+            height: 22px;
+            color: #2B6CB0;
+            flex-shrink: 0;
+        }
+
+        .folder-icon-svg {
+            fill: currentColor;
+        }
+
+        .tree-item.collapsed::before {
+            content: '+';
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .tree-item.expanded::before {
+            content: '−';
+            font-weight: bold;
+            margin-right: 5px;
+        }
+
+        .tree-children {
+            margin-left: 20px;
+            display: none;
+        }
+
+        .tree-children.show {
+            display: block;
+        }
+
+        /* 에디터 영역 */
+        .editor-area {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: #f5f7fa;
+            min-width: 0;
+        }
+
+        .tab-bar {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            overflow-x: auto;
+            position: relative;
+            z-index: 50;
+        }
+
+        .tab {
+            padding: 10px 30px 10px 15px;
+            background: white;
+            border-right: 1px solid #e2e8f0;
+            cursor: pointer;
+            font-size: 13px;
+            white-space: nowrap;
+            position: relative;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: #718096;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            background: #f7f7f7;
+            border-bottom: 2px solid #2b6cb0;
+            color: #2b6cb0;
+            font-weight: 500;
+        }
+
+        .tab:hover {
+            background: #f7f7f7;
+            transform: translateY(-2px);
+        }
+
+        .tab-close {
+            position: absolute;
+            right: 8px;
+            width: 18px;
+            height: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3px;
+            font-size: 16px;
+            color: #a0aec0;
+            transition: all 0.2s ease;
+        }
+
+        .tab-close:hover {
+            background: #e2e8f0;
+            color: #2b6cb0;
+            transform: scale(1.2);
+        }
+
+        .tab-name {
+            cursor: pointer;
+        }
+
+        .tab-name:hover {
+            text-decoration: underline;
+        }
+
+        /* 에디터 컨테이너 - 스크롤 버그 수정 */
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            overflow: hidden;
+            min-height: 0;
+        }
+
+        /* v0.6: 라인 넘버 완벽 정렬 */
+        .line-numbers {
+            width: 50px;
+            background: #f7fafc;
+            border-right: 1px solid #e2e8f0;
+            padding-top: 16px;
+            padding-bottom: 16px;
+            padding-left: 5px;
+            padding-right: 5px;
+            text-align: right;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 22.4px;
+            color: #a0aec0;
+            user-select: none;
+            overflow: hidden;
+        }
+
+        .line-numbers div {
+            height: 22.4px;
+            line-height: 22.4px;
+        }
+
+        /* 스크롤 버그 수정: editor에 명시적 크기 및 스크롤 설정 */
+        .editor {
+            flex: 1;
+            min-width: 0;
+            border: none;
+            padding: 16px;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 22.4px;
+            resize: none;
+            outline: none;
+            background: white;
+            color: #2d3748;
+            overflow-y: scroll !important;
+            overflow-x: auto;
+            height: 100%;
+            width: 100%;
+        }
+
+        /* 검증 패널 */
+        .validation-panel {
+            display: none;
+            max-height: 150px;
+            overflow-y: auto;
+            border-top: 1px solid #e2e8f0;
+            background: #f7fafc;
+        }
+
+        .validation-result {
+            padding: 8px 12px;
+        }
+
+        .validation-item {
+            padding: 6px 10px;
+            margin: 4px 0;
+            border-radius: 4px;
+            font-size: 12px;
+            border-left: 3px solid;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .validation-item.error {
+            background: #fff5f5;
+            border-color: #fc8181;
+            color: #c53030;
+        }
+
+        .validation-item.warning {
+            background: #fffaf0;
+            border-color: #f6ad55;
+            color: #c05621;
+        }
+
+        .validation-item.success {
+            background: #f0fff4;
+            border-color: #68d391;
+            color: #276749;
+        }
+
+        .validation-item.info {
+            background: #ebf8ff;
+            border-color: #63b3ed;
+            color: #2c5282;
+        }
+
+        body.dark-mode .validation-panel {
+            background: #0a0a0a;
+            border-color: #3a3a3a;
+        }
+
+        body.dark-mode .validation-item.error {
+            background: #2e0a0a;
+            border-color: #5e1a1a;
+        }
+
+        body.dark-mode .validation-item.warning {
+            background: #2e1a0a;
+            border-color: #5e3a1a;
+        }
+
+        body.dark-mode .validation-item.success {
+            background: #0a2e0a;
+            border-color: #1a5e1a;
+        }
+
+        body.dark-mode .validation-item.info {
+            background: #0a0a2e;
+            border-color: #1a1a5e;
+        }
+
+        body.dark-mode .validation-panel {
+            background: #0a0a0a;
+            border-color: #3a3a3a;
+        }
+
+        body.dark-mode .validation-item.error {
+            background: #2e0a0a;
+            border-color: #5e1a1a;
+            color: #ff6b6b;
+        }
+
+        body.dark-mode .validation-item.warning {
+            background: #2e1a0a;
+            border-color: #5e3a1a;
+            color: #ffa94d;
+        }
+
+        body.dark-mode .validation-item.success {
+            background: #0a2e0a;
+            border-color: #1a5e1a;
+            color: #51cf66;
+        }
+
+        body.dark-mode .validation-item.info {
+            background: #0a0a2e;
+            border-color: #1a1a5e;
+            color: #4dabf7;
+        }
+
+        /* 결과 패널 */
+        .result-panel {
+            height: 300px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .result-tabs {
+            display: flex;
+            background: #f7fafc;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0 8px;
+        }
+
+        .result-tab {
+            padding: 8px 16px;
+            cursor: pointer;
+            font-size: 13px;
+            border-bottom: 2px solid transparent;
+            color: #718096;
+            transition: all 0.3s ease;
+        }
+
+        .result-tab.active {
+            color: #2b6cb0;
+            border-bottom-color: #2b6cb0;
+            font-weight: 500;
+        }
+
+        .result-tab:hover {
+            color: #2d3748;
+            transform: translateY(-2px);
+        }
+
+        .result-content {
+            flex: 1;
+            overflow: auto;
+            padding: 12px;
+        }
+
+        /* v0.6: 결과 정보 패널 */
+        .result-info {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 6px;
+            padding: 10px 15px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            display: none;
+        }
+
+        .result-info.show {
+            display: block;
+        }
+
+        .result-info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 10px;
+        }
+
+        .result-info-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-info-label {
+            font-weight: 600;
+            color: #0369a1;
+        }
+
+        .result-info-value {
+            color: #075985;
+        }
+
+        body.dark-mode .result-info {
+            background: #0a0a0a;
+            border-color: #3a3a3a;
+        }
+
+        body.dark-mode .result-info-label {
+            color: #4dabf7;
+        }
+
+        body.dark-mode .result-info-value {
+            color: #74c0fc;
+        }
+
+        body.dark-mode .result-info-item .material-icons {
+            color: #4dabf7;
+        }
+
+        .result-grid {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+
+        .result-grid th {
+            background: #f7fafc;
+            padding: 10px 12px;
+            text-align: left;
+            font-weight: 600;
+            border: 1px solid #e2e8f0;
+            position: sticky;
+            top: 0;
+            color: #4a5568;
+        }
+
+        .result-grid td {
+            padding: 8px 12px;
+            border: 1px solid #e2e8f0;
+            transition: all 0.2s ease;
+        }
+
+        .result-grid tr {
+            transition: all 0.2s ease;
+        }
+
+        .result-grid tr:hover {
+            background: #f7fafc;
+            transform: scale(1.005);
+        }
+
+        /* 속성 패널 */
+        .properties-panel {
+            width: 250px;
+            background: white;
+            border-left: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .properties-header {
+            padding: 12px 15px;
+            background: #f7fafc;
+            border-bottom: 1px solid #e2e8f0;
+            font-weight: 600;
+            font-size: 13px;
+            color: #2d3748;
+        }
+
+        .properties-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+
+        .property-item {
+            padding: 8px 0;
+            border-bottom: 1px solid #f7fafc;
+            transition: all 0.2s ease;
+        }
+
+        .property-item:hover {
+            transform: translateX(-4px);
+            background: #f9fafb;
+        }
+
+        .property-label {
+            font-size: 12px;
+            color: #718096;
+            margin-bottom: 4px;
+            transition: color 0.2s ease;
+        }
+
+        .property-item:hover .property-label {
+            color: #2b6cb0;
+        }
+
+        .property-value {
+            font-size: 13px;
+            color: #2d3748;
+            font-weight: 500;
+        }
+
+        body.dark-mode .property-label {
+            color: #999999;
+        }
+
+        body.dark-mode .property-value {
+            color: #ffffff;
+        }
+
+        /* 상태바 */
+        .status-bar {
+            height: 25px;
+            background: white;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            padding: 0 15px;
+            gap: 20px;
+            font-size: 12px;
+            color: #718096;
+        }
+
+        .status-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        /* 스크롤바 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #cbd5e0;
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #a0aec0;
+        }
+
+        body.dark-mode ::-webkit-scrollbar-track {
+            background: #1a1a1a;
+        }
+
+        body.dark-mode ::-webkit-scrollbar-thumb {
+            background: #3a3a3a;
+        }
+
+        /* 컨텍스트 메뉴 */
+        .context-menu {
+            position: fixed;
+            background: white;
+            border: 1px solid #cbd5e0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            border-radius: 8px;
+            min-width: 180px;
+            z-index: 10000;
+            display: none;
+            animation: scaleIn 0.15s ease-out;
+        }
+
+        .context-menu-item {
+            padding: 8px 15px;
+            cursor: pointer;
+            font-size: 13px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #2d3748;
+            transition: all 0.2s ease;
+        }
+
+        .context-menu-item:hover {
+            background: #f7fafc;
+            color: #2b6cb0;
+            padding-left: 20px;
+        }
+
+        .context-menu-separator {
+            height: 1px;
+            background: #e2e8f0;
+            margin: 5px 0;
+        }
+
+        body.dark-mode .context-menu {
+            background: #000000;
+            border-color: #3a3a3a;
+        }
+
+        body.dark-mode .context-menu-item {
+            color: #ffffff;
+        }
+
+        body.dark-mode .context-menu-item:hover {
+            background: #1a1a1a;
+        }
+
+        /* 모달 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 9999;
+            align-items: center;
+            justify-content: center;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            max-width: 800px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            animation: scaleIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .modal-header {
+            padding: 20px;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .modal-close {
+            cursor: pointer;
+            font-size: 24px;
+            color: #718096;
+            background: none;
+            border: none;
+            padding: 0;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 4px;
+            transition: all 0.2s ease;
+        }
+
+        .modal-close:hover {
+            background: #f7fafc;
+            color: #2d3748;
+            transform: scale(1.1) rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 20px;
+        }
+
+        .modal-footer {
+            padding: 15px 20px;
+            border-top: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-primary {
+            background: #2196F3;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #1976D2;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(33, 150, 243, 0.4);
+        }
+
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+
+        .btn-secondary {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 1px solid #cbd5e0;
+        }
+
+        .btn-secondary:hover {
+            background: #e2e8f0;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn-secondary:active {
+            transform: translateY(0);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 500;
+            font-size: 13px;
+            color: #2d3748;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #cbd5e0;
+            border-radius: 6px;
+            font-size: 14px;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: #2196F3;
+            box-shadow: 0 0 0 3px rgba(33, 150, 243, 0.1);
+            transform: scale(1.01);
+        }
+
+        .designer-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        .designer-table th,
+        .designer-table td {
+            padding: 8px;
+            border: 1px solid #e2e8f0;
+            font-size: 13px;
+        }
+
+        .designer-table th {
+            background: #f7fafc;
+            font-weight: 600;
+            text-align: left;
+            white-space: nowrap;
+        }
+
+        .designer-table input[type="text"],
+        .designer-table select {
+            width: 100%;
+            padding: 4px 8px;
+            border: 1px solid #cbd5e0;
+            border-radius: 4px;
+            font-size: 13px;
+        }
+
+        /* 추가 다크모드 스타일 */
+        body.dark-mode .editor::placeholder,
+        body.dark-mode .search-input::placeholder,
+        body.dark-mode .form-control::placeholder {
+            color: #666666;
+        }
+
+        body.dark-mode .workspace {
+            background: #000000;
+        }
+
+        body.dark-mode #editorContainer {
+            background: #000000;
+        }
+
+        body.dark-mode .editor-container {
+            background: #000000;
+        }
+
+        body.dark-mode p {
+            color: #999999;
+        }
+
+        body.dark-mode h3 {
+            color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- 메뉴바 -->
+        <div class="menu-bar">
+            <div class="menu-item">
+                파일
+                <div class="dropdown-menu">
+                    <div class="dropdown-item" onclick="newQuery()">
+                        <span>새 쿼리</span>
+                        <span class="shortcut">Ctrl+N</span>
+                    </div>
+                    <div class="dropdown-item" onclick="openQuery()">
+                        <span>쿼리 열기</span>
+                        <span class="shortcut">Ctrl+O</span>
+                    </div>
+                    <div class="dropdown-item" onclick="saveQuery()">
+                        <span>쿼리 저장</span>
+                        <span class="shortcut">Ctrl+S</span>
+                    </div>
+                    <div class="dropdown-separator"></div>
+                    <div class="dropdown-item" onclick="exportResults()">
+                        <span>결과 내보내기</span>
+                        <span class="shortcut">Ctrl+Shift+E</span>
+                    </div>
+                </div>
+            </div>
+            <div class="menu-item">
+                편집
+                <div class="dropdown-menu">
+                    <div class="dropdown-item" onclick="document.execCommand('undo')">
+                        <span>실행 취소</span>
+                        <span class="shortcut">Ctrl+Z</span>
+                    </div>
+                    <div class="dropdown-item" onclick="document.execCommand('redo')">
+                        <span>다시 실행</span>
+                        <span class="shortcut">Ctrl+Y</span>
+                    </div>
+                </div>
+            </div>
+            <div class="menu-item">
+                쿼리
+                <div class="dropdown-menu">
+                    <div class="dropdown-item" onclick="executeQuery()">
+                        <span>실행</span>
+                        <span class="shortcut">F5</span>
+                    </div>
+                    <div class="dropdown-item" onclick="formatSQL()">
+                        <span>SQL 포맷</span>
+                        <span class="shortcut">Ctrl+Shift+F</span>
+                    </div>
+                    <div class="dropdown-item" onclick="validateQuery()">
+                        <span>쿼리 검증</span>
+                        <span class="shortcut">Ctrl+Shift+V</span>
+                    </div>
+                </div>
+            </div>
+            <div class="menu-item">
+                도구
+                <div class="dropdown-menu">
+                    <div class="dropdown-item" onclick="showTableDesigner()">
+                        <span>테이블 디자이너</span>
+                    </div>
+                </div>
+            </div>
+            <div class="menu-item">
+                보기
+                <div class="dropdown-menu">
+                    <div class="dropdown-item" onclick="toggleSidebar()">
+                        <span>DB 탐색기</span>
+                    </div>
+                    <div class="dropdown-item" onclick="toggleProperties()">
+                        <span>속성 패널</span>
+                    </div>
+                </div>
+            </div>
+            <div class="menu-item">
+                도움말
+                <div class="dropdown-menu">
+                    <div class="dropdown-item" onclick="showAbout()">
+                        <span>정보</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 툴바 -->
+        <div class="toolbar">
+            <button class="toolbar-btn" onclick="newQuery()" title="새 쿼리 (Ctrl+N)">
+                <span class="material-icons">note_add</span>
+                <span>새로 만들기</span>
+            </button>
+            <button class="toolbar-btn" onclick="openQuery()" title="쿼리 열기 (Ctrl+O)">
+                <span class="material-icons">folder_open</span>
+                <span>열기</span>
+            </button>
+            <button class="toolbar-btn" onclick="saveQuery()" title="쿼리 저장 (Ctrl+S)">
+                <span class="material-icons">save</span>
+                <span>저장</span>
+            </button>
+            
+            <div class="toolbar-separator"></div>
+            
+            <button class="toolbar-btn" onclick="executeQuery()" title="실행 (F5)">
+                <span class="material-icons">play_arrow</span>
+                <span>실행</span>
+            </button>
+            <button class="toolbar-btn" onclick="formatSQL()" title="SQL 포맷 (Ctrl+Shift+F)">
+                <span class="material-icons">format_align_left</span>
+                <span>포맷</span>
+            </button>
+            <button class="toolbar-btn" onclick="validateQuery()" title="쿼리 검증 (Ctrl+Shift+V)">
+                <span class="material-icons">check_circle</span>
+                <span>검증</span>
+            </button>
+            <button class="toolbar-btn" onclick="clearEditor()" title="쿼리창 지우기 (Ctrl+Shift+C)">
+                <span class="material-icons">delete_sweep</span>
+                <span>지우기</span>
+            </button>
+            
+            <div class="toolbar-separator"></div>
+            
+            <button class="toolbar-btn" onclick="showTableDesigner()" title="테이블 디자이너">
+                <span class="material-icons">table_chart</span>
+                <span>테이블 디자이너</span>
+            </button>
+            
+            <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="다크모드 전환">
+                <span class="material-icons" id="darkModeIcon">dark_mode</span>
+            </button>
+        </div>
+
+        <!-- 작업 공간 -->
+        <div class="workspace">
+            <!-- 왼쪽 사이드바 -->
+            <div class="sidebar" id="sidebar">
+                <div class="sidebar-header">데이터베이스 탐색기</div>
+                
+                <div class="search-container">
+                    <div class="search-wrapper">
+                        <span class="material-icons search-icon">search</span>
+                        <input type="text" 
+                               class="search-input" 
+                               id="dbSearchInput" 
+                               placeholder="데이터베이스 검색..." 
+                               oninput="filterDatabaseTree(this.value)">
+                        <span class="material-icons clear-search" onclick="clearSearch()">close</span>
+                    </div>
+                </div>
+                
+                <div class="tree-view">
+                    <div class="tree-item collapsed" onclick="toggleTreeItem(this)">
+                        <svg class="folder-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path class="folder-icon-svg" d="M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z"/>
+                        </svg>
+                        <span>샘플 데이터베이스</span>
+                    </div>
+                    <div class="tree-children">
+                        <div class="tree-item collapsed" onclick="toggleTreeItem(this)">
+                            <svg class="folder-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path class="folder-icon-svg" d="M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z"/>
+                            </svg>
+                            <span>테이블</span>
+                        </div>
+                        <div class="tree-children">
+                            <div class="tree-item" onclick="selectItem(this, 'users')">
+                                <span style="width: 22px; text-align: center;">└</span>
+                                <span>users</span>
+                            </div>
+                            <div class="tree-item" onclick="selectItem(this, 'orders')">
+                                <span style="width: 22px; text-align: center;">└</span>
+                                <span>orders</span>
+                            </div>
+                            <div class="tree-item" onclick="selectItem(this, 'products')">
+                                <span style="width: 22px; text-align: center;">└</span>
+                                <span>products</span>
+                            </div>
+                        </div>
+                        <div class="tree-item collapsed" onclick="toggleTreeItem(this)">
+                            <svg class="folder-icon" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                <path class="folder-icon-svg" d="M12,3C7.58,3 4,4.79 4,7C4,9.21 7.58,11 12,11C16.42,11 20,9.21 20,7C20,4.79 16.42,3 12,3M4,9V12C4,14.21 7.58,16 12,16C16.42,16 20,14.21 20,12V9C20,11.21 16.42,13 12,13C7.58,13 4,11.21 4,9M4,14V17C4,19.21 7.58,21 12,21C16.42,21 20,19.21 20,17V14C20,16.21 16.42,18 12,18C7.58,18 4,16.21 4,14Z"/>
+                            </svg>
+                            <span>뷰</span>
+                        </div>
+                        <div class="tree-children">
+                            <div class="tree-item" onclick="selectItem(this, 'user_orders')">
+                                <span style="width: 22px; text-align: center;">└</span>
+                                <span>user_orders</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 중앙 에디터 영역 -->
+            <div class="editor-area">
+                <div class="tab-bar" id="tabBar">
+                    <!-- 탭들이 동적으로 추가됨 -->
+                </div>
+
+                <div id="editorContainer" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0;">
+                    <!-- 에디터들이 동적으로 추가됨 -->
+                </div>
+
+                <!-- 결과 패널 -->
+                <div class="result-panel" id="resultPanel">
+                    <div class="result-tabs">
+                        <div class="result-tab active" data-tab="data" onclick="switchResultTab('data')">데이터</div>
+                        <div class="result-tab" data-tab="messages" onclick="switchResultTab('messages')">메시지</div>
+                        <div class="result-tab" data-tab="history" onclick="switchResultTab('history')">실행 기록</div>
+                    </div>
+                    <div class="result-content" id="resultContent">
+                        <!-- 결과 정보 패널 -->
+                        <div class="result-info" id="resultInfo">
+                            <div class="result-info-grid">
+                                <div class="result-info-item">
+                                    <span class="material-icons" style="font-size: 16px;">table_rows</span>
+                                    <span class="result-info-label">행 수:</span>
+                                    <span class="result-info-value" id="infoRowCount">-</span>
+                                </div>
+                                <div class="result-info-item">
+                                    <span class="material-icons" style="font-size: 16px;">view_column</span>
+                                    <span class="result-info-label">열 수:</span>
+                                    <span class="result-info-value" id="infoColumnCount">-</span>
+                                </div>
+                                <div class="result-info-item">
+                                    <span class="material-icons" style="font-size: 16px;">schedule</span>
+                                    <span class="result-info-label">실행 시간:</span>
+                                    <span class="result-info-value" id="infoExecutionTime">-</span>
+                                </div>
+                                <div class="result-info-item">
+                                    <span class="material-icons" style="font-size: 16px;">memory</span>
+                                    <span class="result-info-label">메모리:</span>
+                                    <span class="result-info-value" id="infoMemoryUsage">-</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div id="resultGrid">
+                            <p style="color: #a0aec0; text-align: center; margin-top: 50px;">쿼리를 실행하면 결과가 여기에 표시됩니다.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 오른쪽 속성 패널 -->
+            <div class="properties-panel" id="propertiesPanel">
+                <div class="properties-header">속성</div>
+                <div class="properties-content">
+                    <div class="property-item">
+                        <div class="property-label">데이터베이스</div>
+                        <div class="property-value">샘플 데이터베이스</div>
+                    </div>
+                    <div class="property-item">
+                        <div class="property-label">연결 상태</div>
+                        <div class="property-value">🟢 연결됨</div>
+                    </div>
+                    <div class="property-item">
+                        <div class="property-label">서버</div>
+                        <div class="property-value">localhost:3306</div>
+                    </div>
+                    <div class="property-item">
+                        <div class="property-label">사용자</div>
+                        <div class="property-value">admin</div>
+                    </div>
+                    <div class="property-item">
+                        <div class="property-label">문자 집합</div>
+                        <div class="property-value">utf8mb4</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 상태바 -->
+        <div class="status-bar">
+            <div class="status-item">
+                <span>줄: <span id="lineNumber">1</span></span>
+            </div>
+            <div class="status-item">
+                <span>열: <span id="columnNumber">1</span></span>
+            </div>
+            <div class="status-item">
+                <span>선택: <span id="selectionInfo">0</span></span>
+            </div>
+            <div class="status-item">
+                <span id="statusMessage">준비</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- 컨텍스트 메뉴 -->
+    <div class="context-menu" id="contextMenu">
+        <div class="context-menu-item" onclick="executeQuery()">
+            <span>실행</span>
+            <span class="shortcut">F5</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" onclick="formatSQL()">
+            <span>SQL 포맷</span>
+            <span class="shortcut">Ctrl+Shift+F</span>
+        </div>
+        <div class="context-menu-item" onclick="validateQuery()">
+            <span>쿼리 검증</span>
+            <span class="shortcut">Ctrl+Shift+V</span>
+        </div>
+        <div class="context-menu-separator"></div>
+        <div class="context-menu-item" onclick="commentCode()">
+            <span>주석 처리</span>
+            <span class="shortcut">Ctrl+/</span>
+        </div>
+    </div>
+
+    <!-- 테이블 디자이너 모달 -->
+    <div class="modal" id="tableDesignerModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div class="modal-title">테이블 디자이너</div>
+                <button class="modal-close" onclick="closeModal('tableDesignerModal')">×</button>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label class="form-label">테이블 이름</label>
+                    <input type="text" class="form-control" id="tableName" placeholder="예: users">
+                </div>
+                <table class="designer-table">
+                    <thead>
+                        <tr>
+                            <th>컬럼명</th>
+                            <th>데이터 타입</th>
+                            <th>길이</th>
+                            <th>Null 허용</th>
+                            <th>기본값</th>
+                            <th>PK</th>
+                        </tr>
+                    </thead>
+                    <tbody id="columnDesigner">
+                        <tr>
+                            <td><input type="text" placeholder="id" value="id"></td>
+                            <td>
+                                <select>
+                                    <option>INT</option>
+                                    <option>BIGINT</option>
+                                    <option>SMALLINT</option>
+                                    <option>TINYINT</option>
+                                    <option>VARCHAR</option>
+                                    <option>CHAR</option>
+                                    <option>TEXT</option>
+                                    <option>MEDIUMTEXT</option>
+                                    <option>LONGTEXT</option>
+                                    <option>DATE</option>
+                                    <option>DATETIME</option>
+                                    <option>TIMESTAMP</option>
+                                    <option>TIME</option>
+                                    <option>BOOLEAN</option>
+                                    <option>DECIMAL</option>
+                                    <option>FLOAT</option>
+                                    <option>DOUBLE</option>
+                                    <option>BLOB</option>
+                                    <option>JSON</option>
+                                </select>
+                            </td>
+                            <td><input type="text" placeholder="11" value="11"></td>
+                            <td style="text-align: center;"><input type="checkbox"></td>
+                            <td><input type="text" placeholder="예: 0, 'value', NULL"></td>
+                            <td style="text-align: center;"><input type="checkbox" checked></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <button class="btn btn-secondary" onclick="addColumn()" style="margin-top: 10px;">
+                    <span class="material-icons" style="font-size: 16px; vertical-align: middle;">add</span>
+                    컬럼 추가
+                </button>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('tableDesignerModal')">취소</button>
+                <button class="btn btn-primary" onclick="generateCreateTable()">SQL 생성</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ===== 전역 변수 =====
+        let tabs = {};
+        let tabCounter = 0;
+        let activeTabId = null;
+        let isDarkMode = false;
+        let queryHistory = [];
+
+        // ===== 리플 효과 함수 =====
+        function createRipple(event) {
+            const button = event.currentTarget;
+            const ripple = document.createElement('span');
+            ripple.classList.add('ripple');
+            
+            const rect = button.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = event.clientX - rect.left - size / 2;
+            const y = event.clientY - rect.top - size / 2;
+            
+            ripple.style.width = ripple.style.height = size + 'px';
+            ripple.style.left = x + 'px';
+            ripple.style.top = y + 'px';
+            
+            button.appendChild(ripple);
+            
+            setTimeout(() => ripple.remove(), 600);
+        }
+
+        // ===== 초기화 =====
+        window.onload = function() {
+            newQuery();
+            setupKeyboardShortcuts();
+            
+            // 모든 버튼에 리플 효과 추가
+            document.querySelectorAll('.toolbar-btn, .btn, .btn-primary, .btn-secondary').forEach(button => {
+                button.addEventListener('click', createRipple);
+            });
+        };
+
+        // ===== 탭 관리 =====
+        function newQuery() {
+            tabCounter++;
+            const tabId = tabCounter;
+            const tabName = `Query ${tabCounter}`;
+            
+            tabs[tabId] = {
+                name: tabName,
+                content: '',
+                saved: true
+            };
+            
+            // 탭 생성
+            const tabBar = document.getElementById('tabBar');
+            const tab = document.createElement('div');
+            tab.className = 'tab active';
+            tab.dataset.tabId = tabId;
+            tab.innerHTML = `
+                <span class="material-icons">description</span>
+                <span class="tab-name" ondblclick="renameTab(${tabId})">${tabName}</span>
+                <span class="material-icons tab-close" onclick="closeTab(event, ${tabId})">close</span>
+            `;
+            tab.onclick = function(e) {
+                if (!e.target.classList.contains('tab-close') && !e.target.classList.contains('material-icons')) {
+                    switchTab(tabId);
+                }
+            };
+            tabBar.appendChild(tab);
+            
+            // 에디터 컨테이너 생성
+            const editorContainer = document.getElementById('editorContainer');
+            const editorWrapper = document.createElement('div');
+            editorWrapper.id = `editor-wrapper-${tabId}`;
+            editorWrapper.style.display = 'none';
+            editorWrapper.style.flex = '1';
+            editorWrapper.style.flexDirection = 'column';
+            editorWrapper.style.minHeight = '0';
+            editorWrapper.style.overflow = 'hidden';
+            editorWrapper.innerHTML = `
+                <div class="editor-container">
+                    <div class="line-numbers" id="line-numbers-${tabId}">
+                        <div>1</div>
+                    </div>
+                    <textarea 
+                        class="editor" 
+                        id="editor-${tabId}" 
+                        placeholder="여기에 SQL 쿼리를 작성하세요...
+
+예제:
+SELECT * FROM users;
+SELECT column1, column2 FROM table_name WHERE condition;
+INSERT INTO table_name (column1, column2) VALUES (value1, value2);"
+                        oninput="markTabAsUnsaved(${tabId}); syncLineNumbers(${tabId}); updateCursorPosition();"
+                        onscroll="syncScroll(${tabId})"
+                        onkeydown="handleEditorKeydown(event, ${tabId})"
+                        oncontextmenu="showContextMenu(event)"
+                    ></textarea>
+                </div>
+                <div class="validation-panel" id="validation-${tabId}"></div>
+            `;
+            editorContainer.appendChild(editorWrapper);
+            
+            switchTab(tabId);
+        }
+
+        function switchTab(tabId) {
+            // 모든 탭 비활성화
+            document.querySelectorAll('.tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 모든 에디터 숨기기
+            document.querySelectorAll('[id^="editor-wrapper-"]').forEach(wrapper => {
+                wrapper.style.display = 'none';
+            });
+            
+            // 선택한 탭 활성화
+            const selectedTab = document.querySelector(`[data-tab-id="${tabId}"]`);
+            if (selectedTab) {
+                selectedTab.classList.add('active');
+            }
+            
+            // 해당 에디터 표시
+            const editorWrapper = document.getElementById(`editor-wrapper-${tabId}`);
+            if (editorWrapper) {
+                editorWrapper.style.display = 'flex';
+            }
+            
+            const editor = document.getElementById(`editor-${tabId}`);
+            if (editor) {
+                editor.value = tabs[tabId].content;
+                editor.focus();
+                // 스크롤 강제 재계산
+                forceEditorReflow(editor);
+            }
+            
+            activeTabId = tabId;
+            syncLineNumbers(tabId);
+            updateCursorPosition();
+        }
+
+        // 스크롤 버그 수정: 에디터 reflow 강제 실행
+        function forceEditorReflow(editor) {
+            if (!editor) return;
+            setTimeout(() => {
+                editor.scrollTop = editor.scrollTop;
+                editor.style.overflowY = 'scroll';
+            }, 0);
+        }
+
+        function closeTab(event, tabId) {
+            event.stopPropagation();
+            
+            if (!tabs[tabId].saved) {
+                if (!confirm('저장하지 않은 변경사항이 있습니다. 닫으시겠습니까?')) {
+                    return;
+                }
+            }
+            
+            const tab = document.querySelector(`[data-tab-id="${tabId}"]`);
+            const editorWrapper = document.getElementById(`editor-wrapper-${tabId}`);
+            
+            if (tab) tab.remove();
+            if (editorWrapper) editorWrapper.remove();
+            delete tabs[tabId];
+            
+            const remainingTabs = Object.keys(tabs);
+            if (remainingTabs.length === 0) {
+                newQuery();
+            } else if (activeTabId === tabId) {
+                switchTab(parseInt(remainingTabs[0]));
+            }
+        }
+
+        function renameTab(tabId) {
+            const tab = document.querySelector(`[data-tab-id="${tabId}"]`);
+            const nameSpan = tab.querySelector('.tab-name');
+            const currentName = nameSpan.textContent;
+            
+            const input = document.createElement('input');
+            input.type = 'text';
+            input.value = currentName;
+            input.style.cssText = 'border: 1px solid #2196F3; padding: 2px 5px; border-radius: 3px; font-size: 13px; width: 100px;';
+            
+            nameSpan.replaceWith(input);
+            input.focus();
+            input.select();
+            
+            input.onkeydown = function(e) {
+                if (e.key === 'Enter') {
+                    saveTabName(tabId, input, currentName);
+                } else if (e.key === 'Escape') {
+                    cancelTabRename(tabId, input, currentName);
+                }
+            };
+            
+            input.onblur = function() {
+                setTimeout(() => {
+                    if (input.parentNode) {
+                        saveTabName(tabId, input, currentName);
+                    }
+                }, 100);
+            };
+        }
+
+        function saveTabName(tabId, input, fallbackName) {
+            const newName = input.value.trim() || fallbackName;
+            if (tabs[tabId]) tabs[tabId].name = newName;
+            
+            const span = document.createElement('span');
+            span.className = 'tab-name';
+            span.ondblclick = function() { renameTab(tabId); };
+            span.textContent = newName;
+            
+            input.replaceWith(span);
+        }
+
+        function cancelTabRename(tabId, input, originalName) {
+            const span = document.createElement('span');
+            span.className = 'tab-name';
+            span.ondblclick = function() { renameTab(tabId); };
+            span.textContent = originalName;
+            
+            input.replaceWith(span);
+        }
+
+        function markTabAsUnsaved(tabId) {
+            tabs[tabId].saved = false;
+            const tab = document.querySelector(`[data-tab-id="${tabId}"]`);
+            if (tab) {
+                const nameSpan = tab.querySelector('.tab-name');
+                if (nameSpan && !nameSpan.textContent.endsWith('*')) {
+                    nameSpan.textContent = nameSpan.textContent + ' *';
+                }
+            }
+        }
+
+        // ===== 라인 넘버 동기화 =====
+        function syncLineNumbers(tabId) {
+            const editor = document.getElementById(`editor-${tabId}`);
+            const lineNumbers = document.getElementById(`line-numbers-${tabId}`);
+            
+            if (!editor || !lineNumbers) return;
+            
+            const text = editor.value;
+            const lines = text.split('\n').length;
+            const currentLines = lineNumbers.children.length;
+            
+            if (lines !== currentLines) {
+                let html = '';
+                for (let i = 1; i <= lines; i++) {
+                    html += `<div>${i}</div>`;
+                }
+                lineNumbers.innerHTML = html;
+            }
+        }
+
+        function syncScroll(tabId) {
+            const editor = document.getElementById(`editor-${tabId}`);
+            const lineNumbers = document.getElementById(`line-numbers-${tabId}`);
+            
+            if (!editor || !lineNumbers) return;
+            
+            lineNumbers.scrollTop = editor.scrollTop;
+        }
+
+        function handleEditorKeydown(event, tabId) {
+            if (event.key === 'Tab') {
+                event.preventDefault();
+                const editor = event.target;
+                const start = editor.selectionStart;
+                const end = editor.selectionEnd;
+                
+                editor.value = editor.value.substring(0, start) + '    ' + editor.value.substring(end);
+                editor.selectionStart = editor.selectionEnd = start + 4;
+                
+                syncLineNumbers(tabId);
+            }
+        }
+
+        function updateCursorPosition() {
+            if (!activeTabId) return;
+            
+            const editor = document.getElementById(`editor-${activeTabId}`);
+            if (!editor) return;
+            
+            const text = editor.value.substring(0, editor.selectionStart);
+            const lines = text.split('\n');
+            const lineNumber = lines.length;
+            const columnNumber = lines[lines.length - 1].length + 1;
+            
+            document.getElementById('lineNumber').textContent = lineNumber;
+            document.getElementById('columnNumber').textContent = columnNumber;
+            
+            const selectionLength = editor.selectionEnd - editor.selectionStart;
+            document.getElementById('selectionInfo').textContent = selectionLength > 0 ? selectionLength : '0';
+            
+            if (tabs[activeTabId]) {
+                tabs[activeTabId].content = editor.value;
+            }
+        }
+
+        // ===== 쿼리창 지우기 =====
+        function clearEditor() {
+            if (!activeTabId) return;
+            
+            if (confirm('현재 쿼리를 모두 지우시겠습니까?')) {
+                const editor = document.getElementById(`editor-${activeTabId}`);
+                if (editor) {
+                    editor.value = '';
+                    syncLineNumbers(activeTabId);
+                    updateCursorPosition();
+                    
+                    if (tabs[activeTabId]) {
+                        tabs[activeTabId].content = '';
+                        markTabAsUnsaved(activeTabId);
+                    }
+                    
+                    const validationPanel = document.getElementById(`validation-${activeTabId}`);
+                    if (validationPanel) {
+                        validationPanel.style.display = 'none';
+                    }
+                    
+                    updateStatus('statusMessage', '쿼리가 지워졌습니다.');
+                }
+            }
+        }
+
+        // ===== 쿼리 검증 (고도화 버전) =====
+        function validateQuery() {
+            if (!activeTabId) return;
+            
+            const editor = document.getElementById(`editor-${activeTabId}`);
+            const query = editor.value.trim();
+            
+            if (!query) {
+                alert('검증할 쿼리를 입력하세요.');
+                return;
+            }
+            
+            updateStatus('statusMessage', '쿼리 검증 중...');
+            
+            const validation = performAdvancedValidation(query);
+            showValidationResults(validation);
+            
+            if (validation.isValid) {
+                updateStatus('statusMessage', '✓ 쿼리 검증 완료');
+            } else {
+                updateStatus('statusMessage', '✗ 쿼리에 오류가 있습니다');
+            }
+        }
+
+        // ===== 고급 SQL 검증 엔진 (SQL Gate/DBeaver 수준) - 대폭 강화됨 =====
+        function performAdvancedValidation(query) {
+            const results = {
+                isValid: true,
+                errors: [],
+                warnings: [],
+                suggestions: []
+            };
+
+            if (!query.trim()) {
+                results.errors.push('쿼리가 비어있습니다.');
+                results.isValid = false;
+                return results;
+            }
+
+            // 주석 제거 (검증용)
+            const queryWithoutComments = removeComments(query);
+            
+            // 토큰 분석
+            const tokens = tokenizeSQL(queryWithoutComments);
+            
+            // 1. 기본 구문 검증
+            validateBasicSyntax(queryWithoutComments, results);
+            
+            // 2. SELECT 문 고급 검증
+            validateSelectStatement(queryWithoutComments, tokens, results);
+            
+            // 3. INSERT 문 고급 검증
+            validateInsertStatement(queryWithoutComments, tokens, results);
+            
+            // 4. UPDATE 문 고급 검증
+            validateUpdateStatement(queryWithoutComments, tokens, results);
+            
+            // 5. DELETE 문 고급 검증
+            validateDeleteStatement(queryWithoutComments, tokens, results);
+            
+            // 6. JOIN 절 고급 검증
+            validateJoinClauses(queryWithoutComments, results);
+            
+            // 7. WHERE 절 고급 검증
+            validateWhereClause(queryWithoutComments, results);
+            
+            // 8. 괄호/따옴표 매칭 검증
+            validateBalancedDelimiters(query, results);
+            
+            // 9. 데이터 타입 및 함수 검증
+            validateDataTypesAndFunctions(queryWithoutComments, results);
+            
+            // 10. 성능 최적화 제안
+            suggestPerformanceOptimizations(queryWithoutComments, results);
+            
+            // 11. 보안 취약점 검사
+            checkSecurityVulnerabilities(queryWithoutComments, results);
+            
+            // 12. 예약어 및 식별자 검증
+            validateReservedWordsAndIdentifiers(queryWithoutComments, tokens, results);
+            
+            // ===== 추가 강화 검증 =====
+            
+            // 13. 쿼리 복잡도 분석
+            analyzeQueryComplexity(queryWithoutComments, results);
+            
+            // 14. 트랜잭션 안전성 검증
+            validateTransactionSafety(queryWithoutComments, results);
+            
+            // 15. 데이터베이스별 호환성 검사
+            checkDatabaseCompatibility(queryWithoutComments, results);
+            
+            return results;
+        }
+        
+        // 13. 쿼리 복잡도 분석 (신규)
+        function analyzeQueryComplexity(query, results) {
+            let complexity = 0;
+            
+            // JOIN 개수
+            const joins = (query.match(/\bJOIN\b/gi) || []).length;
+            complexity += joins * 2;
+            
+            // 서브쿼리 개수
+            const subqueries = calculateSubqueryDepth(query);
+            complexity += subqueries * 3;
+            
+            // 집계 함수
+            const aggregates = (query.match(/\b(COUNT|SUM|AVG|MIN|MAX|GROUP_CONCAT)\s*\(/gi) || []).length;
+            complexity += aggregates;
+            
+            // UNION
+            const unions = (query.match(/\bUNION\b/gi) || []).length;
+            complexity += unions * 2;
+            
+            // CASE WHEN
+            const cases = (query.match(/\bCASE\b/gi) || []).length;
+            complexity += cases;
+            
+            // CTE
+            const ctes = (query.match(/\bWITH\b/gi) || []).length;
+            complexity += ctes;
+            
+            if (complexity > 20) {
+                results.warnings.push(`쿼리 복잡도가 ${complexity}로 매우 높습니다. 쿼리를 분리하는 것을 고려하세요.\n💡 수정 제안: 임시 테이블이나 뷰를 사용하여 쿼리를 단순화하세요.`);
+            } else if (complexity > 10) {
+                results.suggestions.push(`쿼리 복잡도: ${complexity}. 복잡도가 높으면 유지보수가 어려워질 수 있습니다.`);
+            }
+        }
+        
+        // 14. 트랜잭션 안전성 검증 (신규)
+        function validateTransactionSafety(query, results) {
+            // 트랜잭션 키워드
+            const hasBegin = query.match(/\bBEGIN\b/i);
+            const hasCommit = query.match(/\bCOMMIT\b/i);
+            const hasRollback = query.match(/\bROLLBACK\b/i);
+            
+            if (hasBegin && !hasCommit && !hasRollback) {
+                results.warnings.push('BEGIN이 있지만 COMMIT이나 ROLLBACK이 없습니다. 트랜잭션을 명시적으로 종료하세요.\n💡 수정 제안: COMMIT 또는 ROLLBACK을 추가하세요.');
+            }
+            
+            // 위험한 작업 without 트랜잭션
+            if ((query.match(/\bUPDATE\b/i) || query.match(/\bDELETE\b/i)) && !hasBegin) {
+                results.suggestions.push('중요한 UPDATE/DELETE 작업은 트랜잭션 안에서 실행하는 것이 안전합니다.\n💡 수정 제안: BEGIN; ... COMMIT; 으로 감싸세요.');
+            }
+            
+            // AUTOCOMMIT 경고
+            if (query.match(/SET\s+AUTOCOMMIT\s*=\s*0/i)) {
+                results.warnings.push('AUTOCOMMIT을 비활성화했습니다. 트랜잭션을 명시적으로 관리해야 합니다.\n💡 주의: 반드시 COMMIT 또는 ROLLBACK을 호출하세요.');
+            }
+        }
+        
+        // 15. 데이터베이스별 호환성 검사 (신규)
+        function checkDatabaseCompatibility(query, results) {
+            // MySQL 전용 함수
+            const mysqlFunctions = ['IFNULL', 'CONCAT_WS', 'GROUP_CONCAT', 'UNIX_TIMESTAMP', 'FROM_UNIXTIME', 'DATE_FORMAT'];
+            const mysqlSyntax = ['LIMIT \\d+ OFFSET', 'ON DUPLICATE KEY UPDATE', '`\\w+`', 'UNSIGNED', 'AUTO_INCREMENT'];
+            
+            // PostgreSQL 전용
+            const postgresFunctions = ['STRING_AGG', 'ARRAY_AGG', 'COALESCE', 'NULLIF', 'GREATEST', 'LEAST'];
+            const postgresSyntax = ['OFFSET \\d+ LIMIT', 'RETURNING', '::INTEGER', '::TEXT', '::TIMESTAMP'];
+            
+            // SQL Server 전용
+            const sqlserverFunctions = ['ISNULL', 'GETDATE', 'DATEDIFF', 'DATEADD', 'CONVERT'];
+            const sqlserverSyntax = ['TOP \\d+', '\\[\\w+\\]', 'IDENTITY\\(', 'WITH \\(NOLOCK\\)'];
+            
+            let detectedDB = [];
+            
+            // 검사
+            mysqlFunctions.concat(mysqlSyntax).forEach(pattern => {
+                if (query.match(new RegExp(pattern, 'i'))) {
+                    detectedDB.push('MySQL');
+                }
+            });
+            
+            postgresFunctions.concat(postgresSyntax).forEach(pattern => {
+                if (query.match(new RegExp(pattern, 'i'))) {
+                    detectedDB.push('PostgreSQL');
+                }
+            });
+            
+            sqlserverFunctions.concat(sqlserverSyntax).forEach(pattern => {
+                if (query.match(new RegExp(pattern, 'i'))) {
+                    detectedDB.push('SQL Server');
+                }
+            });
+            
+            // 중복 제거
+            detectedDB = [...new Set(detectedDB)];
+            
+            if (detectedDB.length > 1) {
+                results.warnings.push(`여러 데이터베이스의 문법이 혼용되었습니다: ${detectedDB.join(', ')}\n💡 수정 제안: 단일 데이터베이스의 문법만 사용하세요.`);
+            } else if (detectedDB.length === 1) {
+                results.suggestions.push(`감지된 데이터베이스: ${detectedDB[0]}`);
+            }
+        }
+
+        // 주석 제거 함수
+        function removeComments(query) {
+            // -- 주석 제거
+            query = query.replace(/--[^\n]*/g, '');
+            // /* */ 주석 제거
+            query = query.replace(/\/\*[\s\S]*?\*\//g, '');
+            return query;
+        }
+
+        // SQL 토큰화 (간단한 lexer)
+        function tokenizeSQL(query) {
+            const keywords = /\b(SELECT|FROM|WHERE|JOIN|INNER|LEFT|RIGHT|FULL|OUTER|CROSS|ON|USING|GROUP|BY|HAVING|ORDER|LIMIT|OFFSET|UNION|ALL|DISTINCT|AS|INSERT|INTO|VALUES|UPDATE|SET|DELETE|CREATE|TABLE|ALTER|DROP|INDEX|VIEW|WITH|CASE|WHEN|THEN|ELSE|END|AND|OR|NOT|IN|EXISTS|BETWEEN|LIKE|IS|NULL|COUNT|SUM|AVG|MIN|MAX|CAST|CONVERT|COALESCE|NULLIF|IFNULL|CONCAT|SUBSTRING|TRIM|UPPER|LOWER|LENGTH|ROUND|FLOOR|CEIL|ABS|NOW|CURRENT_DATE|CURRENT_TIMESTAMP|DATE|TIME|DATETIME|YEAR|MONTH|DAY)\b/gi;
+            
+            const tokens = [];
+            let match;
+            
+            while ((match = keywords.exec(query)) !== null) {
+                tokens.push({
+                    type: 'KEYWORD',
+                    value: match[0].toUpperCase(),
+                    position: match.index
+                });
+            }
+            
+            return tokens;
+        }
+
+        // 1. 기본 구문 검증
+        function validateBasicSyntax(query, results) {
+            // SQL 키워드로 시작하는지 확인
+            const sqlKeywords = /^\s*(SELECT|INSERT|UPDATE|DELETE|CREATE|ALTER|DROP|TRUNCATE|WITH|EXPLAIN|DESCRIBE|SHOW|GRANT|REVOKE|BEGIN|COMMIT|ROLLBACK|MERGE|CALL|EXEC|USE|SET|COMMENT)/i;
+            if (!query.match(sqlKeywords)) {
+                results.errors.push('올바른 SQL 키워드로 시작해야 합니다 (SELECT, INSERT, UPDATE, DELETE, CREATE 등)');
+                results.isValid = false;
+            }
+
+            // 세미콜론으로 끝나는지 확인 (선택사항이지만 권장)
+            if (!query.trim().endsWith(';')) {
+                results.suggestions.push('쿼리 끝에 세미콜론(;)을 추가하는 것이 좋습니다.');
+            }
+
+            // 다중 쿼리 감지
+            const statements = query.split(';').filter(s => s.trim());
+            if (statements.length > 1) {
+                results.warnings.push(`${statements.length}개의 SQL 문이 감지되었습니다. 각각 별도로 실행하세요.`);
+            }
+        }
+
+        // 2. SELECT 문 고급 검증
+        function validateSelectStatement(query, tokens, results) {
+            if (!query.match(/^\s*SELECT\b/i)) return;
+
+            // SELECT 절 분석
+            const selectMatch = query.match(/SELECT\s+(.*?)\s+FROM/is);
+            if (!selectMatch) {
+                // FROM 없이 SELECT만 있는 경우 (예: SELECT 1, SELECT NOW())
+                if (!query.match(/SELECT\s+(?!.*FROM)/is)) {
+                    results.errors.push('SELECT 문에 FROM 절이 필요합니다 (상수 조회 제외)');
+                    results.isValid = false;
+                }
+                return;
+            }
+
+            const selectClause = selectMatch[1];
+
+            // SELECT * 검사
+            if (selectClause.trim() === '*') {
+                results.warnings.push('SELECT *는 성능 저하의 원인이 될 수 있습니다. 필요한 컬럼만 명시적으로 선택하세요.');
+            }
+
+            // 컬럼 별칭 검증
+            const aliases = selectClause.match(/\s+AS\s+(['"`]?\w+['"`]?)/gi);
+            if (aliases) {
+                const aliasNames = aliases.map(a => a.replace(/\s+AS\s+/i, '').trim().replace(/['"`]/g, '').toUpperCase());
+                const duplicates = aliasNames.filter((item, index) => aliasNames.indexOf(item) !== index);
+                if (duplicates.length > 0) {
+                    results.errors.push(`중복된 컬럼 별칭이 있습니다: ${[...new Set(duplicates)].join(', ')}`);
+                    results.isValid = false;
+                }
+            }
+
+            // DISTINCT 사용 검증
+            if (query.match(/SELECT\s+DISTINCT\b/i)) {
+                results.suggestions.push('DISTINCT는 성능 비용이 높습니다. GROUP BY나 인덱스 활용을 고려하세요.');
+                
+                // DISTINCT와 집계 함수 동시 사용 체크
+                if (query.match(/DISTINCT.*?(COUNT|SUM|AVG|MIN|MAX)\s*\(/i)) {
+                    results.warnings.push('DISTINCT와 집계 함수를 함께 사용하면 예상치 못한 결과가 나올 수 있습니다.');
+                }
+            }
+
+            // FROM 절 검증
+            const fromMatch = query.match(/FROM\s+([\w\s,`.()]+?)(?:\s+WHERE|\s+JOIN|\s+GROUP|\s+ORDER|\s+LIMIT|\s+UNION|$)/is);
+            if (fromMatch) {
+                const fromClause = fromMatch[1].trim();
+                
+                // FROM 절에 테이블이 없는 경우
+                if (!fromClause || fromClause.length === 0) {
+                    results.errors.push('FROM 절에 테이블명이 필요합니다.');
+                    results.isValid = false;
+                }
+
+                // 테이블 별칭 없이 여러 테이블 참조
+                const tables = fromClause.split(',');
+                if (tables.length > 1) {
+                    results.warnings.push('여러 테이블을 콤마로 구분하는 것보다 명시적인 JOIN을 사용하세요.');
+                }
+            }
+
+            // GROUP BY 검증
+            if (query.match(/\bGROUP\s+BY\b/i)) {
+                // SELECT 절의 비집계 컬럼이 GROUP BY에 포함되어야 함
+                const aggregates = ['COUNT', 'SUM', 'AVG', 'MIN', 'MAX', 'STDDEV', 'VARIANCE'];
+                const hasAggregates = aggregates.some(agg => query.match(new RegExp(`\\b${agg}\\s*\\(`, 'i')));
+                
+                if (!hasAggregates) {
+                    results.warnings.push('GROUP BY를 사용하지만 집계 함수가 없습니다. 의도한 것이 맞는지 확인하세요.');
+                }
+
+                // HAVING 절 검증
+                if (query.match(/\bHAVING\b/i)) {
+                    // HAVING에 집계 함수가 있는지 확인
+                    const havingClause = query.match(/HAVING\s+(.*?)(?:ORDER|LIMIT|$)/is);
+                    if (havingClause && !aggregates.some(agg => havingClause[1].match(new RegExp(`\\b${agg}\\s*\\(`, 'i')))) {
+                        results.suggestions.push('HAVING 절에는 집계 함수를 사용하세요. 일반 조건은 WHERE 절에 작성하는 것이 효율적입니다.');
+                    }
+                } else {
+                    results.suggestions.push('GROUP BY와 함께 HAVING 절을 사용하여 그룹화된 결과를 필터링할 수 있습니다.');
+                }
+            } else if (query.match(/\bHAVING\b/i)) {
+                results.errors.push('HAVING 절은 GROUP BY 없이 사용할 수 없습니다.');
+                results.isValid = false;
+            }
+
+            // ORDER BY 검증
+            if (query.match(/\bORDER\s+BY\b/i)) {
+                const orderByClause = query.match(/ORDER\s+BY\s+(.*?)(?:LIMIT|OFFSET|UNION|;|$)/is);
+                if (orderByClause) {
+                    // ASC/DESC 명시 권장
+                    if (!orderByClause[1].match(/\b(ASC|DESC)\b/i)) {
+                        results.suggestions.push('ORDER BY에 ASC 또는 DESC를 명시하면 의도가 더 명확해집니다.');
+                    }
+
+                    // 컬럼 번호로 정렬 (안티패턴)
+                    if (orderByClause[1].match(/\b\d+\b/)) {
+                        results.warnings.push('ORDER BY에 컬럼 번호 대신 컬럼명을 사용하세요. 유지보수가 어려워질 수 있습니다.');
+                    }
+                }
+            }
+
+            // LIMIT/OFFSET 검증
+            const limitMatch = query.match(/\bLIMIT\s+(\d+)/i);
+            const offsetMatch = query.match(/\bOFFSET\s+(\d+)/i);
+            
+            if (offsetMatch && !limitMatch) {
+                results.warnings.push('OFFSET은 LIMIT와 함께 사용하는 것이 일반적입니다.');
+            }
+
+            if (limitMatch) {
+                const limitValue = parseInt(limitMatch[1]);
+                if (limitValue > 10000) {
+                    results.warnings.push(`LIMIT ${limitValue}는 큰 값입니다. 페이지네이션을 고려하세요.`);
+                }
+            }
+
+            if (offsetMatch) {
+                const offsetValue = parseInt(offsetMatch[1]);
+                if (offsetValue > 1000) {
+                    results.warnings.push(`OFFSET ${offsetValue}는 큰 값입니다. 키셋 페이지네이션(Keyset Pagination)을 고려하세요.`);
+                }
+            }
+
+            // UNION 검증
+            const unions = query.match(/\bUNION(\s+ALL)?\b/gi);
+            if (unions && unions.length > 0) {
+                results.suggestions.push(`${unions.length}개의 UNION이 감지되었습니다. 각 SELECT의 컬럼 개수, 순서, 타입이 일치해야 합니다.`);
+                
+                // UNION vs UNION ALL
+                const hasUnionAll = query.match(/\bUNION\s+ALL\b/i);
+                if (!hasUnionAll && unions.length > 0) {
+                    results.suggestions.push('중복 제거가 필요 없다면 UNION ALL을 사용하면 성능이 향상됩니다.');
+                }
+            }
+
+            // 서브쿼리 검증
+            const subqueries = (query.match(/\(\s*SELECT/gi) || []).length;
+            if (subqueries > 0) {
+                results.suggestions.push(`${subqueries}개의 서브쿼리가 감지되었습니다.`);
+                
+                if (subqueries > 3) {
+                    results.warnings.push('서브쿼리가 많습니다. JOIN이나 CTE(WITH 절) 사용을 고려하세요.');
+                }
+
+                // 스칼라 서브쿼리 검증
+                if (query.match(/SELECT\s+[^,]*\(\s*SELECT[^)]*\)\s*[^,]*/i)) {
+                    results.warnings.push('스칼라 서브쿼리는 행마다 실행됩니다. JOIN으로 변경하면 성능이 향상될 수 있습니다.');
+                }
+
+                // IN 절의 서브쿼리
+                if (query.match(/\bIN\s*\(\s*SELECT/i)) {
+                    results.suggestions.push('IN (SELECT ...)는 EXISTS로 변경하면 성능이 향상될 수 있습니다.');
+                }
+            }
+
+            // CTE (Common Table Expression) 검증
+            if (query.match(/^\s*WITH\b/i)) {
+                // CTE 구문 검증
+                if (!query.match(/WITH\s+\w+\s+AS\s*\(/i)) {
+                    results.errors.push('CTE 구문이 올바르지 않습니다. "WITH cte_name AS (...)" 형식이어야 합니다.');
+                    results.isValid = false;
+                } else {
+                    results.suggestions.push('CTE는 복잡한 쿼리의 가독성을 높입니다.');
+                    
+                    // 재귀 CTE 감지
+                    if (query.match(/WITH\s+RECURSIVE/i)) {
+                        results.warnings.push('재귀 CTE는 무한 루프에 주의하세요. 종료 조건을 명확히 하세요.');
+                    }
+                }
+            }
+        }
+
+        // 3. INSERT 문 고급 검증
+        function validateInsertStatement(query, tokens, results) {
+            if (!query.match(/^\s*INSERT\s+INTO\b/i)) return;
+
+            // INSERT INTO 테이블명 검증
+            const insertMatch = query.match(/INSERT\s+INTO\s+(\w+)/i);
+            if (!insertMatch) {
+                results.errors.push('INSERT INTO 다음에 테이블명이 필요합니다.');
+                results.isValid = false;
+                return;
+            }
+
+            // VALUES 또는 SELECT 절 확인
+            if (!query.match(/\bVALUES\b/i) && !query.match(/\bSELECT\b/i)) {
+                results.errors.push('INSERT 문에는 VALUES 절이나 SELECT 문이 필요합니다.');
+                results.isValid = false;
+            }
+
+            // 컬럼 목록 검증
+            const columnListMatch = query.match(/INSERT\s+INTO\s+\w+\s*\((.*?)\)\s+VALUES/is);
+            if (columnListMatch) {
+                const columns = columnListMatch[1].split(',').map(c => c.trim());
+                
+                // 중복 컬럼 체크
+                const duplicates = columns.filter((item, index) => columns.indexOf(item) !== index);
+                if (duplicates.length > 0) {
+                    results.errors.push(`INSERT 문에 중복된 컬럼이 있습니다: ${[...new Set(duplicates)].join(', ')}`);
+                    results.isValid = false;
+                }
+            } else if (query.match(/\bVALUES\b/i)) {
+                results.warnings.push('컬럼 목록을 명시하지 않으면 테이블 구조 변경 시 오류가 발생할 수 있습니다.');
+            }
+
+            // VALUES 절 검증
+            if (query.match(/\bVALUES\b/i)) {
+                const valuesMatch = query.match(/VALUES\s*\((.*?)\)/is);
+                if (valuesMatch) {
+                    const values = valuesMatch[1];
+                    
+                    // 컬럼 개수와 값 개수 비교
+                    if (columnListMatch) {
+                        const columnCount = columnListMatch[1].split(',').length;
+                        const valueCount = values.split(',').length;
+                        
+                        if (columnCount !== valueCount) {
+                            results.errors.push(`컬럼 개수(${columnCount})와 값 개수(${valueCount})가 일치하지 않습니다.`);
+                            results.isValid = false;
+                        }
+                    }
+                }
+
+                // 다중 행 INSERT 감지
+                const multipleRows = query.match(/VALUES\s*\([^)]+\)\s*,\s*\(/gi);
+                if (multipleRows && multipleRows.length > 100) {
+                    results.warnings.push(`${multipleRows.length + 1}개의 행을 한 번에 INSERT합니다. 배치 크기를 조절하거나 트랜잭션을 고려하세요.`);
+                }
+            }
+
+            // INSERT ... SELECT 검증
+            if (query.match(/INSERT\s+INTO.*?SELECT/is)) {
+                results.suggestions.push('INSERT ... SELECT 사용 시 SELECT 결과 컬럼과 INSERT 컬럼이 일치하는지 확인하세요.');
+            }
+
+            // ON DUPLICATE KEY UPDATE (MySQL)
+            if (query.match(/ON\s+DUPLICATE\s+KEY\s+UPDATE/i)) {
+                results.suggestions.push('ON DUPLICATE KEY UPDATE는 MySQL 전용 구문입니다. 다른 DBMS에서는 MERGE나 UPSERT를 사용하세요.');
+            }
+        }
+
+        // 4. UPDATE 문 고급 검증
+        function validateUpdateStatement(query, tokens, results) {
+            if (!query.match(/^\s*UPDATE\b/i)) return;
+
+            // UPDATE 테이블명 검증
+            const updateMatch = query.match(/UPDATE\s+(\w+)/i);
+            if (!updateMatch) {
+                results.errors.push('UPDATE 다음에 테이블명이 필요합니다.');
+                results.isValid = false;
+                return;
+            }
+
+            // SET 절 확인
+            if (!query.match(/\bSET\b/i)) {
+                results.errors.push('UPDATE 문에는 SET 절이 필요합니다.');
+                results.isValid = false;
+            }
+
+            // WHERE 절 확인 (매우 중요)
+            if (!query.match(/\bWHERE\b/i)) {
+                results.errors.push('⚠️ 위험: UPDATE 문에 WHERE 절이 없습니다! 모든 행이 수정됩니다.');
+                results.warnings.push('WHERE 절을 추가하여 수정 대상을 명확히 지정하세요.');
+            }
+
+            // SET 절 분석
+            const setMatch = query.match(/SET\s+(.*?)(?:\s+WHERE|$)/is);
+            if (setMatch) {
+                const setClause = setMatch[1];
+                const assignments = setClause.split(',');
+                
+                // 동일 컬럼 중복 수정 체크
+                const columns = assignments.map(a => {
+                    const match = a.trim().match(/^(\w+)\s*=/);
+                    return match ? match[1] : null;
+                }).filter(c => c);
+                
+                const duplicates = columns.filter((item, index) => columns.indexOf(item) !== index);
+                if (duplicates.length > 0) {
+                    results.errors.push(`동일한 컬럼을 여러 번 수정하려고 합니다: ${[...new Set(duplicates)].join(', ')}`);
+                    results.isValid = false;
+                }
+
+                // 자기 자신 참조 업데이트 체크
+                assignments.forEach(assignment => {
+                    const parts = assignment.split('=');
+                    if (parts.length === 2) {
+                        const column = parts[0].trim();
+                        const value = parts[1].trim();
+                        if (value.includes(column)) {
+                            results.suggestions.push(`컬럼 ${column}이(가) 자기 자신을 참조하여 업데이트됩니다. 의도한 것이 맞는지 확인하세요.`);
+                        }
+                    }
+                });
+            }
+
+            // 서브쿼리 사용 시 주의
+            if (query.match(/SET.*?\(\s*SELECT/is)) {
+                results.warnings.push('UPDATE의 SET 절에 서브쿼리를 사용하면 성능이 저하될 수 있습니다.');
+            }
+        }
+
+        // 5. DELETE 문 고급 검증
+        function validateDeleteStatement(query, tokens, results) {
+            if (!query.match(/^\s*DELETE\b/i)) return;
+
+            // DELETE FROM 검증
+            if (!query.match(/DELETE\s+FROM\b/i)) {
+                results.errors.push('DELETE 다음에 FROM 키워드가 필요합니다.');
+                results.isValid = false;
+            }
+
+            // WHERE 절 확인 (매우 중요)
+            if (!query.match(/\bWHERE\b/i)) {
+                results.errors.push('⚠️ 위험: DELETE 문에 WHERE 절이 없습니다! 모든 행이 삭제됩니다.');
+                results.warnings.push('WHERE 절을 추가하여 삭제 대상을 명확히 지정하세요.');
+            }
+
+            // LIMIT 사용 권장
+            if (!query.match(/\bLIMIT\b/i) && !query.match(/\bTOP\b/i)) {
+                results.suggestions.push('대량 삭제 시 LIMIT를 사용하여 배치로 처리하는 것을 고려하세요.');
+            }
+
+            // 외래 키 제약 고려
+            results.suggestions.push('외래 키 제약이 있는 경우 참조 무결성을 확인하세요.');
+        }
+
+        // 6. JOIN 절 고급 검증
+        function validateJoinClauses(query, results) {
+            const joins = query.match(/\b(INNER\s+JOIN|LEFT\s+(?:OUTER\s+)?JOIN|RIGHT\s+(?:OUTER\s+)?JOIN|FULL\s+(?:OUTER\s+)?JOIN|CROSS\s+JOIN|JOIN)\b/gi);
+            
+            if (!joins || joins.length === 0) return;
+
+            // JOIN 조건 확인
+            const ons = (query.match(/\bON\b/gi) || []).length;
+            const usings = (query.match(/\bUSING\b/gi) || []).length;
+            const totalConditions = ons + usings;
+
+            if (totalConditions < joins.length) {
+                // CROSS JOIN 제외
+                const crossJoins = (query.match(/\bCROSS\s+JOIN\b/gi) || []).length;
+                if (totalConditions < joins.length - crossJoins) {
+                    results.errors.push('일부 JOIN에 ON 또는 USING 조건이 없습니다. CROSS JOIN이 아니라면 조인 조건을 추가하세요.');
+                    results.isValid = false;
+                }
+            }
+
+            // JOIN 성능 경고
+            if (joins.length > 5) {
+                results.warnings.push(`${joins.length}개의 JOIN이 감지되었습니다. 성능 저하가 발생할 수 있으니 실행 계획을 확인하세요.`);
+            }
+
+            // JOIN 타입별 권장사항
+            joins.forEach(join => {
+                const joinType = join.trim().toUpperCase();
+                
+                if (joinType.includes('CROSS')) {
+                    results.warnings.push('CROSS JOIN은 카테시안 곱을 생성합니다. 의도한 것이 맞는지 확인하세요.');
+                }
+                
+                if (joinType.includes('RIGHT')) {
+                    results.suggestions.push('RIGHT JOIN 대신 LEFT JOIN을 사용하면 쿼리 가독성이 향상됩니다.');
+                }
+                
+                if (joinType.includes('FULL')) {
+                    results.suggestions.push('FULL OUTER JOIN은 성능 비용이 높습니다. 꼭 필요한지 확인하세요.');
+                }
+            });
+
+            // JOIN 조건 분석
+            const onClauses = query.match(/ON\s+(.*?)(?:JOIN|WHERE|GROUP|ORDER|$)/gis);
+            if (onClauses) {
+                onClauses.forEach(onClause => {
+                    // OR 조건 사용 시 경고
+                    if (onClause.match(/\bOR\b/i)) {
+                        results.warnings.push('JOIN 조건에 OR를 사용하면 인덱스 활용이 어려워 성능이 저하될 수 있습니다.');
+                    }
+
+                    // 함수 사용 시 경고
+                    if (onClause.match(/\b(UPPER|LOWER|SUBSTRING|CONCAT|TRIM)\s*\(/i)) {
+                        results.warnings.push('JOIN 조건에 함수를 사용하면 인덱스를 활용하지 못할 수 있습니다.');
+                    }
+                });
+            }
+        }
+
+        // 7. WHERE 절 고급 검증 (대폭 강화됨)
+        function validateWhereClause(query, results) {
+            const whereMatch = query.match(/WHERE\s+(.*?)(?:GROUP|HAVING|ORDER|LIMIT|UNION|;|$)/is);
+            if (!whereMatch) return;
+
+            const whereClause = whereMatch[1];
+
+            // WHERE 1=1 안티패턴
+            if (whereClause.match(/\b1\s*=\s*1\b/)) {
+                results.warnings.push('WHERE 1=1은 불필요한 조건입니다. 동적 쿼리가 아니라면 제거하세요.\n💡 수정 제안: 실제 조건만 WHERE 절에 작성하세요.');
+            }
+            
+            // WHERE 1=0 (테이블 구조만 가져오기)
+            if (whereClause.match(/\b1\s*=\s*0\b/)) {
+                results.suggestions.push('WHERE 1=0은 테이블 구조만 가져오는 기법입니다. 의도한 것이 맞는지 확인하세요.');
+            }
+
+            // LIKE '%value%' 패턴 (인덱스 미사용)
+            if (whereClause.match(/LIKE\s+['"]%/i)) {
+                results.warnings.push("LIKE '%value%'는 인덱스를 사용하지 못합니다. 전문 검색(Full-Text Search)을 고려하세요.\n💡 수정 제안: FULLTEXT INDEX를 생성하고 MATCH AGAINST를 사용하세요.");
+            }
+            
+            // LIKE '%value' (끝부분 매칭)
+            if (whereClause.match(/LIKE\s+['"]%[^%]+['"]\s*$/i) && !whereClause.match(/LIKE\s+['"][^%]/i)) {
+                results.warnings.push("LIKE '%value'는 인덱스를 사용하지 못합니다.\n💡 수정 제안: LIKE 'value%'로 변경하거나 전문 검색을 사용하세요.");
+            }
+
+            // NOT IN 사용 시 경고
+            if (whereClause.match(/\bNOT\s+IN\b/i)) {
+                results.suggestions.push('NOT IN 대신 NOT EXISTS를 사용하면 NULL 처리가 더 명확하고 성능이 향상될 수 있습니다.\n💡 수정 제안: WHERE col NOT IN (SELECT ...) 대신 WHERE NOT EXISTS (SELECT 1 FROM ... WHERE col = ...)를 사용하세요.');
+            }
+            
+            // IN 절에 NULL 포함
+            if (whereClause.match(/\bIN\s*\([^)]*NULL[^)]*\)/i)) {
+                results.warnings.push('IN 절에 NULL이 포함되어 있습니다. IN은 NULL과 매칭되지 않습니다.\n💡 수정 제안: OR IS NULL을 별도로 추가하세요.');
+            }
+
+            // OR 조건 과다 사용
+            const orCount = (whereClause.match(/\bOR\b/gi) || []).length;
+            if (orCount > 5) {
+                results.warnings.push(`OR 조건이 ${orCount}개 있습니다. IN 절이나 UNION을 고려하세요.\n💡 수정 제안: WHERE a=1 OR a=2 OR a=3 대신 WHERE a IN (1,2,3)을 사용하세요.`);
+            } else if (orCount > 10) {
+                results.errors.push(`OR 조건이 ${orCount}개로 너무 많습니다. 쿼리 최적화가 필요합니다.\n💡 수정 제안: 임시 테이블을 생성하고 JOIN하세요.`);
+            }
+
+            // 함수를 컬럼에 적용
+            const functionsOnColumns = whereClause.match(/\b(YEAR|MONTH|DAY|DATE|UPPER|LOWER|SUBSTRING|LEFT|RIGHT|TRIM|LENGTH|CONCAT)\s*\(\s*\w+\s*\)/gi);
+            if (functionsOnColumns) {
+                results.warnings.push(`WHERE 절에서 컬럼에 함수를 적용하면 인덱스를 사용하지 못할 수 있습니다. (${functionsOnColumns.length}개 발견)\n💡 수정 제안: 함수 기반 인덱스를 생성하거나 컬럼을 직접 비교하세요.`);
+            }
+            
+            // 컬럼에 연산 적용
+            if (whereClause.match(/\w+\s*[\+\-\*\/]\s*\d+\s*[=<>]/)) {
+                results.warnings.push('WHERE 절에서 컬럼에 연산을 적용하면 인덱스를 사용하지 못합니다.\n💡 수정 제안: WHERE price * 1.1 > 100 대신 WHERE price > 90.91을 사용하세요.');
+            }
+
+            // != 대신 <> 사용 권장
+            if (whereClause.match(/!=/)) {
+                results.suggestions.push('!= 대신 SQL 표준인 <>를 사용하세요.\n💡 수정 제안: WHERE col != value 대신 WHERE col <> value를 사용하세요.');
+            }
+
+            // = NULL (오류)
+            if (whereClause.match(/[=<>]\s*NULL/i) && !whereClause.match(/IS\s+(NOT\s+)?NULL/i)) {
+                results.errors.push('NULL 비교는 =, <>, <, > 대신 IS NULL 또는 IS NOT NULL을 사용해야 합니다.\n💡 수정 제안: WHERE col = NULL 대신 WHERE col IS NULL을 사용하세요.');
+                results.isValid = false;
+            }
+
+            // 날짜 비교 검증
+            if (whereClause.match(/\b(date|time|timestamp|created_at|updated_at)\b/i)) {
+                if (!whereClause.match(/\b(BETWEEN|>=|<=|>|<|DATE)\b/i)) {
+                    results.suggestions.push('날짜 범위 검색 시 BETWEEN을 사용하면 더 명확합니다.\n💡 수정 제안: WHERE date >= "2025-01-01" AND date <= "2025-12-31" 대신 WHERE date BETWEEN "2025-01-01" AND "2025-12-31"을 사용하세요.');
+                }
+            }
+            
+            // BETWEEN의 잘못된 사용
+            if (whereClause.match(/BETWEEN\s+(\d+)\s+AND\s+(\d+)/i)) {
+                const match = whereClause.match(/BETWEEN\s+(\d+)\s+AND\s+(\d+)/i);
+                if (match && parseInt(match[1]) > parseInt(match[2])) {
+                    results.errors.push(`BETWEEN의 범위가 잘못되었습니다. 시작값(${match[1]})이 끝값(${match[2]})보다 큽니다.\n💡 수정 제안: BETWEEN ${match[2]} AND ${match[1]}로 수정하세요.`);
+                    results.isValid = false;
+                }
+            }
+            
+            // 타입 불일치 가능성
+            if (whereClause.match(/\b\w+\s*=\s*['"]\d+['"]/)) {
+                results.warnings.push('숫자형 컬럼을 문자열과 비교하고 있을 수 있습니다. 타입을 확인하세요.\n💡 수정 제안: WHERE id = "123" 대신 WHERE id = 123을 사용하세요.');
+            }
+            
+            // AND/OR 우선순위 괄호 누락
+            if (whereClause.match(/\bAND\b/i) && whereClause.match(/\bOR\b/i) && !whereClause.includes('(')) {
+                results.warnings.push('AND와 OR를 함께 사용할 때 괄호로 우선순위를 명확히 하세요.\n💡 수정 제안: WHERE a=1 AND b=2 OR c=3 대신 WHERE (a=1 AND b=2) OR c=3을 사용하세요.');
+            }
+            
+            // 부정 조건 최적화
+            if (whereClause.match(/\bNOT\s+(LIKE|IN|EXISTS|BETWEEN)/i)) {
+                results.suggestions.push('부정 조건(NOT)은 인덱스 최적화를 방해할 수 있습니다.\n💡 수정 제안: 가능하면 긍정 조건으로 변경하세요.');
+            }
+            
+            // 복잡한 조건식
+            const conditionCount = (whereClause.match(/\b(AND|OR)\b/gi) || []).length;
+            if (conditionCount > 10) {
+                results.warnings.push(`WHERE 절에 ${conditionCount}개의 조건이 있습니다. 복잡한 조건은 가독성과 성능을 저하시킵니다.\n💡 수정 제안: CTE나 서브쿼리로 조건을 분리하세요.`);
+            }
+            
+            // 대소문자 구분 없는 비교
+            if (whereClause.match(/UPPER\s*\([^)]+\)\s*=\s*UPPER\s*\(/i) || whereClause.match(/LOWER\s*\([^)]+\)\s*=\s*LOWER\s*\(/i)) {
+                results.suggestions.push('대소문자 구분 없는 비교를 위해 UPPER/LOWER를 사용하고 있습니다.\n💡 수정 제안: COLLATE를 사용하거나 케이스 인센서티브 인덱스를 생성하세요.');
+            }
+            
+            // 빈 문자열 비교
+            if (whereClause.match(/=\s*['"]{2}/)) {
+                results.suggestions.push("빈 문자열('')과 비교하고 있습니다.\n💡 수정 제안: NULL과 빈 문자열을 구분해야 한다면 LENGTH(col) = 0 또는 col = '' OR col IS NULL을 사용하세요.");
+            }
+        }
+
+        // 8. 괄호/따옴표 균형 검증 (강화됨)
+        function validateBalancedDelimiters(query, results) {
+            // 문자열 리터럴을 제외하고 괄호 매칭 검사
+            let parenDepth = 0;
+            let maxParenDepth = 0;
+            let inString = false;
+            let stringChar = '';
+            let escapeNext = false;
+            let parenPositions = [];
+            
+            for (let i = 0; i < query.length; i++) {
+                const char = query[i];
+                
+                // 이스케이프 처리
+                if (escapeNext) {
+                    escapeNext = false;
+                    continue;
+                }
+                
+                if (char === '\\') {
+                    escapeNext = true;
+                    continue;
+                }
+                
+                // 문자열 리터럴 처리
+                if ((char === "'" || char === '"' || char === '`') && !inString) {
+                    inString = true;
+                    stringChar = char;
+                    continue;
+                } else if (char === stringChar && inString) {
+                    inString = false;
+                    continue;
+                }
+                
+                // 문자열 내부가 아닐 때만 괄호 검사
+                if (!inString) {
+                    if (char === '(') {
+                        parenDepth++;
+                        maxParenDepth = Math.max(maxParenDepth, parenDepth);
+                        parenPositions.push({ type: 'open', pos: i });
+                    }
+                    else if (char === ')') {
+                        parenDepth--;
+                        if (parenDepth < 0) {
+                            const context = query.substring(Math.max(0, i - 20), Math.min(query.length, i + 20));
+                            results.errors.push(`위치 ${i}: 닫는 괄호 ')'에 대응하는 여는 괄호가 없습니다.\n컨텍스트: ...${context}...`);
+                            results.isValid = false;
+                            break;
+                        }
+                        parenPositions.push({ type: 'close', pos: i });
+                    }
+                }
+            }
+            
+            if (parenDepth > 0) {
+                results.errors.push(`괄호가 ${parenDepth}개 닫히지 않았습니다. 여는 괄호가 ${parenDepth}개 더 많습니다.`);
+                results.isValid = false;
+            } else if (parenDepth < 0) {
+                results.errors.push(`괄호가 일치하지 않습니다. 닫는 괄호가 ${Math.abs(parenDepth)}개 더 많습니다.`);
+                results.isValid = false;
+            }
+            
+            if (maxParenDepth > 5) {
+                results.warnings.push(`괄호 중첩이 ${maxParenDepth}단계로 깊습니다. 쿼리 가독성을 위해 CTE 사용을 고려하세요.`);
+            }
+
+            // 따옴표 매칭 개선 (이스케이프 처리)
+            let singleQuoteCount = 0;
+            let doubleQuoteCount = 0;
+            let backtickCount = 0;
+            escapeNext = false;
+            
+            for (let i = 0; i < query.length; i++) {
+                const char = query[i];
+                
+                if (escapeNext) {
+                    escapeNext = false;
+                    continue;
+                }
+                
+                if (char === '\\') {
+                    escapeNext = true;
+                    continue;
+                }
+                
+                if (char === "'") singleQuoteCount++;
+                if (char === '"') doubleQuoteCount++;
+                if (char === '`') backtickCount++;
+            }
+            
+            if (singleQuoteCount % 2 !== 0) {
+                results.errors.push("작은따옴표(')가 일치하지 않습니다. 문자열 리터럴을 제대로 닫았는지 확인하세요.\n💡 수정 제안: 누락된 작은따옴표를 추가하세요.");
+                results.isValid = false;
+            }
+
+            if (doubleQuoteCount % 2 !== 0) {
+                results.errors.push('큰따옴표(")가 일치하지 않습니다. 식별자나 문자열을 제대로 닫았는지 확인하세요.\n💡 수정 제안: 누락된 큰따옴표를 추가하세요.');
+                results.isValid = false;
+            }
+
+            if (backtickCount % 2 !== 0) {
+                results.errors.push('백틱(`)이 일치하지 않습니다. MySQL 식별자를 제대로 닫았는지 확인하세요.\n💡 수정 제안: 누락된 백틱을 추가하세요.');
+                results.isValid = false;
+            }
+
+            // 대괄호 매칭 (SQL Server 식별자)
+            const openBrackets = (query.match(/\[/g) || []).length;
+            const closeBrackets = (query.match(/\]/g) || []).length;
+            if (openBrackets !== closeBrackets) {
+                results.errors.push(`대괄호가 일치하지 않습니다. (여는 대괄호: ${openBrackets}, 닫는 대괄호: ${closeBrackets})\n💡 수정 제안: SQL Server 식별자의 대괄호 개수를 맞추세요.`);
+                results.isValid = false;
+            }
+        }
+
+        // 9. 데이터 타입 및 함수 검증
+        function validateDataTypesAndFunctions(query, results) {
+            // 날짜/시간 함수 검증
+            const dateFunctions = ['NOW()', 'CURRENT_DATE', 'CURRENT_TIMESTAMP', 'GETDATE()', 'SYSDATE'];
+            dateFunctions.forEach(func => {
+                if (query.toUpperCase().includes(func)) {
+                    results.suggestions.push(`${func} 사용 시 타임존에 주의하세요.`);
+                }
+            });
+
+            // 문자열 함수 검증
+            if (query.match(/\bCONCAT\s*\(/i)) {
+                results.suggestions.push('CONCAT 함수는 NULL을 빈 문자열로 처리합니다. CONCAT_WS 사용도 고려하세요.');
+            }
+
+            // 형변환 함수 검증
+            const castMatch = query.match(/\bCAST\s*\((.*?)\s+AS\s+(\w+)\)/gi);
+            if (castMatch) {
+                results.suggestions.push('형변환 시 데이터 손실이 발생하지 않는지 확인하세요.');
+            }
+
+            // COALESCE vs IFNULL
+            if (query.match(/\bIFNULL\s*\(/i)) {
+                results.suggestions.push('IFNULL 대신 표준 SQL인 COALESCE 사용을 고려하세요 (다중 인자 지원).');
+            }
+
+            // 집계 함수 NULL 처리
+            if (query.match(/\b(SUM|AVG|COUNT)\s*\(/i)) {
+                results.suggestions.push('집계 함수는 NULL을 무시합니다. COUNT(*)와 COUNT(column)의 차이를 이해하세요.');
+            }
+
+            // CASE WHEN 구문 검증
+            const caseStatements = query.match(/\bCASE\b/gi);
+            const whenStatements = query.match(/\bWHEN\b/gi);
+            const endStatements = query.match(/\bEND\b/gi);
+            
+            if (caseStatements && endStatements) {
+                if (caseStatements.length !== endStatements.length) {
+                    results.errors.push('CASE 문과 END 문의 개수가 일치하지 않습니다.');
+                    results.isValid = false;
+                }
+            }
+
+            if (caseStatements && !whenStatements) {
+                results.errors.push('CASE 문에 WHEN 절이 없습니다.');
+                results.isValid = false;
+            }
+
+            // 윈도우 함수 검증
+            const windowFunctions = ['ROW_NUMBER', 'RANK', 'DENSE_RANK', 'LAG', 'LEAD', 'FIRST_VALUE', 'LAST_VALUE'];
+            windowFunctions.forEach(func => {
+                const pattern = new RegExp(`\\b${func}\\s*\\(`, 'i');
+                if (query.match(pattern)) {
+                    if (!query.match(/\bOVER\s*\(/i)) {
+                        results.errors.push(`${func} 윈도우 함수는 OVER 절이 필요합니다.`);
+                        results.isValid = false;
+                    } else {
+                        results.suggestions.push(`${func} 윈도우 함수 사용 시 PARTITION BY와 ORDER BY를 적절히 사용하세요.`);
+                    }
+                }
+            });
+
+            // 정규표현식 함수 (REGEXP, LIKE)
+            if (query.match(/\bREGEXP\b/i) || query.match(/\bRLIKE\b/i)) {
+                results.warnings.push('정규표현식은 성능 비용이 높습니다. 간단한 패턴은 LIKE를 사용하세요.');
+            }
+        }
+
+        // 10. 성능 최적화 제안 (대폭 강화됨)
+        function suggestPerformanceOptimizations(query, results) {
+            // 전체 테이블 스캔 가능성
+            if (!query.match(/\bWHERE\b/i) && query.match(/^\s*SELECT/i)) {
+                const hasJoin = query.match(/\bJOIN\b/i);
+                const hasLimit = query.match(/\bLIMIT\b/i);
+                if (!hasJoin && !hasLimit) {
+                    results.warnings.push('WHERE 절이 없어 전체 테이블 스캔이 발생할 수 있습니다. 성능에 주의하세요.\n💡 수정 제안: WHERE 절을 추가하거나 LIMIT를 사용하세요.');
+                }
+            }
+
+            // 인덱스 활용 제안
+            if (query.match(/\bWHERE\b/i)) {
+                results.suggestions.push('WHERE 절의 조건 컬럼에 인덱스가 있는지 확인하세요.');
+                
+                // WHERE 절에서 컬럼에 연산/함수 적용 (인덱스 미사용)
+                if (query.match(/WHERE\s+.*?(\w+)\s*[\+\-\*\/]\s*\d+/i)) {
+                    results.warnings.push('WHERE 절에서 컬럼에 연산을 적용하면 인덱스를 사용할 수 없습니다.\n💡 수정 제안: WHERE salary + 1000 > 50000 대신 WHERE salary > 49000으로 변경하세요.');
+                }
+                
+                // WHERE 절에서 함수 적용
+                if (query.match(/WHERE\s+.*?(YEAR|MONTH|DAY|DATE|UPPER|LOWER|SUBSTRING|TRIM|LEFT|RIGHT)\s*\(/i)) {
+                    results.warnings.push('WHERE 절에서 컬럼에 함수를 적용하면 인덱스를 사용할 수 없습니다.\n💡 수정 제안: 함수 기반 인덱스를 생성하거나 컬럼을 직접 비교하세요.');
+                }
+                
+                // NOT 연산자 사용
+                if (query.match(/WHERE\s+.*?\bNOT\s+(LIKE|IN|EXISTS|BETWEEN)/i)) {
+                    results.warnings.push('NOT 연산자는 인덱스 최적화를 방해할 수 있습니다.\n💡 수정 제안: 가능하면 긍정 조건으로 변경하세요.');
+                }
+            }
+
+            // ORDER BY 성능
+            if (query.match(/\bORDER\s+BY\b/i)) {
+                if (!query.match(/\bLIMIT\b/i)) {
+                    results.warnings.push('ORDER BY를 LIMIT 없이 사용하면 전체 결과를 정렬해야 하므로 성능 저하가 발생할 수 있습니다.\n💡 수정 제안: LIMIT를 추가하거나 정렬 컬럼에 인덱스를 생성하세요.');
+                }
+                
+                // ORDER BY에서 함수 사용
+                if (query.match(/ORDER\s+BY\s+.*?(UPPER|LOWER|SUBSTRING|CONCAT|DATE|YEAR)/i)) {
+                    results.warnings.push('ORDER BY에서 함수를 사용하면 인덱스를 활용할 수 없습니다.\n💡 수정 제안: 미리 계산된 컬럼이나 함수 기반 인덱스를 사용하세요.');
+                }
+                
+                // 여러 컬럼 정렬
+                const orderByColumns = (query.match(/ORDER\s+BY\s+(.*?)(?:LIMIT|OFFSET|UNION|;|$)/is) || [])[1];
+                if (orderByColumns && orderByColumns.split(',').length > 3) {
+                    results.warnings.push('여러 컬럼으로 정렬하면 성능이 저하될 수 있습니다.\n💡 수정 제안: 복합 인덱스를 생성하거나 정렬 컬럼을 최소화하세요.');
+                }
+            }
+
+            // SELECT DISTINCT 최적화
+            if (query.match(/SELECT\s+DISTINCT/i)) {
+                if (!query.match(/\bGROUP\s+BY\b/i)) {
+                    results.suggestions.push('GROUP BY를 사용하면 DISTINCT보다 제어가 용이하고 집계도 가능합니다.\n💡 수정 제안: SELECT DISTINCT col1 대신 SELECT col1 FROM table GROUP BY col1을 사용하세요.');
+                }
+                
+                // DISTINCT와 대량 데이터
+                if (!query.match(/\bLIMIT\b/i)) {
+                    results.warnings.push('DISTINCT는 전체 결과를 메모리에서 중복 제거하므로 성능 비용이 높습니다.\n💡 수정 제안: LIMIT를 추가하거나 인덱스를 활용하세요.');
+                }
+            }
+
+            // 많은 컬럼 선택
+            const selectMatch = query.match(/SELECT\s+(.*?)\s+FROM/is);
+            if (selectMatch && !selectMatch[1].includes('*')) {
+                const columns = selectMatch[1].split(',');
+                if (columns.length > 20) {
+                    results.warnings.push(`${columns.length}개의 컬럼을 선택합니다. 정말 필요한 컬럼만 선택하세요.\n💡 수정 제안: 사용하지 않는 컬럼을 제거하여 데이터 전송량을 줄이세요.`);
+                }
+            }
+
+            // 대용량 IN 절
+            const inMatch = query.match(/\bIN\s*\(([^)]+)\)/gi);
+            if (inMatch) {
+                inMatch.forEach(inClause => {
+                    const content = inClause.match(/\(([^)]+)\)/)[1];
+                    const values = content.split(',');
+                    if (values.length > 100) {
+                        results.warnings.push(`IN 절에 ${values.length}개의 값이 있습니다. 대량 데이터는 임시 테이블이나 JOIN을 고려하세요.\n💡 수정 제안: 임시 테이블을 생성하고 JOIN으로 변경하세요.`);
+                    } else if (values.length > 1000) {
+                        results.errors.push(`IN 절에 ${values.length}개의 값이 있습니다. 많은 DB에서 IN 절 제한을 초과합니다.\n💡 수정 제안: 반드시 임시 테이블로 변경하세요.`);
+                        results.isValid = false;
+                    }
+                });
+            }
+
+            // 복잡한 서브쿼리
+            const subqueryDepth = calculateSubqueryDepth(query);
+            if (subqueryDepth > 3) {
+                results.warnings.push(`서브쿼리 중첩 깊이가 ${subqueryDepth}단계입니다. 가독성과 성능이 저하됩니다.\n💡 수정 제안: CTE(WITH 절)나 임시 테이블로 분리하세요.`);
+            } else if (subqueryDepth > 2) {
+                results.suggestions.push('중첩된 서브쿼리는 임시 테이블이나 CTE로 분리하면 성능과 가독성이 향상됩니다.');
+            }
+            
+            // 스칼라 서브쿼리 (SELECT 절의 서브쿼리)
+            const scalarSubqueries = (query.match(/SELECT\s+[^,]*\(\s*SELECT[^)]*\)\s*/gi) || []).length;
+            if (scalarSubqueries > 0) {
+                results.warnings.push(`${scalarSubqueries}개의 스칼라 서브쿼리가 감지되었습니다. 각 행마다 실행되므로 N+1 문제가 발생합니다.\n💡 수정 제안: LEFT JOIN으로 변경하여 한 번에 조회하세요.`);
+            }
+            
+            // IN 절의 서브쿼리 최적화
+            if (query.match(/\bIN\s*\(\s*SELECT/i)) {
+                results.suggestions.push('IN (SELECT ...)는 EXISTS로 변경하면 성능이 향상될 수 있습니다.\n💡 수정 제안: WHERE col IN (SELECT ...) 대신 WHERE EXISTS (SELECT 1 FROM ... WHERE ...)를 사용하세요.');
+            }
+            
+            // 카테시안 곱 위험
+            const fromMatch = query.match(/FROM\s+(.*?)(?:WHERE|JOIN|GROUP|ORDER|LIMIT|UNION|;|$)/is);
+            if (fromMatch) {
+                const tables = fromMatch[1].split(',').map(t => t.trim()).filter(t => t);
+                if (tables.length > 1 && !query.match(/\bWHERE\b/i) && !query.match(/\bJOIN\b/i)) {
+                    results.errors.push(`${tables.length}개의 테이블을 조인 조건 없이 사용하면 카테시안 곱이 발생합니다!\n💡 수정 제안: WHERE 절에 조인 조건을 추가하거나 명시적 JOIN을 사용하세요.`);
+                    results.isValid = false;
+                }
+            }
+            
+            // COUNT(*) vs COUNT(column)
+            if (query.match(/COUNT\s*\(\s*\*\s*\)/i) && query.match(/WHERE/i)) {
+                results.suggestions.push('COUNT(*)는 모든 행을 세지만, NULL이 없는 컬럼의 COUNT(column)가 더 빠를 수 있습니다.');
+            }
+            
+            // GROUP BY 없이 집계 함수
+            const aggregates = ['COUNT', 'SUM', 'AVG', 'MIN', 'MAX'];
+            const hasAggregate = aggregates.some(agg => query.match(new RegExp(`\\b${agg}\\s*\\(`, 'i')));
+            if (hasAggregate && !query.match(/\bGROUP\s+BY\b/i)) {
+                const selectCols = (query.match(/SELECT\s+(.*?)\s+FROM/is) || [])[1];
+                if (selectCols && selectCols.split(',').length > 1) {
+                    results.warnings.push('집계 함수와 일반 컬럼을 함께 SELECT하면 GROUP BY가 필요합니다.\n💡 수정 제안: GROUP BY 절을 추가하거나 집계 함수만 사용하세요.');
+                }
+            }
+            
+            // LIKE 패턴 최적화
+            if (query.match(/LIKE\s+['"]%.*%['"]/i)) {
+                results.warnings.push("LIKE '%값%'는 전체 테이블 스캔을 유발합니다.\n💡 수정 제안: 전문 검색(FULLTEXT INDEX) 또는 LIKE '값%'를 사용하세요.");
+            }
+            
+            // OFFSET 대신 키셋 페이지네이션
+            const offsetMatch = query.match(/OFFSET\s+(\d+)/i);
+            if (offsetMatch && parseInt(offsetMatch[1]) > 10000) {
+                results.warnings.push(`OFFSET ${offsetMatch[1]}는 매우 큰 값입니다. 앞의 모든 행을 건너뛰므로 성능이 매우 나쁩니다.\n💡 수정 제안: 키셋 페이지네이션(WHERE id > last_id LIMIT n)을 사용하세요.`);
+            }
+            
+            // 불필요한 DISTINCT
+            if (query.match(/SELECT\s+DISTINCT/i) && query.match(/\bGROUP\s+BY\b/i)) {
+                results.warnings.push('GROUP BY를 사용하면 이미 중복이 제거되므로 DISTINCT가 불필요합니다.\n💡 수정 제안: DISTINCT를 제거하세요.');
+            }
+        }
+        
+        // 서브쿼리 깊이 계산 (정교한 버전)
+        function calculateSubqueryDepth(query) {
+            let maxDepth = 0;
+            let currentDepth = 0;
+            let inString = false;
+            let stringChar = '';
+            
+            for (let i = 0; i < query.length; i++) {
+                const char = query[i];
+                
+                // 문자열 처리
+                if ((char === "'" || char === '"') && !inString) {
+                    inString = true;
+                    stringChar = char;
+                } else if (char === stringChar && inString) {
+                    inString = false;
+                }
+                
+                if (!inString) {
+                    if (char === '(') {
+                        // 다음 몇 글자를 확인하여 SELECT가 있는지 체크
+                        const nextChars = query.substring(i, i + 50).toUpperCase().trim();
+                        if (nextChars.match(/^\(\s*SELECT/)) {
+                            currentDepth++;
+                            maxDepth = Math.max(maxDepth, currentDepth);
+                        }
+                    } else if (char === ')') {
+                        // SELECT 서브쿼리의 끝인지 확인
+                        if (currentDepth > 0) {
+                            currentDepth--;
+                        }
+                    }
+                }
+            }
+            
+            return maxDepth;
+        }
+
+        // 11. 보안 취약점 검사 (대폭 강화됨)
+        function checkSecurityVulnerabilities(query, results) {
+            // SQL 인젝션 패턴 (확장됨)
+            const injectionPatterns = [
+                { pattern: /['"]\s*OR\s+['"]?\d+['"]?\s*=\s*['"]?\d+/i, desc: "OR '1'='1' 패턴" },
+                { pattern: /['"]\s*OR\s+['"]\w+['"]\s*=\s*['"]\w+/i, desc: "OR 'a'='a' 패턴" },
+                { pattern: /['"]\s*;\s*DROP\s+TABLE/i, desc: "DROP TABLE 시도" },
+                { pattern: /['"]\s*;\s*DELETE\s+FROM/i, desc: "DELETE FROM 시도" },
+                { pattern: /['"]\s*;\s*UPDATE\s+/i, desc: "UPDATE 시도" },
+                { pattern: /['"]\s*UNION\s+SELECT/i, desc: "UNION SELECT 시도" },
+                { pattern: /['"]\s*UNION\s+ALL\s+SELECT/i, desc: "UNION ALL SELECT 시도" },
+                { pattern: /--\s*$/m, desc: "주석을 이용한 우회" },
+                { pattern: /\/\*.*?\*\//s, desc: "블록 주석 사용" },
+                { pattern: /\bEXEC\s*\(/i, desc: "EXEC 동적 실행" },
+                { pattern: /\bEXECUTE\s*\(/i, desc: "EXECUTE 동적 실행" },
+                { pattern: /['"]\s*AND\s+['"]?\d+['"]?\s*=\s*['"]?\d+/i, desc: "AND '1'='1' 패턴" },
+                { pattern: /['"]\s*\|\|/i, desc: "문자열 연결을 통한 인젝션" },
+                { pattern: /\bSLEEP\s*\(/i, desc: "Time-based SQL Injection" },
+                { pattern: /\bBENCHMARK\s*\(/i, desc: "BENCHMARK를 이용한 공격" },
+                { pattern: /\bLOAD_FILE\s*\(/i, desc: "파일 시스템 접근 시도" },
+                { pattern: /\bINTO\s+OUTFILE/i, desc: "파일 쓰기 시도" },
+                { pattern: /\bINTO\s+DUMPFILE/i, desc: "덤프 파일 생성 시도" },
+                { pattern: /['"]\s*XOR\s+/i, desc: "XOR 연산자를 이용한 우회" },
+                { pattern: /CHAR\s*\(\s*\d+/i, desc: "CHAR 함수를 이용한 인코딩 우회" },
+                { pattern: /CONCAT\s*\(.*?CHAR\s*\(/i, desc: "CONCAT+CHAR를 이용한 인젝션" }
+            ];
+
+            let injectionFound = false;
+            injectionPatterns.forEach(({ pattern, desc }) => {
+                if (query.match(pattern)) {
+                    results.warnings.push(`⚠️ SQL 인젝션 위험: ${desc}이(가) 감지되었습니다.\n💡 수정 제안: 파라미터화된 쿼리(Prepared Statement)를 사용하고 입력값을 검증하세요.`);
+                    injectionFound = true;
+                }
+            });
+
+            // 동적 SQL 위험
+            if (query.match(/CONCAT\s*\(.*?WHERE/is)) {
+                results.warnings.push('⚠️ 동적 SQL: WHERE 절에서 CONCAT을 사용한 동적 쿼리 생성이 감지되었습니다.\n💡 수정 제안: 매개변수화된 쿼리를 사용하세요.');
+            }
+
+            // 위험한 명령어
+            const dangerousCommands = [
+                { cmd: 'DROP', level: 'critical', desc: '테이블/데이터베이스 삭제' },
+                { cmd: 'TRUNCATE', level: 'critical', desc: '테이블 전체 삭제' },
+                { cmd: 'ALTER', level: 'warning', desc: '테이블 구조 변경' },
+                { cmd: 'GRANT', level: 'warning', desc: '권한 부여' },
+                { cmd: 'REVOKE', level: 'warning', desc: '권한 회수' },
+                { cmd: 'SHUTDOWN', level: 'critical', desc: '서버 종료' }
+            ];
+            
+            dangerousCommands.forEach(({ cmd, level, desc }) => {
+                if (query.match(new RegExp(`\\b${cmd}\\b`, 'i'))) {
+                    if (level === 'critical') {
+                        results.errors.push(`⚠️⚠️⚠️ 매우 위험: ${cmd} 명령어(${desc})가 감지되었습니다!\n💡 경고: 이 명령은 돌이킬 수 없는 변경을 발생시킵니다. 매우 신중하게 실행하세요.`);
+                    } else {
+                        results.warnings.push(`⚠️ 위험: ${cmd} 명령어(${desc})가 감지되었습니다.\n💡 주의: 이 명령은 신중하게 실행해야 합니다.`);
+                    }
+                }
+            });
+
+            // 권한 관련
+            if (query.match(/\bGRANT\b/i) || query.match(/\bREVOKE\b/i)) {
+                results.warnings.push('권한 관련 명령어는 DBA 권한이 필요하며, 보안에 영향을 줄 수 있습니다.\n💡 수정 제안: 권한 변경 내역을 로그로 남기세요.');
+            }
+            
+            // 크리덴셜 하드코딩 감지
+            const credentialPatterns = [
+                /password\s*=\s*['"][^'"]+['"]/i,
+                /pwd\s*=\s*['"][^'"]+['"]/i,
+                /api[_-]?key\s*=\s*['"][^'"]+['"]/i,
+                /secret\s*=\s*['"][^'"]+['"]/i,
+                /token\s*=\s*['"][^'"]+['"]/i
+            ];
+            
+            credentialPatterns.forEach(pattern => {
+                if (query.match(pattern)) {
+                    results.warnings.push('⚠️ 보안: 쿼리에 비밀번호나 인증 정보가 하드코딩되어 있습니다.\n💡 수정 제안: 환경 변수나 보안 저장소를 사용하세요.');
+                }
+            });
+            
+            // 주석 내 민감 정보
+            const commentMatch = query.match(/--.*?(password|pwd|secret|key|token)/i);
+            if (commentMatch) {
+                results.warnings.push('⚠️ 보안: 주석에 민감한 정보가 포함되어 있을 수 있습니다.\n💡 수정 제안: 주석에서 민감 정보를 제거하세요.');
+            }
+            
+            // 무조건 참인 조건 (인젝션 흔적)
+            if (query.match(/WHERE\s+.*?['"]?1['"]?\s*=\s*['"]?1['"]?/i) && !query.match(/AND|OR/i)) {
+                results.warnings.push('⚠️ 의심스러운 패턴: WHERE 1=1 조건이 단독으로 사용되었습니다.\n💡 수정 제안: 의도한 것이 아니라면 제거하고, 동적 쿼리라면 파라미터화하세요.');
+            }
+            
+            // INFORMATION_SCHEMA 접근 (정보 수집 시도)
+            if (query.match(/INFORMATION_SCHEMA/i)) {
+                results.warnings.push('⚠️ 보안: INFORMATION_SCHEMA에 접근하고 있습니다.\n💡 주의: 데이터베이스 구조 정보 노출에 주의하세요.');
+            }
+            
+            // 시스템 프로시저/함수 (MySQL/SQL Server)
+            const systemFunctions = [
+                'xp_cmdshell', 'sp_executesql', 'sp_OACreate', 'USER_NAME', 
+                'SYSTEM_USER', 'SESSION_USER', 'DATABASE()', 'VERSION()'
+            ];
+            
+            systemFunctions.forEach(func => {
+                if (query.match(new RegExp(`\\b${func.replace(/[()]/g, '\\$&')}`, 'i'))) {
+                    results.warnings.push(`⚠️ 보안: 시스템 함수 ${func}가 감지되었습니다.\n💡 주의: 시스템 정보 노출에 주의하세요.`);
+                }
+            });
+            
+            // 백도어 패턴
+            if (query.match(/WHERE\s+.*?['"]admin['"].*?['"]admin['"]/i)) {
+                results.warnings.push('⚠️ 의심스러운 패턴: 관리자 계정 관련 의심스러운 패턴이 감지되었습니다.\n💡 경고: 백도어 삽입 시도일 수 있습니다.');
+            }
+        }
+
+        // 12. 예약어 및 식별자 검증
+        function validateReservedWordsAndIdentifiers(query, tokens, results) {
+            // SQL 예약어 목록 (주요 예약어만)
+            const reservedWords = [
+                'SELECT', 'FROM', 'WHERE', 'JOIN', 'ON', 'AS', 'AND', 'OR', 'NOT', 'IN', 'LIKE',
+                'BETWEEN', 'IS', 'NULL', 'EXISTS', 'ALL', 'ANY', 'SOME', 'UNION', 'INTERSECT',
+                'EXCEPT', 'ORDER', 'BY', 'GROUP', 'HAVING', 'LIMIT', 'OFFSET', 'DISTINCT',
+                'INSERT', 'INTO', 'VALUES', 'UPDATE', 'SET', 'DELETE', 'CREATE', 'TABLE',
+                'ALTER', 'DROP', 'INDEX', 'VIEW', 'DATABASE', 'SCHEMA', 'CONSTRAINT', 'PRIMARY',
+                'FOREIGN', 'KEY', 'UNIQUE', 'CHECK', 'DEFAULT', 'AUTO_INCREMENT', 'IDENTITY',
+                'CASE', 'WHEN', 'THEN', 'ELSE', 'END', 'IF', 'BEGIN', 'COMMIT', 'ROLLBACK'
+            ];
+
+            // 예약어를 테이블/컬럼명으로 사용하는지 체크
+            const identifierPattern = /(?:FROM|JOIN|UPDATE|INTO)\s+(\w+)|(?:SELECT|SET)\s+(\w+)/gi;
+            let match;
+            while ((match = identifierPattern.exec(query)) !== null) {
+                const identifier = (match[1] || match[2]).toUpperCase();
+                if (reservedWords.includes(identifier)) {
+                    results.warnings.push(`"${identifier}"는 SQL 예약어입니다. 식별자로 사용 시 백틱(\`)이나 대괄호([])로 감싸세요.`);
+                }
+            }
+
+            // 테이블/컬럼명에 공백이 있는 경우
+            if (query.match(/\b(?:FROM|JOIN|UPDATE|INTO)\s+[a-z0-9]+\s+[a-z0-9]+\b/i)) {
+                results.warnings.push('테이블명이나 컬럼명에 공백이 포함된 것으로 보입니다. 별칭(AS)을 명시하거나 식별자를 따옴표로 감싸세요.');
+            }
+
+            // 한글 식별자 사용
+            if (query.match(/[가-힣]/)) {
+                results.suggestions.push('한글 식별자는 일부 DB에서 제대로 작동하지 않을 수 있습니다. 영문 사용을 권장합니다.');
+            }
+        }
+
+        function showValidationResults(validation) {
+            if (!activeTabId) return;
+            
+            const panel = document.getElementById(`validation-${activeTabId}`);
+            if (!panel) return;
+            
+            let html = '<div class="validation-result">';
+            
+            if (validation.errors.length > 0) {
+                validation.errors.forEach(error => {
+                    html += `<div class="validation-item error">
+                        <span class="material-icons" style="font-size: 14px;">error</span>
+                        <span>${error}</span>
+                    </div>`;
+                });
+            }
+            
+            if (validation.warnings.length > 0) {
+                validation.warnings.forEach(warning => {
+                    html += `<div class="validation-item warning">
+                        <span class="material-icons" style="font-size: 14px;">warning</span>
+                        <span>${warning}</span>
+                    </div>`;
+                });
+            }
+            
+            if (validation.suggestions.length > 0) {
+                validation.suggestions.forEach(suggestion => {
+                    html += `<div class="validation-item info">
+                        <span class="material-icons" style="font-size: 14px;">lightbulb</span>
+                        <span>${suggestion}</span>
+                    </div>`;
+                });
+            }
+            
+            if (validation.errors.length === 0 && validation.warnings.length === 0 && validation.suggestions.length === 0) {
+                html += `<div class="validation-item success">
+                    <span class="material-icons" style="font-size: 14px;">check_circle</span>
+                    <span>쿼리 검증 통과! 문법적으로 올바른 쿼리입니다.</span>
+                </div>`;
+            }
+            
+            html += '</div>';
+            
+            panel.innerHTML = html;
+            panel.style.display = 'block';
+            
+            if (validation.isValid && validation.warnings.length === 0) {
+                setTimeout(() => {
+                    panel.style.display = 'none';
+                }, 5000);
+            }
+        }
+
+        // ===== 쿼리 실행 =====
+        function executeQuery() {
+            if (!activeTabId) return;
+            
+            const editor = document.getElementById(`editor-${activeTabId}`);
+            const sql = editor.value.trim();
+            
+            if (!sql) {
+                alert('실행할 쿼리를 입력하세요.');
+                return;
+            }
+            
+            const validation = performAdvancedValidation(sql);
+            
+            if (!validation.isValid) {
+                alert('쿼리에 오류가 있습니다:\n\n' + validation.errors.join('\n'));
+                showValidationResults(validation);
+                return;
+            }
+            
+            updateStatus('statusMessage', '쿼리 실행 중...');
+            
+            const startTime = Date.now();
+            
+            setTimeout(() => {
+                const executionTime = Date.now() - startTime;
+                
+                const sampleData = [
+                    { id: 1, name: 'John Doe', email: 'john@example.com', department: 'IT', salary: 75000 },
+                    { id: 2, name: 'Jane Smith', email: 'jane@example.com', department: 'HR', salary: 65000 },
+                    { id: 3, name: 'Mike Johnson', email: 'mike@example.com', department: 'Sales', salary: 70000 },
+                    { id: 4, name: 'Sarah Williams', email: 'sarah@example.com', department: 'IT', salary: 80000 },
+                    { id: 5, name: 'Tom Brown', email: 'tom@example.com', department: 'Finance', salary: 72000 }
+                ];
+                
+                displayResults(sampleData, executionTime);
+                
+                queryHistory.push({
+                    query: sql,
+                    timestamp: new Date().toLocaleString('ko-KR'),
+                    rowCount: sampleData.length,
+                    executionTime: executionTime
+                });
+                
+                if (validation.warnings.length > 0 || validation.suggestions.length > 0) {
+                    showValidationResults(validation);
+                }
+                
+                updateStatus('statusMessage', `쿼리 실행 완료 (${executionTime}ms, ${sampleData.length}행)`);
+            }, 100 + Math.random() * 400);
+        }
+
+        function displayResults(data, executionTime) {
+            const resultGrid = document.getElementById('resultGrid');
+            const resultInfo = document.getElementById('resultInfo');
+            
+            if (!data || data.length === 0) {
+                resultGrid.innerHTML = '<p style="color: #a0aec0; text-align: center; margin-top: 50px;">결과가 없습니다.</p>';
+                resultInfo.classList.remove('show');
+                return;
+            }
+            
+            // 결과 정보 표시
+            const rowCount = data.length;
+            const columnCount = Object.keys(data[0]).length;
+            const memoryUsage = ((JSON.stringify(data).length / 1024).toFixed(2)) + ' KB';
+            
+            document.getElementById('infoRowCount').textContent = rowCount.toLocaleString();
+            document.getElementById('infoColumnCount').textContent = columnCount;
+            document.getElementById('infoExecutionTime').textContent = executionTime + ' ms';
+            document.getElementById('infoMemoryUsage').textContent = memoryUsage;
+            
+            resultInfo.classList.add('show');
+            
+            // 테이블 생성
+            const columns = Object.keys(data[0]);
+            
+            let html = '<table class="result-grid"><thead><tr>';
+            columns.forEach(col => {
+                html += `<th>${col}</th>`;
+            });
+            html += '</tr></thead><tbody>';
+            
+            data.forEach(row => {
+                html += '<tr>';
+                columns.forEach(col => {
+                    html += `<td>${row[col] !== null && row[col] !== undefined ? row[col] : 'NULL'}</td>`;
+                });
+                html += '</tr>';
+            });
+            
+            html += '</tbody></table>';
+            resultGrid.innerHTML = html;
+            
+            switchResultTab('data');
+        }
+
+        function switchResultTab(tab) {
+            document.querySelectorAll('.result-tab').forEach(t => t.classList.remove('active'));
+            const activeTab = document.querySelector(`.result-tab[data-tab="${tab}"]`);
+            if (activeTab) activeTab.classList.add('active');
+            
+            const resultGrid = document.getElementById('resultGrid');
+            const resultInfo = document.getElementById('resultInfo');
+            
+            if (tab === 'data') {
+                // 데이터 탭은 현재 상태 유지
+            } else if (tab === 'messages') {
+                resultInfo.classList.remove('show');
+                resultGrid.innerHTML = `
+                    <div style="padding: 20px;">
+                        <h3 style="margin-bottom: 15px; color: #2d3748;">시스템 메시지</h3>
+                        <div style="color: #16a34a; margin: 10px 0;">✓ 데이터베이스 연결 성공</div>
+                        <div style="color: #16a34a; margin: 10px 0;">✓ 쿼리 실행 준비 완료</div>
+                    </div>
+                `;
+            } else if (tab === 'history') {
+                resultInfo.classList.remove('show');
+                let html = '<div style="padding: 20px;"><h3 style="margin-bottom: 15px; color: #2d3748;">쿼리 히스토리</h3>';
+                
+                if (queryHistory.length === 0) {
+                    html += '<p style="color: #718096;">실행된 쿼리가 없습니다.</p>';
+                } else {
+                    html += '<table class="result-grid"><thead><tr>';
+                    html += '<th>실행 시간</th><th>쿼리</th><th>행 수</th><th>소요 시간</th>';
+                    html += '</tr></thead><tbody>';
+                    
+                    queryHistory.slice().reverse().forEach(item => {
+                        const shortQuery = item.query.length > 50 ? item.query.substring(0, 50) + '...' : item.query;
+                        html += `<tr>
+                            <td>${item.timestamp}</td>
+                            <td>${shortQuery}</td>
+                            <td>${item.rowCount}</td>
+                            <td>${item.executionTime}ms</td>
+                        </tr>`;
+                    });
+                    
+                    html += '</tbody></table>';
+                }
+                html += '</div>';
+                resultGrid.innerHTML = html;
+            }
+        }
+
+        // ===== SQL 포맷팅 =====
+        function formatSQL() {
+            if (!activeTabId) return;
+            
+            const editor = document.getElementById(`editor-${activeTabId}`);
+            let query = editor.value;
+            
+            if (!query.trim()) {
+                alert('포맷팅할 쿼리를 입력하세요.');
+                return;
+            }
+            
+            query = query
+                .replace(/\s+/g, ' ')
+                .replace(/\s*,\s*/g, ',\n    ')
+                .replace(/\bSELECT\b/gi, '\nSELECT\n    ')
+                .replace(/\bFROM\b/gi, '\nFROM\n    ')
+                .replace(/\bWHERE\b/gi, '\nWHERE\n    ')
+                .replace(/\bAND\b/gi, '\n    AND ')
+                .replace(/\bOR\b/gi, '\n    OR ')
+                .replace(/\bJOIN\b/gi, '\nJOIN\n    ')
+                .replace(/\bLEFT JOIN\b/gi, '\nLEFT JOIN\n    ')
+                .replace(/\bRIGHT JOIN\b/gi, '\nRIGHT JOIN\n    ')
+                .replace(/\bINNER JOIN\b/gi, '\nINNER JOIN\n    ')
+                .replace(/\bON\b/gi, '\nON ')
+                .replace(/\bGROUP BY\b/gi, '\nGROUP BY\n    ')
+                .replace(/\bHAVING\b/gi, '\nHAVING\n    ')
+                .replace(/\bORDER BY\b/gi, '\nORDER BY\n    ')
+                .replace(/\bLIMIT\b/gi, '\nLIMIT ')
+                .replace(/\bOFFSET\b/gi, '\nOFFSET ')
+                .trim();
+            
+            editor.value = query;
+            syncLineNumbers(activeTabId);
+            updateCursorPosition();
+            markTabAsUnsaved(activeTabId);
+            
+            updateStatus('statusMessage', '쿼리가 포맷팅되었습니다.');
+        }
+
+        // ===== 파일 작업 =====
+        function openQuery() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.sql,.txt';
+            input.onchange = function(e) {
+                const file = e.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = function(event) {
+                        newQuery();
+                        const editor = document.getElementById(`editor-${activeTabId}`);
+                        editor.value = event.target.result;
+                        tabs[activeTabId].name = file.name;
+                        const tab = document.querySelector(`[data-tab-id="${activeTabId}"]`);
+                        const nameSpan = tab.querySelector('.tab-name');
+                        nameSpan.textContent = file.name;
+                        syncLineNumbers(activeTabId);
+                        updateCursorPosition();
+                        // 스크롤 강제 재계산
+                        forceEditorReflow(editor);
+                    };
+                    reader.readAsText(file);
+                }
+            };
+            input.click();
+        }
+
+        function saveQuery() {
+            if (!activeTabId) return;
+            
+            const editor = document.getElementById(`editor-${activeTabId}`);
+            const content = editor.value;
+            const fileName = tabs[activeTabId].name + '.sql';
+            
+            const blob = new Blob([content], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            tabs[activeTabId].saved = true;
+            const tab = document.querySelector(`[data-tab-id="${activeTabId}"]`);
+            const nameSpan = tab.querySelector('.tab-name');
+            nameSpan.textContent = nameSpan.textContent.replace(' *', '');
+            
+            updateStatus('statusMessage', '파일이 저장되었습니다.');
+        }
+
+        function exportResults() {
+            const resultGrid = document.querySelector('.result-grid');
+            
+            if (!resultGrid) {
+                alert('내보낼 결과가 없습니다. 먼저 쿼리를 실행하세요.');
+                return;
+            }
+            
+            let csv = '';
+            
+            const headers = Array.from(resultGrid.querySelectorAll('thead th')).map(th => th.textContent);
+            csv += headers.join(',') + '\n';
+            
+            const rows = resultGrid.querySelectorAll('tbody tr');
+            rows.forEach(row => {
+                const cells = Array.from(row.querySelectorAll('td')).map(td => {
+                    let value = td.textContent;
+                    if (value.includes(',') || value.includes('"') || value.includes('\n')) {
+                        value = '"' + value.replace(/"/g, '""') + '"';
+                    }
+                    return value;
+                });
+                csv += cells.join(',') + '\n';
+            });
+            
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'query_results.csv';
+            a.click();
+            URL.revokeObjectURL(url);
+            
+            updateStatus('statusMessage', '결과가 CSV 파일로 내보내졌습니다.');
+        }
+
+        // ===== UI 제어 =====
+        function toggleDarkMode() {
+            isDarkMode = !isDarkMode;
+            document.body.classList.toggle('dark-mode');
+            const icon = document.getElementById('darkModeIcon');
+            icon.textContent = isDarkMode ? 'light_mode' : 'dark_mode';
+            updateStatus('statusMessage', isDarkMode ? '다크모드 활성화' : '라이트모드 활성화');
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('sidebar');
+            sidebar.style.display = sidebar.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        function toggleProperties() {
+            const properties = document.getElementById('propertiesPanel');
+            properties.style.display = properties.style.display === 'none' ? 'flex' : 'none';
+        }
+
+        // ===== 트리 뷰 =====
+        function toggleTreeItem(element) {
+            element.classList.toggle('expanded');
+            element.classList.toggle('collapsed');
+            
+            const children = element.nextElementSibling;
+            if (children && children.classList.contains('tree-children')) {
+                children.classList.toggle('show');
+            }
+        }
+
+        function selectItem(element, itemName) {
+            document.querySelectorAll('.tree-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            element.classList.add('selected');
+            
+            updateStatus('statusMessage', `선택됨: ${itemName}`);
+        }
+
+        function filterDatabaseTree(searchTerm) {
+            const treeView = document.querySelector('.tree-view');
+            if (!treeView) return;
+            
+            const items = treeView.querySelectorAll('.tree-item');
+            
+            searchTerm = searchTerm.toLowerCase().trim();
+            
+            if (!searchTerm) {
+                items.forEach(item => {
+                    item.style.display = '';
+                });
+                return;
+            }
+            
+            items.forEach(item => {
+                const text = item.textContent.toLowerCase();
+                const matches = text.includes(searchTerm);
+                
+                if (matches) {
+                    item.style.display = '';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
+        }
+
+        function clearSearch() {
+            const searchInput = document.getElementById('dbSearchInput');
+            if (searchInput) {
+                searchInput.value = '';
+                filterDatabaseTree('');
+                searchInput.focus();
+            }
+        }
+
+        // ===== 테이블 디자이너 =====
+        function showTableDesigner() {
+            document.getElementById('tableDesignerModal').classList.add('show');
+        }
+
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('show');
+        }
+
+        function addColumn() {
+            const tbody = document.getElementById('columnDesigner');
+            const newRow = tbody.insertRow();
+            newRow.innerHTML = `
+                <td><input type="text" placeholder="column_name"></td>
+                <td>
+                    <select>
+                        <option>INT</option>
+                        <option>BIGINT</option>
+                        <option>SMALLINT</option>
+                        <option>TINYINT</option>
+                        <option>VARCHAR</option>
+                        <option>CHAR</option>
+                        <option>TEXT</option>
+                        <option>MEDIUMTEXT</option>
+                        <option>LONGTEXT</option>
+                        <option>DATE</option>
+                        <option>DATETIME</option>
+                        <option>TIMESTAMP</option>
+                        <option>TIME</option>
+                        <option>BOOLEAN</option>
+                        <option>DECIMAL</option>
+                        <option>FLOAT</option>
+                        <option>DOUBLE</option>
+                        <option>BLOB</option>
+                        <option>JSON</option>
+                    </select>
+                </td>
+                <td><input type="text" placeholder=""></td>
+                <td style="text-align: center;"><input type="checkbox"></td>
+                <td><input type="text" placeholder=""></td>
+                <td style="text-align: center;"><input type="checkbox"></td>
+            `;
+        }
+
+        function generateCreateTable() {
+            const tableName = document.getElementById('tableName').value.trim();
+            if (!tableName) {
+                alert('테이블 이름을 입력하세요.');
+                return;
+            }
+            
+            const rows = document.getElementById('columnDesigner').rows;
+            let columns = [];
+            let primaryKeys = [];
+            
+            for (let i = 0; i < rows.length; i++) {
+                const cells = rows[i].cells;
+                const colName = cells[0].querySelector('input').value.trim();
+                const colType = cells[1].querySelector('select').value;
+                const colLength = cells[2].querySelector('input').value.trim();
+                const nullable = cells[3].querySelector('input').checked;
+                const defaultVal = cells[4].querySelector('input').value.trim();
+                const isPK = cells[5].querySelector('input').checked;
+                
+                if (!colName) continue;
+                
+                let columnDef = `    ${colName} ${colType}`;
+                
+                // 데이터 타입별 길이 처리
+                if (colLength) {
+                    if (colType === 'VARCHAR' || colType === 'CHAR') {
+                        columnDef += `(${colLength})`;
+                    } else if (colType === 'INT' || colType === 'BIGINT' || colType === 'SMALLINT' || colType === 'TINYINT') {
+                        columnDef += `(${colLength})`;
+                    } else if (colType === 'DECIMAL' || colType === 'NUMERIC' || colType === 'FLOAT' || colType === 'DOUBLE') {
+                        columnDef += `(${colLength})`;
+                    }
+                }
+                
+                // NULL 허용 여부
+                if (!nullable) {
+                    columnDef += ' NOT NULL';
+                }
+                
+                // 기본값 처리 - 데이터 타입에 따라 따옴표 처리
+                if (defaultVal) {
+                    const numericTypes = ['INT', 'BIGINT', 'SMALLINT', 'TINYINT', 'DECIMAL', 'NUMERIC', 'FLOAT', 'DOUBLE'];
+                    const booleanTypes = ['BOOLEAN', 'BOOL'];
+                    
+                    if (numericTypes.includes(colType)) {
+                        // 숫자 타입은 따옴표 없이
+                        columnDef += ` DEFAULT ${defaultVal}`;
+                    } else if (booleanTypes.includes(colType)) {
+                        // BOOLEAN 타입 처리
+                        const boolVal = defaultVal.toLowerCase();
+                        if (boolVal === 'true' || boolVal === '1') {
+                            columnDef += ' DEFAULT TRUE';
+                        } else if (boolVal === 'false' || boolVal === '0') {
+                            columnDef += ' DEFAULT FALSE';
+                        } else {
+                            columnDef += ` DEFAULT ${defaultVal}`;
+                        }
+                    } else if (defaultVal.toUpperCase() === 'NULL') {
+                        // NULL 값 처리
+                        columnDef += ' DEFAULT NULL';
+                    } else if (defaultVal.toUpperCase() === 'CURRENT_TIMESTAMP') {
+                        // CURRENT_TIMESTAMP 처리
+                        columnDef += ' DEFAULT CURRENT_TIMESTAMP';
+                    } else {
+                        // 문자열 타입은 따옴표로 감싸기
+                        columnDef += ` DEFAULT '${defaultVal}'`;
+                    }
+                }
+                
+                // PRIMARY KEY는 자동으로 AUTO_INCREMENT 추가 (INT 타입인 경우)
+                if (isPK && (colType === 'INT' || colType === 'BIGINT')) {
+                    columnDef += ' AUTO_INCREMENT';
+                }
+                
+                columns.push(columnDef);
+                
+                if (isPK) {
+                    primaryKeys.push(colName);
+                }
+            }
+            
+            if (columns.length === 0) {
+                alert('최소 하나의 컬럼을 정의하세요.');
+                return;
+            }
+            
+            let sql = `CREATE TABLE ${tableName} (\n`;
+            sql += columns.join(',\n');
+            
+            if (primaryKeys.length > 0) {
+                sql += `,\n    PRIMARY KEY (${primaryKeys.join(', ')})`;
+            }
+            
+            sql += '\n);';
+            
+            if (!activeTabId) {
+                newQuery();
+            }
+            
+            const editor = document.getElementById(`editor-${activeTabId}`);
+            editor.value = sql;
+            syncLineNumbers(activeTabId);
+            updateCursorPosition();
+            markTabAsUnsaved(activeTabId);
+            
+            closeModal('tableDesignerModal');
+            updateStatus('statusMessage', 'CREATE TABLE 문이 생성되었습니다.');
+        }
+
+        // ===== 컨텍스트 메뉴 =====
+        function showContextMenu(event) {
+            event.preventDefault();
+            const contextMenu = document.getElementById('contextMenu');
+            contextMenu.style.display = 'block';
+            contextMenu.style.left = event.pageX + 'px';
+            contextMenu.style.top = event.pageY + 'px';
+        }
+
+        document.addEventListener('click', function() {
+            document.getElementById('contextMenu').style.display = 'none';
+        });
+
+        function commentCode() {
+            if (!activeTabId) return;
+            
+            const editor = document.getElementById(`editor-${activeTabId}`);
+            const start = editor.selectionStart;
+            const end = editor.selectionEnd;
+            
+            if (start === end) {
+                // 현재 라인 주석 처리
+                const text = editor.value;
+                const lineStart = text.lastIndexOf('\n', start - 1) + 1;
+                const lineEnd = text.indexOf('\n', start);
+                const currentLine = text.substring(lineStart, lineEnd === -1 ? text.length : lineEnd);
+                
+                if (currentLine.trim().startsWith('--')) {
+                    // 주석 해제
+                    const newLine = currentLine.replace(/^\s*--\s?/, '');
+                    editor.value = text.substring(0, lineStart) + newLine + text.substring(lineEnd === -1 ? text.length : lineEnd);
+                } else {
+                    // 주석 추가
+                    editor.value = text.substring(0, lineStart) + '-- ' + currentLine + text.substring(lineEnd === -1 ? text.length : lineEnd);
+                }
+            } else {
+                // 선택된 텍스트 주석 처리
+                const selectedText = editor.value.substring(start, end);
+                editor.value = editor.value.substring(0, start) + '/* ' + selectedText + ' */' + editor.value.substring(end);
+            }
+            
+            syncLineNumbers(activeTabId);
+            updateCursorPosition();
+            markTabAsUnsaved(activeTabId);
+        }
+
+        // ===== 키보드 단축키 =====
+        function setupKeyboardShortcuts() {
+            document.addEventListener('keydown', function(e) {
+                if (e.ctrlKey && e.key === 'n') {
+                    e.preventDefault();
+                    newQuery();
+                }
+                else if (e.ctrlKey && e.key === 'o') {
+                    e.preventDefault();
+                    openQuery();
+                }
+                else if (e.ctrlKey && e.key === 's') {
+                    e.preventDefault();
+                    saveQuery();
+                }
+                else if (e.key === 'F5') {
+                    e.preventDefault();
+                    executeQuery();
+                }
+                else if (e.ctrlKey && e.shiftKey && e.key === 'F') {
+                    e.preventDefault();
+                    formatSQL();
+                }
+                else if (e.ctrlKey && e.shiftKey && e.key === 'V') {
+                    e.preventDefault();
+                    validateQuery();
+                }
+                else if (e.ctrlKey && e.shiftKey && e.key === 'C') {
+                    e.preventDefault();
+                    clearEditor();
+                }
+                else if (e.ctrlKey && e.shiftKey && e.key === 'E') {
+                    e.preventDefault();
+                    exportResults();
+                }
+                else if (e.ctrlKey && e.key === '/') {
+                    e.preventDefault();
+                    commentCode();
+                }
+            });
+        }
+
+        // ===== 도움말 =====
+        function showAbout() {
+            alert('DateEye SQL Professional v1.0 Advanced Validation Engine\n\n고급 기능:\n• SQL Gate/DBeaver 수준의 전문가급 쿼리 검증\n• 토큰 기반 구문 분석 (Lexical Analysis)\n• 12개 카테고리, 50+ 검증 규칙\n• 성능 최적화 제안 (인덱스, 조인, 서브쿼리)\n• 보안 취약점 자동 탐지 (SQL Injection)\n• 데이터 타입 및 함수 호환성 검사\n• 라인 번호 표시 및 다크모드 지원\n\n제작: DateEye Development Team');
+        }
+
+        // ===== 상태 업데이트 =====
+        function updateStatus(elementId, message) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.textContent = message;
+            }
+        }
+
+        console.log('DateEye SQL Professional v1.0 - Advanced Validation Engine (SQL Gate/DBeaver Level)');
+    </script>
+</body>
+</html>
