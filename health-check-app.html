@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KT Smart Health Care</title>
+    <title>KT SMART HEALTH</title>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
     <style>
@@ -16,8 +16,8 @@
         :root {
             --primary-color: #DC000C;
             --secondary-color: #FF1744;
-            --bg-color: #FFFFFF;
-            --card-bg: #F8F9FA;
+            --bg-color: #F7F7F7;
+            --card-bg: #FFFFFF;
             --text-primary: #212121;
             --text-secondary: #757575;
             --border-color: #E0E0E0;
@@ -25,19 +25,27 @@
             --warning-color: #FF9800;
             --danger-color: #F44336;
             --shadow: 0 2px 12px rgba(0,0,0,0.08);
-            --header-bg: #F5F5F5;
+            --header-bg: #E8E8E8;
             --nav-bg: #000000;
         }
 
         body.dark-mode {
-            --bg-color: #121212;
-            --card-bg: #1E1E1E;
+            --bg-color: #1A1A1A;
+            --card-bg: #2A2A2A;
             --text-primary: #FFFFFF;
             --text-secondary: #B0B0B0;
             --border-color: #333333;
             --shadow: 0 2px 12px rgba(0,0,0,0.4);
-            --header-bg: #1E1E1E;
+            --header-bg: #2A2A2A;
             --nav-bg: #000000;
+        }
+
+        body.dark-mode .form-select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23B0B0B0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        }
+
+        body.dark-mode .form-select:focus {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23DC000C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
         }
 
         body {
@@ -47,6 +55,135 @@
             padding-bottom: 85px;
             transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1), 
                         color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 스플래시 스크린 */
+        .splash-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #000000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            cursor: pointer;
+            transition: opacity 0.5s ease-out, visibility 0.5s ease-out;
+        }
+
+        .splash-screen.hide {
+            opacity: 0;
+            visibility: hidden;
+        }
+
+        .splash-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 24px;
+            animation: splashFadeIn 1s ease-out;
+            margin-top: -60px;
+        }
+
+        .splash-emblem {
+            width: 120px;
+            height: 120px;
+            background: linear-gradient(135deg, #DC000C 0%, #FF1744 100%);
+            border-radius: 28px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 32px rgba(220, 0, 12, 0.5);
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        .splash-emblem .material-icons {
+            font-size: 72px;
+            color: white;
+        }
+
+        .splash-title {
+            color: white;
+            text-align: center;
+        }
+
+        .splash-title h1 {
+            font-size: 36px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            text-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .splash-subtitle {
+            color: white;
+            font-size: 20px;
+            font-weight: 600;
+            opacity: 0.95;
+            letter-spacing: 0.5px;
+            text-align: center;
+            line-height: 1.5;
+            margin-bottom: 8px;
+        }
+
+        .splash-copyright {
+            position: absolute;
+            bottom: 100px;
+            color: white;
+            font-size: 10px;
+            font-weight: 500;
+            opacity: 0.6;
+            letter-spacing: 0.5px;
+        }
+
+        .splash-hint {
+            position: absolute;
+            bottom: 50px;
+            color: white;
+            font-size: 14px;
+            opacity: 0.8;
+            animation: bounce 2s ease-in-out infinite;
+        }
+
+        @keyframes splashFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.9) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1) translateY(0);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 8px 32px rgba(220, 0, 12, 0.5);
+            }
+            50% {
+                transform: scale(1.05);
+                box-shadow: 0 12px 48px rgba(220, 0, 12, 0.7);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        .main-content {
+            display: none;
+        }
+
+        .main-content.show {
+            display: block;
         }
 
         .material-icons {
@@ -63,37 +200,106 @@
             direction: ltr;
         }
 
+        /* 헤더 개선 */
         .header {
             background-color: var(--header-bg);
             color: var(--text-primary);
-            padding: 16px 20px;
+            padding: 14px 20px;
             display: flex;
             justify-content: space-between;
             align-items: center;
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-            transition: background-color 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        .header-title {
+        .header-left {
+            flex: 1;
             display: flex;
-            flex-direction: column;
+            align-items: center;
         }
 
-        .header h1 {
-            font-size: 20px;
-            font-weight: 800;
+        .menu-toggle {
+            background: transparent;
+            border: none;
             color: var(--text-primary);
-            letter-spacing: -0.5px;
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.6, 1);
         }
 
-        .header .subtitle {
+        .menu-toggle:hover {
+            background: rgba(0,0,0,0.05);
+            transform: scale(1.05);
+        }
+
+        .menu-toggle:active {
+            transform: scale(0.95);
+        }
+
+        .header-center {
+            flex: 3;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .header-center h1 {
+            font-size: 18px;
+            font-weight: 900;
+            color: var(--text-primary);
+            letter-spacing: 0.3px;
+            text-align: center;
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: center;
+            white-space: nowrap;
+            flex-wrap: nowrap;
+        }
+
+        .header-center h1 .kt-logo {
+            color: var(--primary-color);
+            font-weight: 900;
+            letter-spacing: 1px;
+        }
+
+        .header-emblem {
+            width: 32px;
+            height: 32px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            box-shadow: 0 2px 8px rgba(220, 0, 12, 0.3);
+        }
+
+        .header-emblem .material-icons {
+            font-size: 20px;
+        }
+
+        .header-center .subtitle {
             font-size: 11px;
             color: var(--text-secondary);
             margin-top: 2px;
             font-weight: 500;
+            text-align: center;
+        }
+
+        .header-right {
+            flex: 1;
+            display: flex;
+            justify-content: flex-end;
         }
 
         .theme-toggle {
@@ -107,11 +313,12 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.6, 1);
         }
 
         .theme-toggle:hover {
             transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
         }
 
         .theme-toggle:active {
@@ -120,6 +327,94 @@
 
         .theme-toggle .material-icons {
             font-size: 22px;
+        }
+
+        /* GNB 사이드 메뉴 */
+        .side-menu {
+            position: fixed;
+            top: 0;
+            left: -320px;
+            width: 320px;
+            height: 100%;
+            background: var(--card-bg);
+            box-shadow: 2px 0 24px rgba(0,0,0,0.15);
+            z-index: 1000;
+            transition: left 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            overflow-y: auto;
+        }
+
+        .side-menu.active {
+            left: 0;
+        }
+
+        .side-menu-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            backdrop-filter: blur(2px);
+        }
+
+        .side-menu-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .side-menu-content {
+            padding: 8px 0 12px;
+        }
+
+        .menu-section {
+            margin-bottom: 4px;
+        }
+        
+        .menu-section:first-child {
+            margin-bottom: 8px;
+        }
+
+        .menu-section-title {
+            padding: 12px 24px 8px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .menu-item {
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            color: var(--text-primary);
+            text-decoration: none;
+        }
+
+        .menu-item:hover {
+            background: rgba(0, 0, 0, 0.05);
+            padding-left: 28px;
+        }
+
+        .menu-item:active {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .menu-item .material-icons {
+            color: var(--text-primary);
+            font-size: 24px;
+        }
+
+        .menu-item span:not(.material-icons) {
+            font-size: 16px;
+            font-weight: 600;
         }
 
         .container {
@@ -176,8 +471,13 @@
         }
 
         .stat-card .icon {
-            font-size: 36px;
+            font-size: 40px;
             margin-bottom: 12px;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .stat-card:hover .icon {
+            transform: scale(1.1) rotate(5deg);
         }
 
         .stat-card .label {
@@ -225,188 +525,746 @@
             text-decoration: none;
             cursor: pointer;
             font-weight: 700;
-            transition: transform 0.2s;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
             display: inline-flex;
             align-items: center;
             gap: 4px;
         }
 
-        .see-more:active {
+        .see-more:hover {
+            transform: translateX(4px);
+        }
+
+        .see-more .material-icons {
+            font-size: 18px;
+        }
+
+        .quick-actions {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .action-btn {
+            background: var(--card-bg);
+            border: 2px solid var(--border-color);
+            border-radius: 16px;
+            padding: 20px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+            text-align: center;
+        }
+
+        .action-btn:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(220, 0, 12, 0.12);
+            border-color: var(--primary-color);
+        }
+
+        .action-btn:active {
             transform: scale(0.95);
         }
 
-        .list-item {
+        .action-btn .material-icons {
+            font-size: 36px;
+            color: var(--primary-color);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        
+        .action-btn .emoji-icon {
+            font-size: 36px;
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .action-btn:hover .material-icons,
+        .action-btn:hover .emoji-icon {
+            transform: scale(1.15) rotate(10deg);
+        }
+
+        .action-btn span:not(.material-icons) {
+            font-size: 15px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .health-card {
             background: var(--card-bg);
-            border-radius: 16px;
-            padding: 18px;
-            margin-bottom: 12px;
+            border-radius: 20px;
+            padding: 24px;
             box-shadow: var(--shadow);
             border: 1px solid var(--border-color);
-            display: flex;
-            align-items: center;
-            gap: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
-            overflow: hidden;
         }
 
-        .list-item::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(220, 0, 12, 0.1);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
+        .health-cards-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
         }
 
-        .list-item:hover {
-            transform: translateY(-4px) translateX(2px);
-            box-shadow: 0 8px 24px rgba(0,0,0,0.15);
-            border-color: rgba(220, 0, 12, 0.2);
+        .health-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+            border-color: rgba(220, 0, 12, 0.3);
         }
 
-        .list-item:hover::before {
-            width: 300%;
-            height: 300%;
+        .health-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
         }
 
-        .list-item:active {
-            transform: scale(0.98);
-            transition: all 0.1s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .list-item .icon {
-            font-size: 32px;
-            width: 48px;
-            height: 48px;
+        .health-card-title {
             display: flex;
             align-items: center;
-            justify-content: center;
-            background: rgba(220, 0, 12, 0.08);
-            border-radius: 14px;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
-            z-index: 1;
+            gap: 12px;
         }
 
-        .list-item:hover .icon {
-            background: rgba(220, 0, 12, 0.15);
-            transform: scale(1.15) rotate(5deg);
-            box-shadow: 0 4px 12px rgba(220, 0, 12, 0.2);
+        .health-card-title .material-icons {
+            color: var(--primary-color);
+            font-size: 28px;
+        }
+        
+        .health-card-title .emoji-icon {
+            font-size: 28px;
         }
 
-        .list-item .content {
-            flex: 1;
-        }
-
-        .list-item .title {
-            font-size: 17px;
+        .health-card-title h3 {
+            font-size: 18px;
             font-weight: 700;
-            margin-bottom: 4px;
-            letter-spacing: -0.3px;
         }
 
-        .list-item .subtitle {
-            font-size: 14px;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .list-item .time {
+        .health-card-time {
             font-size: 13px;
             color: var(--text-secondary);
             font-weight: 500;
         }
 
+        .health-card-content {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+
+        .health-value {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .health-value-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .health-value-number {
+            font-size: 24px;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .health-value-number.normal {
+            color: var(--success-color);
+        }
+
+        .health-value-number.warning {
+            color: var(--warning-color);
+        }
+
+        .health-value-number.danger {
+            color: var(--danger-color);
+        }
+
+        .medicine-item {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .medicine-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            border-color: rgba(220, 0, 12, 0.3);
+        }
+
+        .medicine-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .medicine-name {
+            font-size: 17px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .medicine-time {
+            font-size: 15px;
+            color: var(--primary-color);
+            font-weight: 700;
+        }
+
+        .medicine-info {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
         .tip-card {
-            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
-            color: white;
+            background: linear-gradient(135deg, var(--card-bg), var(--bg-color));
             border-radius: 20px;
             padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 8px 24px rgba(220, 0, 12, 0.25);
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             cursor: pointer;
         }
 
         .tip-card:hover {
-            transform: translateY(-6px) scale(1.02);
-            box-shadow: 0 16px 36px rgba(220, 0, 12, 0.4);
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(220, 0, 12, 0.12);
         }
 
-        .tip-card:active {
-            transform: scale(0.98);
+        .tip-card-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
         }
 
-        .tip-card .tip-icon {
-            font-size: 28px;
-            margin-bottom: 12px;
+        .tip-icon {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            width: 48px;
+            height: 48px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+        
+        .tip-icon .material-icons {
+            font-size: 24px;
         }
 
-        .tip-card .tip-title {
-            font-size: 20px;
-            font-weight: 800;
-            margin-bottom: 8px;
-            letter-spacing: -0.5px;
+        .tip-title {
+            font-size: 18px;
+            font-weight: 700;
         }
 
-        .tip-card .tip-content {
+        .tip-content {
             font-size: 15px;
-            line-height: 1.7;
-            opacity: 0.95;
+            line-height: 1.8;
+            color: var(--text-secondary);
+        }
+
+        .settings-section {
+            margin-bottom: 32px;
+        }
+
+        .settings-group {
+            background: var(--card-bg);
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .settings-item {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border-color);
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .settings-item:last-child {
+            border-bottom: none;
+        }
+
+        .settings-item:hover {
+            background: rgba(220, 0, 12, 0.05);
+            padding-left: 28px;
+        }
+
+        .settings-item:active {
+            background: rgba(220, 0, 12, 0.1);
+        }
+
+        .settings-item-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .settings-item-left .material-icons {
+            color: var(--primary-color);
+            font-size: 24px;
+        }
+
+        .settings-item-content {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .settings-item-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .settings-item-desc {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
+
+        .settings-item-right .material-icons {
+            color: var(--text-secondary);
+            font-size: 20px;
+        }
+
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 2000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            padding: 20px;
+            backdrop-filter: blur(4px);
+        }
+
+        .modal.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: var(--bg-color);
+            border-radius: 24px;
+            width: 100%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            transform: scale(0.9) translateY(30px);
+            transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        .modal.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-header {
+            padding: 28px 28px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 22px;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+
+        .modal-close {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .modal-close:hover {
+            background: var(--danger-color);
+            border-color: var(--danger-color);
+            transform: rotate(90deg);
+        }
+
+        .modal-close:hover .material-icons {
+            color: white;
+        }
+
+        .modal-close .material-icons {
+            font-size: 20px;
+            color: var(--text-secondary);
+            transition: color 0.2s;
+        }
+
+        .modal form {
+            padding: 28px;
+        }
+
+        .form-group {
+            margin-bottom: 24px;
+            position: relative;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .form-input, .form-select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+            appearance: none;
+        }
+
+        .form-input::placeholder {
+            color: var(--text-secondary);
+            opacity: 0.6;
+        }
+
+        .form-input:hover, .form-select:hover {
+            border-color: rgba(220, 0, 12, 0.3);
+            background: var(--card-bg);
+        }
+
+        .form-input:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            background: var(--card-bg);
+            box-shadow: 0 0 0 4px rgba(220, 0, 12, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-input:disabled, .form-select:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            background: var(--border-color);
+        }
+
+        /* Number Input 스타일 */
+        input[type="number"].form-input {
+            -moz-appearance: textfield;
+        }
+
+        input[type="number"].form-input::-webkit-inner-spin-button,
+        input[type="number"].form-input::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Datetime Input 스타일 */
+        input[type="datetime-local"].form-input,
+        input[type="date"].form-input,
+        input[type="time"].form-input {
+            position: relative;
+        }
+
+        input[type="datetime-local"].form-input::-webkit-calendar-picker-indicator,
+        input[type="date"].form-input::-webkit-calendar-picker-indicator,
+        input[type="time"].form-input::-webkit-calendar-picker-indicator {
+            cursor: pointer;
+            opacity: 0.6;
+            transition: opacity 0.2s ease;
+        }
+
+        input[type="datetime-local"].form-input::-webkit-calendar-picker-indicator:hover,
+        input[type="date"].form-input::-webkit-calendar-picker-indicator:hover,
+        input[type="time"].form-input::-webkit-calendar-picker-indicator:hover {
+            opacity: 1;
+        }
+
+        /* Password Input Toggle */
+        .password-input-group {
+            position: relative;
+        }
+
+        .password-toggle {
+            position: absolute;
+            right: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            cursor: pointer;
+            color: var(--text-secondary);
+            transition: color 0.2s ease;
+            background: none;
+            border: none;
+            padding: 4px;
+        }
+
+        .password-toggle:hover {
+            color: var(--primary-color);
+        }
+
+        /* Select 커스텀 화살표 */
+        .form-select {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23757575' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 12px center;
+            background-size: 20px;
+            padding-right: 40px;
+            cursor: pointer;
+        }
+
+        .form-select:focus {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23DC000C' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+        }
+
+        .form-select option {
+            padding: 12px;
+            background: var(--card-bg);
+            color: var(--text-primary);
+        }
+
+        .form-select option:first-child {
+            color: var(--text-secondary);
+        }
+
+        .form-select option:checked {
+            background: var(--primary-color);
+            color: white;
+        }
+
+        /* 인풋 아이콘 스타일 */
+        .form-input-with-icon {
+            position: relative;
+        }
+
+        .form-input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            pointer-events: none;
+            font-size: 20px;
+        }
+
+        .form-input-with-icon .form-input {
+            padding-left: 48px;
+        }
+
+        /* 플로팅 라벨 스타일 */
+        .floating-label-group {
+            position: relative;
+            margin-bottom: 24px;
+        }
+
+        .floating-label {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-secondary);
+            font-size: 15px;
             font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            pointer-events: none;
+            background: var(--bg-color);
+            padding: 0 4px;
+        }
+
+        .floating-input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 12px;
+            font-size: 15px;
+            font-family: 'Noto Sans KR', sans-serif;
+            background: var(--bg-color);
+            color: var(--text-primary);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            outline: none;
+        }
+
+        .floating-input:focus ~ .floating-label,
+        .floating-input:not(:placeholder-shown) ~ .floating-label {
+            top: 0;
+            left: 12px;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--primary-color);
+            background: var(--bg-color);
+        }
+
+        .floating-input:focus {
+            border-color: var(--primary-color);
+            background: var(--card-bg);
+            box-shadow: 0 0 0 4px rgba(220, 0, 12, 0.1);
+        }
+
+        /* 체크박스 & 라디오 스타일 */
+        .form-checkbox, .form-radio {
+            width: 20px;
+            height: 20px;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            appearance: none;
+            position: relative;
+        }
+
+        .form-radio {
+            border-radius: 50%;
+        }
+
+        .form-checkbox:checked, .form-radio:checked {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .form-checkbox:checked::after {
+            content: '✓';
+            position: absolute;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        .form-radio:checked::after {
+            content: '';
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: white;
+            border-radius: 50%;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+        }
+
+        /* 성공/에러 상태 */
+        .form-input.success, .form-select.success {
+            border-color: var(--success-color);
+        }
+
+        .form-input.error, .form-select.error {
+            border-color: var(--danger-color);
+        }
+
+        .form-helper-text {
+            font-size: 13px;
+            margin-top: 6px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .form-helper-text.success {
+            color: var(--success-color);
+        }
+
+        .form-helper-text.error {
+            color: var(--danger-color);
+        }
+
+        .form-helper-text .material-icons {
+            font-size: 16px;
+        }
+
+        /* Textarea 스타일 */
+        textarea.form-input {
+            min-height: 100px;
+            resize: vertical;
+            line-height: 1.6;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        textarea.form-input:focus {
+            min-height: 120px;
+        }
+
+        /* 폼 애니메이션 */
+        @keyframes shake {
+            0%, 100% { transform: translateX(0); }
+            25% { transform: translateX(-10px); }
+            75% { transform: translateX(10px); }
+        }
+
+        .form-input.error, .form-select.error {
+            animation: shake 0.4s ease-in-out;
+        }
+
+        /* 인풋 그룹 (여러 인풋이 한 줄에) */
+        .form-input-group {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .form-input-group .form-input {
+            flex: 1;
+        }
+
+        .form-input-group .form-input-separator {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-secondary);
         }
 
         .btn {
-            background: var(--primary-color);
+            width: 100%;
+            padding: 18px;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
             color: white;
             border: none;
-            padding: 16px 24px;
-            border-radius: 14px;
+            border-radius: 12px;
             font-size: 17px;
             font-weight: 700;
             cursor: pointer;
-            width: 100%;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            margin-top: 12px;
-            box-shadow: 0 4px 12px rgba(220, 0, 12, 0.2);
-            letter-spacing: -0.3px;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .btn::before {
-            content: '';
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 0;
-            height: 0;
-            border-radius: 50%;
-            background: rgba(255, 255, 255, 0.3);
-            transform: translate(-50%, -50%);
-            transition: width 0.6s, height 0.6s;
-        }
-
-        .btn:hover::before {
-            width: 300px;
-            height: 300px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 16px rgba(220, 0, 12, 0.3);
         }
 
         .btn:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 20px rgba(220, 0, 12, 0.35);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(220, 0, 12, 0.4);
         }
 
         .btn:active {
-            transform: scale(0.97);
-            background: #B00009;
-            transition: all 0.1s;
+            transform: scale(0.98);
         }
 
         .btn-secondary {
@@ -416,11 +1274,10 @@
             box-shadow: none;
         }
 
-        .btn-secondary:active {
+        .btn-secondary:hover {
             background: var(--border-color);
         }
 
-        /* iOS 스타일 하단 네비게이션 */
         .bottom-nav {
             position: fixed;
             bottom: 0;
@@ -430,458 +1287,438 @@
             display: flex;
             justify-content: space-around;
             align-items: center;
-            padding: 10px 0 22px 0;
-            z-index: 100;
-            box-shadow: 0 -2px 20px rgba(0,0,0,0.3);
+            padding: 12px 8px;
+            box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
+            z-index: 90;
         }
 
         .nav-item {
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             gap: 6px;
             cursor: pointer;
-            color: #8E8E93;
-            text-decoration: none;
-            padding: 8px 20px;
+            color: #808080;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.6, 1);
+            padding: 8px 16px;
             border-radius: 16px;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            min-width: 70px;
-            position: relative;
+            text-decoration: none;
         }
 
-        .nav-item:active {
-            transform: scale(0.85);
+        .nav-item:hover {
+            background: rgba(255,255,255,0.1);
         }
 
         .nav-item.active {
             color: var(--primary-color);
         }
 
-        .nav-item .nav-icon-wrapper {
-            width: 56px;
-            height: 36px;
+        .nav-icon-wrapper {
+            position: relative;
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 14px;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            position: relative;
         }
 
         .nav-item.active .nav-icon-wrapper {
-            background: rgba(220, 0, 12, 0.18);
-            box-shadow: 0 4px 12px rgba(220, 0, 12, 0.25);
+            animation: bounce 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-8px); }
         }
 
         .nav-item .material-icons {
-            font-size: 30px;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            font-size: 26px;
         }
 
-        .nav-item.active .material-icons {
-            transform: scale(1.15) translateY(-2px);
-        }
-
-        .nav-item:hover .material-icons {
-            transform: scale(1.1);
-        }
-
-        .nav-item .nav-label {
-            font-size: 11px;
-            font-weight: 700;
-            letter-spacing: -0.2px;
-            transition: all 0.3s;
-        }
-
-        .nav-item.active .nav-label {
-            transform: scale(1.05);
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(0,0,0,0.6);
-            z-index: 1000;
-            animation: fadeIn 0.3s;
-        }
-
-        .modal.active {
-            display: flex;
-            align-items: flex-end;
-            justify-content: center;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
-
-        @keyframes slideUp {
-            from { transform: translateY(100%); }
-            to { transform: translateY(0); }
-        }
-
-        .modal-content {
-            background: var(--bg-color);
-            border-radius: 24px 24px 0 0;
-            padding: 24px;
-            width: 100%;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-        }
-
-        .modal-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-
-        .modal-title {
-            font-size: 24px;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-        }
-
-        .modal-close {
-            background: none;
-            border: none;
-            cursor: pointer;
-            color: var(--text-secondary);
-            width: 44px;
-            height: 44px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 50%;
-            transition: all 0.3s;
-        }
-
-        .modal-close:active {
-            background: var(--border-color);
-            transform: scale(0.95);
-        }
-
-        .modal-close .material-icons {
-            font-size: 28px;
-        }
-
-        .form-group {
-            margin-bottom: 20px;
-        }
-
-        .form-label {
-            font-size: 17px;
-            font-weight: 700;
-            margin-bottom: 8px;
-            display: block;
-            letter-spacing: -0.3px;
-        }
-
-        .form-input {
-            width: 100%;
-            padding: 16px;
-            border: 2px solid var(--border-color);
-            border-radius: 12px;
-            font-size: 17px;
-            background: var(--bg-color);
-            color: var(--text-primary);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            font-weight: 500;
-        }
-
-        .form-input:focus {
-            outline: none;
-            border-color: var(--primary-color);
-            box-shadow: 0 0 0 4px rgba(220, 0, 12, 0.1);
-        }
-
-        .hidden {
-            display: none !important;
+        .nav-label {
+            font-size: 12px;
+            font-weight: 600;
         }
 
         .page {
             display: none;
-            animation: fadeIn 0.3s;
+            animation: fadeIn 0.4s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .page.active {
             display: block;
         }
 
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
         }
 
-        .empty-state .empty-icon {
-            font-size: 64px;
-            margin-bottom: 16px;
-            opacity: 0.3;
-        }
-
-        .empty-state .empty-text {
-            font-size: 16px;
-            color: var(--text-secondary);
-            font-weight: 500;
-        }
-
-        .status-badge {
-            display: inline-block;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 13px;
-            font-weight: 700;
-        }
-
-        .status-normal {
-            background: rgba(76, 175, 80, 0.1);
-            color: var(--success-color);
-        }
-
-        .status-warning {
-            background: rgba(255, 152, 0, 0.1);
-            color: var(--warning-color);
-        }
-
-        .status-danger {
-            background: rgba(244, 67, 54, 0.1);
-            color: var(--danger-color);
-        }
-
-        .chart-container {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid var(--border-color);
-            text-align: center;
-        }
-
-        .chart-placeholder {
-            font-size: 80px;
-            opacity: 0.3;
-            margin: 40px 0;
-        }
-
-        /* 건강팁 페이지 스타일 */
-        .tip-list-item {
-            background: var(--card-bg);
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 16px;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--border-color);
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-            cursor: pointer;
+        .welcome-banner {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border-radius: 24px;
+            padding: 32px 28px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 24px rgba(220, 0, 12, 0.3);
             position: relative;
             overflow: hidden;
         }
 
-        .tip-list-item::after {
+        .welcome-banner::before {
             content: '';
             position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(220, 0, 12, 0.05), transparent);
-            transition: left 0.6s;
+            top: -50%;
+            right: -20%;
+            width: 200px;
+            height: 200px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
         }
 
-        .tip-list-item:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 12px 28px rgba(0,0,0,0.15);
-            border-color: rgba(220, 0, 12, 0.3);
-        }
-
-        .tip-list-item:hover::after {
-            left: 100%;
-        }
-
-        .tip-list-item:active {
-            transform: scale(0.98);
-        }
-
-        .tip-list-item .tip-header {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            margin-bottom: 12px;
-        }
-
-        .tip-list-item .tip-category {
-            font-size: 32px;
-            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
-        .tip-list-item:hover .tip-category {
-            transform: scale(1.2) rotate(10deg);
-        }
-
-        .tip-list-item .tip-meta {
-            flex: 1;
-        }
-
-        .tip-list-item .tip-meta .category-name {
-            font-size: 14px;
-            color: var(--primary-color);
-            font-weight: 700;
-            margin-bottom: 4px;
-        }
-
-        .tip-list-item .tip-meta .tip-headline {
-            font-size: 18px;
+        .welcome-banner h2 {
+            font-size: 26px;
             font-weight: 800;
-            color: var(--text-primary);
-            letter-spacing: -0.3px;
-        }
-
-        .tip-list-item .tip-description {
-            font-size: 15px;
-            color: var(--text-secondary);
-            line-height: 1.6;
-            font-weight: 500;
-        }
-
-        /* 설정 페이지 스타일 */
-        .settings-group {
-            margin-bottom: 32px;
-        }
-
-        .settings-group-title {
-            font-size: 14px;
-            font-weight: 700;
-            color: var(--text-secondary);
-            margin-bottom: 12px;
-            padding-left: 4px;
-            letter-spacing: -0.2px;
-        }
-
-        .settings-item {
-            background: var(--card-bg);
-            border-radius: 12px;
-            padding: 16px 18px;
             margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            cursor: pointer;
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border: 1px solid var(--border-color);
             position: relative;
         }
 
-        .settings-item::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 0;
-            bottom: 0;
-            width: 0;
-            background: linear-gradient(90deg, rgba(220, 0, 12, 0.1), transparent);
-            transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            border-radius: 12px 0 0 12px;
+        .welcome-banner p {
+            font-size: 15px;
+            opacity: 0.95;
+            position: relative;
         }
 
-        .settings-item:hover {
-            transform: translateX(8px);
-            box-shadow: -4px 0 12px rgba(220, 0, 12, 0.1);
-            border-color: rgba(220, 0, 12, 0.2);
+        /* 기록 조회 리스트 */
+        .record-list {
+            margin-top: 20px;
         }
 
-        .settings-item:hover::before {
-            width: 4px;
-        }
-
-        .settings-item:active {
-            transform: scale(0.98) translateX(8px);
-        }
-
-        .settings-item-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-        }
-
-        .settings-item-icon {
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border-radius: 10px;
-            background: rgba(220, 0, 12, 0.1);
+        .record-item {
+            background: var(--card-bg);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 12px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+            position: relative;
         }
 
-        .settings-item:hover .settings-item-icon {
-            transform: scale(1.1) rotate(5deg);
-            background: rgba(220, 0, 12, 0.15);
+        .record-item:hover {
+            transform: translateX(4px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+            border-color: rgba(220, 0, 12, 0.3);
         }
 
-        .settings-item-icon .material-icons {
-            font-size: 20px;
-            color: var(--primary-color);
-            transition: all 0.3s;
+        .record-item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
         }
 
-        .settings-item-text {
-            font-size: 16px;
-            font-weight: 700;
-            letter-spacing: -0.3px;
-        }
-
-        .settings-item-right {
+        .record-type {
             display: flex;
             align-items: center;
             gap: 8px;
+            font-size: 16px;
+            font-weight: 700;
         }
 
-        .settings-item-value {
-            font-size: 14px;
+        .record-type .material-icons {
+            color: var(--primary-color);
+        }
+
+        .record-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .record-action-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .record-action-btn:hover {
+            transform: scale(1.1);
+        }
+
+        .record-action-btn.edit:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+        }
+
+        .record-action-btn.delete:hover {
+            background: var(--danger-color);
+            border-color: var(--danger-color);
+        }
+
+        .record-action-btn:hover .material-icons {
+            color: white;
+        }
+
+        .record-action-btn .material-icons {
+            font-size: 18px;
+            color: var(--text-secondary);
+        }
+
+        .record-data {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+        }
+
+        .record-field {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .record-field-label {
+            font-size: 12px;
             color: var(--text-secondary);
             font-weight: 600;
         }
 
-        .settings-item-arrow .material-icons {
-            font-size: 20px;
+        .record-field-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
             color: var(--text-secondary);
+        }
+
+        .empty-state .material-icons {
+            font-size: 80px;
+            opacity: 0.3;
+            margin-bottom: 16px;
+        }
+
+        .empty-state p {
+            font-size: 16px;
+            font-weight: 600;
+        }
+
+        /* 프로필 표시 */
+        .profile-info {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 28px;
+            margin-bottom: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 20px;
+            color: white;
+            font-size: 42px;
+            font-weight: 800;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .profile-email {
+            font-size: 15px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .profile-phone {
+            font-size: 15px;
+            color: var(--text-secondary);
+        }
+
+        @media (max-width: 480px) {
+            .header-center h1 {
+                font-size: 15px;
+                gap: 5px;
+                letter-spacing: 0.2px;
+            }
+            
+            .header-emblem {
+                width: 26px;
+                height: 26px;
+            }
+            
+            .header-emblem .material-icons {
+                font-size: 16px;
+            }
+            
+            .splash-emblem {
+                width: 100px;
+                height: 100px;
+            }
+            
+            .splash-emblem .material-icons {
+                font-size: 60px;
+            }
+            
+            .splash-logo {
+                margin-top: -40px;
+            }
+            
+            .splash-title h1 {
+                font-size: 28px;
+            }
+            
+            .splash-subtitle {
+                font-size: 17px;
+            }
+            
+            .splash-copyright {
+                font-size: 9px;
+                bottom: 90px;
+            }
+            
+            .splash-hint {
+                bottom: 40px;
+                font-size: 13px;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="header">
-        <div class="header-title">
-            <h1>KT Smart Health Care</h1>
-            <div class="subtitle">스마트 헬스케어</div>
+    <!-- 스플래시 스크린 -->
+    <div class="splash-screen" id="splashScreen" onclick="hideSplash()">
+        <div class="splash-logo">
+            <div class="splash-subtitle">
+                <div>노년의 건강을 위한</div>
+                <div>스마트 헬스 케어</div>
+            </div>
+            <div class="splash-emblem">
+                <span class="material-icons">favorite</span>
+            </div>
+            <div class="splash-title">
+                <h1>SMART HEALTH</h1>
+            </div>
         </div>
-        <button class="theme-toggle" onclick="toggleTheme()">
-            <span class="material-icons">dark_mode</span>
-        </button>
+        <div class="splash-copyright">Copyright© KT Corp. All rights reserved.</div>
+        <div class="splash-hint">화면을 터치하세요</div>
+    </div>
+
+    <!-- 메인 콘텐츠 -->
+    <div class="main-content" id="mainContent">
+    <!-- GNB 오버레이 -->
+    <div class="side-menu-overlay" onclick="toggleMenu()"></div>
+
+    <!-- GNB 사이드 메뉴 -->
+    <div class="side-menu" id="sideMenu">
+        <div class="side-menu-content">
+            <div class="menu-section">
+                <a class="menu-item" onclick="showPage('home-page'); toggleMenu();">
+                    <span class="material-icons">home</span>
+                    <span>홈</span>
+                </a>
+                <a class="menu-item" onclick="showPage('records-page'); toggleMenu();">
+                    <span class="material-icons">assignment</span>
+                    <span>건강 기록</span>
+                </a>
+                <a class="menu-item" onclick="showPage('health-tips-page'); toggleMenu();">
+                    <span class="material-icons">tips_and_updates</span>
+                    <span>건강 팁</span>
+                </a>
+                <a class="menu-item" onclick="showPage('settings-page'); toggleMenu();">
+                    <span class="material-icons">settings</span>
+                    <span>설정</span>
+                </a>
+            </div>
+            <div class="menu-section">
+                <div class="menu-section-title">빠른 입력</div>
+                <a class="menu-item" onclick="openModal('add-blood-pressure'); toggleMenu();">
+                    <span class="material-icons">favorite</span>
+                    <span>혈압 측정</span>
+                </a>
+                <a class="menu-item" onclick="openModal('add-blood-sugar'); toggleMenu();">
+                    <span class="material-icons">water_drop</span>
+                    <span>혈당 측정</span>
+                </a>
+                <a class="menu-item" onclick="openModal('add-medicine'); toggleMenu();">
+                    <span class="material-icons">medication</span>
+                    <span>복용약 추가</span>
+                </a>
+                <a class="menu-item" onclick="openModal('add-exercise'); toggleMenu();">
+                    <span class="material-icons">directions_run</span>
+                    <span>운동 기록</span>
+                </a>
+            </div>
+            <div class="menu-section">
+                <div class="menu-section-title">계정</div>
+                <a class="menu-item" onclick="openModal('edit-profile'); toggleMenu();">
+                    <span class="material-icons">person</span>
+                    <span>프로필 수정</span>
+                </a>
+                <a class="menu-item" onclick="openModal('change-password'); toggleMenu();">
+                    <span class="material-icons">lock</span>
+                    <span>비밀번호 변경</span>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- 헤더 -->
+    <div class="header">
+        <div class="header-left">
+            <button class="menu-toggle" onclick="toggleMenu()">
+                <span class="material-icons">menu</span>
+            </button>
+        </div>
+        <div class="header-center">
+            <h1>
+                <div class="header-emblem">
+                    <span class="material-icons">favorite</span>
+                </div>
+                SMART HEALTH
+            </h1>
+        </div>
+        <div class="header-right">
+            <button class="theme-toggle" onclick="toggleTheme()">
+                <span class="material-icons">dark_mode</span>
+            </button>
+        </div>
     </div>
 
     <!-- 홈 페이지 -->
     <div class="page active" id="home-page">
         <div class="container">
-            <div class="tip-card">
-                <div class="tip-icon">💡</div>
-                <div class="tip-title">오늘의 건강 팁</div>
-                <div class="tip-content">
-                    아침 식사 30분 전 물 한 잔을 마시면 신진대사가 활발해지고 소화에 도움이 됩니다. 하루를 건강하게 시작하세요!
-                </div>
+            <div class="welcome-banner">
+                <h2>안녕하세요, 김건강님! 👋</h2>
+                <p>오늘도 건강한 하루 보내세요 ✨</p>
             </div>
 
+            <div class="section-title">오늘의 건강 현황</div>
             <div class="dashboard-grid">
-                <div class="stat-card" onclick="showPage('blood-pressure-page')">
+                <div class="stat-card" onclick="openModal('add-blood-pressure')">
                     <div class="icon">❤️</div>
                     <div class="label">혈압</div>
                     <div>
@@ -889,7 +1726,7 @@
                         <span class="unit">/80</span>
                     </div>
                 </div>
-                <div class="stat-card" onclick="showPage('blood-sugar-page')">
+                <div class="stat-card" onclick="openModal('add-blood-sugar')">
                     <div class="icon">🩸</div>
                     <div class="label">혈당</div>
                     <div>
@@ -897,7 +1734,7 @@
                         <span class="unit">mg/dL</span>
                     </div>
                 </div>
-                <div class="stat-card" onclick="showPage('medicine-page')">
+                <div class="stat-card" onclick="openModal('add-medicine')">
                     <div class="icon">💊</div>
                     <div class="label">복용약</div>
                     <div>
@@ -905,337 +1742,158 @@
                         <span class="unit">개</span>
                     </div>
                 </div>
-                <div class="stat-card" onclick="showPage('exercise-page')">
-                    <div class="icon">🚶</div>
-                    <div class="label">걸음 수</div>
+                <div class="stat-card" onclick="openModal('add-exercise')">
+                    <div class="icon">🏃‍♂️</div>
+                    <div class="label">운동</div>
                     <div>
-                        <span class="value">5,234</span>
-                        <span class="unit">보</span>
+                        <span class="value">30</span>
+                        <span class="unit">분</span>
                     </div>
                 </div>
             </div>
 
             <div class="section">
                 <div class="section-header">
-                    <h2 class="section-title">최근 기록</h2>
-                    <a class="see-more" onclick="showPage('records-page')">전체보기 →</a>
+                    <div class="section-title">빠른 입력</div>
                 </div>
-                
-                <div class="list-item">
-                    <div class="icon">❤️</div>
-                    <div class="content">
-                        <div class="title">혈압 측정</div>
-                        <div class="subtitle">120/80 mmHg <span class="status-badge status-normal">정상</span></div>
+                <div class="quick-actions">
+                    <div class="action-btn" onclick="openModal('add-blood-pressure')">
+                        <span class="emoji-icon">❤️</span>
+                        <span>혈압 측정</span>
                     </div>
-                    <div class="time">오늘 08:30</div>
-                </div>
-
-                <div class="list-item">
-                    <div class="icon">💊</div>
-                    <div class="content">
-                        <div class="title">약 복용</div>
-                        <div class="subtitle">고혈압약 복용 완료</div>
+                    <div class="action-btn" onclick="openModal('add-blood-sugar')">
+                        <span class="emoji-icon">🩸</span>
+                        <span>혈당 측정</span>
                     </div>
-                    <div class="time">오늘 09:00</div>
-                </div>
-
-                <div class="list-item">
-                    <div class="icon">🩸</div>
-                    <div class="content">
-                        <div class="title">혈당 측정</div>
-                        <div class="subtitle">95 mg/dL <span class="status-badge status-normal">정상</span></div>
+                    <div class="action-btn" onclick="openModal('add-medicine')">
+                        <span class="emoji-icon">💊</span>
+                        <span>복용약 추가</span>
                     </div>
-                    <div class="time">어제 07:30</div>
+                    <div class="action-btn" onclick="openModal('add-exercise')">
+                        <span class="emoji-icon">🏃‍♂️</span>
+                        <span>운동 기록</span>
+                    </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- 혈압 페이지 -->
-    <div class="page" id="blood-pressure-page">
-        <div class="container">
             <div class="section">
-                <h2 class="section-title">혈압 기록</h2>
-                
-                <div class="chart-container">
-                    <h3 style="margin-bottom: 16px; font-size: 19px; font-weight: 800;">혈압 추이</h3>
-                    <div class="chart-placeholder">📊</div>
-                    <p style="color: var(--text-secondary); font-size: 14px; font-weight: 500;">최근 7일간의 혈압 변화를 보여줍니다</p>
+                <div class="section-header">
+                    <div class="section-title">최근 건강 기록</div>
+                    <a class="see-more" onclick="showPage('records-page')">
+                        전체보기
+                        <span class="material-icons">arrow_forward</span>
+                    </a>
                 </div>
-
-                <button class="btn" onclick="openModal('add-blood-pressure')">
-                    혈압 기록하기
-                </button>
-
-                <div style="margin-top: 24px;">
-                    <h3 style="font-size: 19px; margin-bottom: 16px; font-weight: 800;">최근 측정 기록</h3>
-                    
-                    <div class="list-item">
-                        <div class="icon">❤️</div>
-                        <div class="content">
-                            <div class="title">120/80 mmHg</div>
-                            <div class="subtitle"><span class="status-badge status-normal">정상 범위</span></div>
+                <div class="health-cards-grid">
+                    <div class="health-card">
+                        <div class="health-card-header">
+                            <div class="health-card-title">
+                                <span class="emoji-icon">❤️</span>
+                                <h3>혈압</h3>
+                            </div>
+                            <div class="health-card-time">오전 9:00</div>
                         </div>
-                        <div class="time">오늘 08:30</div>
+                        <div class="health-card-content">
+                            <div class="health-value">
+                                <div class="health-value-label">수축기</div>
+                                <div class="health-value-number normal">120</div>
+                            </div>
+                            <div class="health-value">
+                                <div class="health-value-label">이완기</div>
+                                <div class="health-value-number normal">80</div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="list-item">
-                        <div class="icon">❤️</div>
-                        <div class="content">
-                            <div class="title">125/82 mmHg</div>
-                            <div class="subtitle"><span class="status-badge status-normal">정상 범위</span></div>
+                    <div class="health-card">
+                        <div class="health-card-header">
+                            <div class="health-card-title">
+                                <span class="emoji-icon">🩸</span>
+                                <h3>혈당</h3>
+                            </div>
+                            <div class="health-card-time">오전 8:30</div>
                         </div>
-                        <div class="time">어제 08:15</div>
-                    </div>
-
-                    <div class="list-item">
-                        <div class="icon">❤️</div>
-                        <div class="content">
-                            <div class="title">135/85 mmHg</div>
-                            <div class="subtitle"><span class="status-badge status-warning">주의 필요</span></div>
+                        <div class="health-card-content">
+                            <div class="health-value">
+                                <div class="health-value-label">공복</div>
+                                <div class="health-value-number normal">95 mg/dL</div>
+                            </div>
                         </div>
-                        <div class="time">2일 전</div>
                     </div>
                 </div>
             </div>
-        </div>
-    </div>
 
-    <!-- 혈당 페이지 -->
-    <div class="page" id="blood-sugar-page">
-        <div class="container">
             <div class="section">
-                <h2 class="section-title">혈당 기록</h2>
-                
-                <div class="chart-container">
-                    <h3 style="margin-bottom: 16px; font-size: 19px; font-weight: 800;">혈당 추이</h3>
-                    <div class="chart-placeholder">📈</div>
-                    <p style="color: var(--text-secondary); font-size: 14px; font-weight: 500;">최근 7일간의 혈당 변화를 보여줍니다</p>
+                <div class="section-header">
+                    <div class="section-title">오늘의 복용약</div>
                 </div>
-
-                <button class="btn" onclick="openModal('add-blood-sugar')">
-                    혈당 기록하기
-                </button>
-
-                <div style="margin-top: 24px;">
-                    <h3 style="font-size: 19px; margin-bottom: 16px; font-weight: 800;">최근 측정 기록</h3>
-                    
-                    <div class="list-item">
-                        <div class="icon">🩸</div>
-                        <div class="content">
-                            <div class="title">95 mg/dL (공복)</div>
-                            <div class="subtitle"><span class="status-badge status-normal">정상 범위</span></div>
-                        </div>
-                        <div class="time">오늘 07:30</div>
+                <div class="medicine-item">
+                    <div class="medicine-header">
+                        <div class="medicine-name">💊 혈압약</div>
+                        <div class="medicine-time">09:00</div>
                     </div>
-
-                    <div class="list-item">
-                        <div class="icon">🩸</div>
-                        <div class="content">
-                            <div class="title">110 mg/dL (식후 2시간)</div>
-                            <div class="subtitle"><span class="status-badge status-normal">정상 범위</span></div>
-                        </div>
-                        <div class="time">어제 20:00</div>
+                    <div class="medicine-info">매일 아침 식후 복용</div>
+                </div>
+                <div class="medicine-item">
+                    <div class="medicine-header">
+                        <div class="medicine-name">💊 당뇨약</div>
+                        <div class="medicine-time">12:00</div>
                     </div>
-
-                    <div class="list-item">
-                        <div class="icon">🩸</div>
-                        <div class="content">
-                            <div class="title">98 mg/dL (공복)</div>
-                            <div class="subtitle"><span class="status-badge status-normal">정상 범위</span></div>
-                        </div>
-                        <div class="time">어제 07:30</div>
+                    <div class="medicine-info">매일 점심 식후 복용</div>
+                </div>
+                <div class="medicine-item">
+                    <div class="medicine-header">
+                        <div class="medicine-name">💊 소화제</div>
+                        <div class="medicine-time">20:00</div>
                     </div>
+                    <div class="medicine-info">매일 저녁 식후 복용</div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- 복용약 페이지 -->
-    <div class="page" id="medicine-page">
-        <div class="container">
-            <div class="section">
-                <h2 class="section-title">복용약 관리</h2>
-
-                <button class="btn" onclick="openModal('add-medicine')">
-                    복용약 추가하기
-                </button>
-
-                <div style="margin-top: 24px;">
-                    <h3 style="font-size: 19px; margin-bottom: 16px; font-weight: 800;">현재 복용 중인 약</h3>
-                    
-                    <div class="list-item">
-                        <div class="icon">💊</div>
-                        <div class="content">
-                            <div class="title">고혈압약</div>
-                            <div class="subtitle">매일 아침 8시 • 식후 복용</div>
-                        </div>
-                        <button class="btn" style="width: auto; padding: 8px 16px; font-size: 14px; margin: 0;" onclick="alert('복용 완료!')">
-                            복용완료
-                        </button>
-                    </div>
-
-                    <div class="list-item">
-                        <div class="icon">💊</div>
-                        <div class="content">
-                            <div class="title">당뇨약</div>
-                            <div class="subtitle">매일 저녁 7시 • 식후 복용</div>
-                        </div>
-                        <button class="btn" style="width: auto; padding: 8px 16px; font-size: 14px; margin: 0;" onclick="alert('복용 완료!')">
-                            복용완료
-                        </button>
-                    </div>
-
-                    <div class="list-item">
-                        <div class="icon">💊</div>
-                        <div class="content">
-                            <div class="title">영양제</div>
-                            <div class="subtitle">매일 아침 8시 • 식후 복용</div>
-                        </div>
-                        <button class="btn" style="width: auto; padding: 8px 16px; font-size: 14px; margin: 0;" onclick="alert('복용 완료!')">
-                            복용완료
-                        </button>
-                    </div>
-                </div>
-
-                <div style="margin-top: 32px;">
-                    <h3 style="font-size: 19px; margin-bottom: 16px; font-weight: 800;">복용 기록</h3>
-                    
-                    <div class="list-item">
-                        <div class="icon">✅</div>
-                        <div class="content">
-                            <div class="title">고혈압약 복용 완료</div>
-                            <div class="subtitle">정시 복용</div>
-                        </div>
-                        <div class="time">오늘 08:30</div>
-                    </div>
-
-                    <div class="list-item">
-                        <div class="icon">✅</div>
-                        <div class="content">
-                            <div class="title">당뇨약 복용 완료</div>
-                            <div class="subtitle">정시 복용</div>
-                        </div>
-                        <div class="time">어제 19:05</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 운동 페이지 -->
-    <div class="page" id="exercise-page">
-        <div class="container">
-            <div class="section">
-                <h2 class="section-title">운동 기록</h2>
-                
-                <div class="chart-container">
-                    <h3 style="margin-bottom: 16px; font-size: 19px; font-weight: 800;">일일 걸음 수</h3>
-                    <div style="font-size: 52px; font-weight: 900; color: var(--primary-color); margin: 20px 0; letter-spacing: -2px;">
-                        5,234
-                    </div>
-                    <p style="color: var(--text-secondary); font-size: 14px; font-weight: 600;">목표: 6,000보</p>
-                    <div style="background: var(--border-color); height: 8px; border-radius: 4px; margin-top: 16px; overflow: hidden;">
-                        <div style="background: var(--primary-color); height: 100%; width: 87%; transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);"></div>
-                    </div>
-                </div>
-
-                <button class="btn" onclick="openModal('add-exercise')">
-                    운동 기록하기
-                </button>
-
-                <div style="margin-top: 24px;">
-                    <h3 style="font-size: 19px; margin-bottom: 16px; font-weight: 800;">최근 운동 기록</h3>
-                    
-                    <div class="list-item">
-                        <div class="icon">🚶</div>
-                        <div class="content">
-                            <div class="title">산책</div>
-                            <div class="subtitle">30분 • 2.5km</div>
-                        </div>
-                        <div class="time">오늘 18:00</div>
-                    </div>
-
-                    <div class="list-item">
-                        <div class="icon">🏃</div>
-                        <div class="content">
-                            <div class="title">빠르게 걷기</div>
-                            <div class="subtitle">20분 • 1.8km</div>
-                        </div>
-                        <div class="time">어제 17:30</div>
-                    </div>
-
-                    <div class="list-item">
-                        <div class="icon">🧘</div>
-                        <div class="content">
-                            <div class="title">스트레칭</div>
-                            <div class="subtitle">15분</div>
-                        </div>
-                        <div class="time">2일 전</div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- 전체 기록 페이지 -->
+    <!-- 기록 페이지 -->
     <div class="page" id="records-page">
         <div class="container">
+            <div class="section-title">건강 기록</div>
+            
             <div class="section">
-                <h2 class="section-title">전체 기록</h2>
-
-                <div class="list-item">
-                    <div class="icon">❤️</div>
-                    <div class="content">
-                        <div class="title">혈압 측정</div>
-                        <div class="subtitle">120/80 mmHg <span class="status-badge status-normal">정상</span></div>
-                    </div>
-                    <div class="time">오늘 08:30</div>
+                <div class="section-header">
+                    <h3 style="font-size: 18px; font-weight: 700;">혈압 기록</h3>
+                    <button class="btn" style="width: auto; padding: 10px 20px; font-size: 14px;" onclick="openModal('add-blood-pressure')">+ 추가</button>
                 </div>
-
-                <div class="list-item">
-                    <div class="icon">💊</div>
-                    <div class="content">
-                        <div class="title">약 복용</div>
-                        <div class="subtitle">고혈압약 복용 완료</div>
-                    </div>
-                    <div class="time">오늘 09:00</div>
+                <div class="record-list" id="bloodPressureList">
+                    <!-- 혈압 기록이 여기 표시됨 -->
                 </div>
+            </div>
 
-                <div class="list-item">
-                    <div class="icon">🚶</div>
-                    <div class="content">
-                        <div class="title">산책</div>
-                        <div class="subtitle">30분 • 2.5km</div>
-                    </div>
-                    <div class="time">오늘 18:00</div>
+            <div class="section">
+                <div class="section-header">
+                    <h3 style="font-size: 18px; font-weight: 700;">혈당 기록</h3>
+                    <button class="btn" style="width: auto; padding: 10px 20px; font-size: 14px;" onclick="openModal('add-blood-sugar')">+ 추가</button>
                 </div>
-
-                <div class="list-item">
-                    <div class="icon">🩸</div>
-                    <div class="content">
-                        <div class="title">혈당 측정</div>
-                        <div class="subtitle">95 mg/dL <span class="status-badge status-normal">정상</span></div>
-                    </div>
-                    <div class="time">어제 07:30</div>
+                <div class="record-list" id="bloodSugarList">
+                    <!-- 혈당 기록이 여기 표시됨 -->
                 </div>
+            </div>
 
-                <div class="list-item">
-                    <div class="icon">💊</div>
-                    <div class="content">
-                        <div class="title">약 복용</div>
-                        <div class="subtitle">당뇨약 복용 완료</div>
-                    </div>
-                    <div class="time">어제 19:05</div>
+            <div class="section">
+                <div class="section-header">
+                    <h3 style="font-size: 18px; font-weight: 700;">운동 기록</h3>
+                    <button class="btn" style="width: auto; padding: 10px 20px; font-size: 14px;" onclick="openModal('add-exercise')">+ 추가</button>
                 </div>
+                <div class="record-list" id="exerciseList">
+                    <!-- 운동 기록이 여기 표시됨 -->
+                </div>
+            </div>
 
-                <div class="list-item">
-                    <div class="icon">❤️</div>
-                    <div class="content">
-                        <div class="title">혈압 측정</div>
-                        <div class="subtitle">125/82 mmHg <span class="status-badge status-normal">정상</span></div>
-                    </div>
-                    <div class="time">어제 08:15</div>
+            <div class="section">
+                <div class="section-header">
+                    <h3 style="font-size: 18px; font-weight: 700;">복용약 관리</h3>
+                    <button class="btn" style="width: auto; padding: 10px 20px; font-size: 14px;" onclick="openModal('add-medicine')">+ 추가</button>
+                </div>
+                <div class="record-list" id="medicineList">
+                    <!-- 복용약 목록이 여기 표시됨 -->
                 </div>
             </div>
         </div>
@@ -1244,85 +1902,65 @@
     <!-- 건강팁 페이지 -->
     <div class="page" id="health-tips-page">
         <div class="container">
-            <div class="section">
-                <h2 class="section-title">건강 팁</h2>
-
-                <div class="tip-list-item">
-                    <div class="tip-header">
-                        <div class="tip-category">💧</div>
-                        <div class="tip-meta">
-                            <div class="category-name">수분 섭취</div>
-                            <div class="tip-headline">하루 물 8잔의 중요성</div>
-                        </div>
-                    </div>
-                    <div class="tip-description">
-                        하루에 1.5~2리터의 물을 마시면 신진대사를 활발하게 하고 노폐물 배출을 돕습니다. 특히 아침 공복에 마시는 물 한 잔은 위장 운동을 촉진시킵니다.
-                    </div>
+            <div class="section-title">건강 팁</div>
+            
+            <div class="tip-card">
+                <div class="tip-card-header">
+                    <div class="tip-icon">❤️</div>
+                    <div class="tip-title">혈압 관리법</div>
                 </div>
-
-                <div class="tip-list-item">
-                    <div class="tip-header">
-                        <div class="tip-category">🥗</div>
-                        <div class="tip-meta">
-                            <div class="category-name">식습관</div>
-                            <div class="tip-headline">균형잡힌 식단 관리</div>
-                        </div>
-                    </div>
-                    <div class="tip-description">
-                        탄수화물, 단백질, 지방을 균형있게 섭취하세요. 특히 채소와 과일을 충분히 먹으면 비타민과 미네랄을 공급받을 수 있습니다.
-                    </div>
+                <div class="tip-content">
+                    규칙적인 운동과 저염식이 혈압 관리에 도움이 됩니다. 하루 30분 이상 걷기 운동을 추천합니다.
                 </div>
+            </div>
 
-                <div class="tip-list-item">
-                    <div class="tip-header">
-                        <div class="tip-category">🚶</div>
-                        <div class="tip-meta">
-                            <div class="category-name">운동</div>
-                            <div class="tip-headline">규칙적인 걷기 운동</div>
-                        </div>
-                    </div>
-                    <div class="tip-description">
-                        하루 30분 이상 걷기는 심혈관 건강을 개선하고 스트레스를 해소합니다. 빠르게 걷기는 더 많은 칼로리를 소모하게 합니다.
-                    </div>
+            <div class="tip-card">
+                <div class="tip-card-header">
+                    <div class="tip-icon">🩸</div>
+                    <div class="tip-title">혈당 관리법</div>
                 </div>
-
-                <div class="tip-list-item">
-                    <div class="tip-header">
-                        <div class="tip-category">😴</div>
-                        <div class="tip-meta">
-                            <div class="category-name">수면</div>
-                            <div class="tip-headline">충분한 수면의 중요성</div>
-                        </div>
-                    </div>
-                    <div class="tip-description">
-                        하루 7-8시간의 수면은 면역력 강화와 피로 회복에 필수적입니다. 규칙적인 수면 패턴을 유지하는 것이 중요합니다.
-                    </div>
+                <div class="tip-content">
+                    식사 시간을 규칙적으로 유지하고, 단순당 섭취를 줄이는 것이 중요합니다. 채소를 충분히 섭취하세요.
                 </div>
+            </div>
 
-                <div class="tip-list-item">
-                    <div class="tip-header">
-                        <div class="tip-category">🧘</div>
-                        <div class="tip-meta">
-                            <div class="category-name">스트레칭</div>
-                            <div class="tip-headline">일상 속 간단한 스트레칭</div>
-                        </div>
-                    </div>
-                    <div class="tip-description">
-                        아침, 점심, 저녁 각 10분씩 스트레칭을 하면 근육의 긴장을 풀고 혈액순환을 개선할 수 있습니다. 특히 목과 어깨 스트레칭이 중요합니다.
-                    </div>
+            <div class="tip-card">
+                <div class="tip-card-header">
+                    <div class="tip-icon">🥗</div>
+                    <div class="tip-title">건강한 식습관</div>
                 </div>
+                <div class="tip-content">
+                    하루 세끼를 규칙적으로 먹고, 과식을 피하며, 다양한 색깔의 채소와 과일을 섭취하세요.
+                </div>
+            </div>
 
-                <div class="tip-list-item">
-                    <div class="tip-header">
-                        <div class="tip-category">🌞</div>
-                        <div class="tip-meta">
-                            <div class="category-name">비타민 D</div>
-                            <div class="tip-headline">햇빛 쬐기의 효과</div>
-                        </div>
-                    </div>
-                    <div class="tip-description">
-                        하루 15-20분 정도 햇빛을 쬐면 비타민 D가 생성되어 뼈 건강과 면역력 향상에 도움이 됩니다. 오전 10시~오후 3시 사이가 가장 좋습니다.
-                    </div>
+            <div class="tip-card">
+                <div class="tip-card-header">
+                    <div class="tip-icon">😴</div>
+                    <div class="tip-title">수면 관리</div>
+                </div>
+                <div class="tip-content">
+                    하루 7-8시간의 충분한 수면이 건강에 중요합니다. 규칙적인 수면 시간을 유지하세요.
+                </div>
+            </div>
+
+            <div class="tip-card">
+                <div class="tip-card-header">
+                    <div class="tip-icon">🧘‍♂️</div>
+                    <div class="tip-title">스트레스 관리</div>
+                </div>
+                <div class="tip-content">
+                    명상, 요가, 산책 등으로 스트레스를 관리하세요. 취미 활동도 스트레스 해소에 도움이 됩니다.
+                </div>
+            </div>
+
+            <div class="tip-card">
+                <div class="tip-card-header">
+                    <div class="tip-icon">💧</div>
+                    <div class="tip-title">수분 섭취</div>
+                </div>
+                <div class="tip-content">
+                    하루 8잔 이상의 물을 마시는 것이 좋습니다. 갈증을 느끼기 전에 규칙적으로 물을 마시세요.
                 </div>
             </div>
         </div>
@@ -1331,158 +1969,110 @@
     <!-- 설정 페이지 -->
     <div class="page" id="settings-page">
         <div class="container">
-            <div class="section">
-                <h2 class="section-title">설정</h2>
+            <div class="section-title">설정</div>
 
+            <!-- 프로필 정보 표시 -->
+            <div class="profile-info">
+                <div class="profile-avatar">김</div>
+                <div class="profile-name" id="displayName">김건강</div>
+                <div class="profile-email" id="displayEmail">kim.health@kt.com</div>
+                <div class="profile-phone" id="displayPhone">010-1234-5678</div>
+            </div>
+
+            <div class="settings-section">
                 <div class="settings-group">
-                    <div class="settings-group-title">개인 정보</div>
-                    <div class="settings-item" onclick="alert('프로필 수정 기능 개발 예정')">
+                    <div class="settings-item" onclick="openModal('edit-profile')">
                         <div class="settings-item-left">
-                            <div class="settings-item-icon">
-                                <span class="material-icons">person</span>
+                            <span class="material-icons">person</span>
+                            <div class="settings-item-content">
+                                <div class="settings-item-title">프로필 수정</div>
+                                <div class="settings-item-desc">이름, 이메일, 전화번호 변경</div>
                             </div>
-                            <div class="settings-item-text">프로필 수정</div>
                         </div>
                         <div class="settings-item-right">
-                            <div class="settings-item-arrow">
-                                <span class="material-icons">chevron_right</span>
-                            </div>
+                            <span class="material-icons">chevron_right</span>
                         </div>
                     </div>
-                    <div class="settings-item" onclick="alert('비밀번호 변경 기능 개발 예정')">
+                    <div class="settings-item" onclick="openModal('change-password')">
                         <div class="settings-item-left">
-                            <div class="settings-item-icon">
-                                <span class="material-icons">lock</span>
+                            <span class="material-icons">lock</span>
+                            <div class="settings-item-content">
+                                <div class="settings-item-title">비밀번호 변경</div>
+                                <div class="settings-item-desc">계정 비밀번호 변경</div>
                             </div>
-                            <div class="settings-item-text">비밀번호 변경</div>
                         </div>
                         <div class="settings-item-right">
-                            <div class="settings-item-arrow">
-                                <span class="material-icons">chevron_right</span>
-                            </div>
+                            <span class="material-icons">chevron_right</span>
                         </div>
                     </div>
                 </div>
+            </div>
 
+            <div class="settings-section">
                 <div class="settings-group">
-                    <div class="settings-group-title">알림</div>
-                    <div class="settings-item" onclick="alert('약 복용 알림 설정 기능 개발 예정')">
+                    <div class="settings-item">
                         <div class="settings-item-left">
-                            <div class="settings-item-icon">
-                                <span class="material-icons">notifications</span>
+                            <span class="material-icons">notifications</span>
+                            <div class="settings-item-content">
+                                <div class="settings-item-title">알림 설정</div>
+                                <div class="settings-item-desc">복용약, 운동 알림</div>
                             </div>
-                            <div class="settings-item-text">약 복용 알림</div>
                         </div>
                         <div class="settings-item-right">
-                            <div class="settings-item-value">켜짐</div>
-                            <div class="settings-item-arrow">
-                                <span class="material-icons">chevron_right</span>
-                            </div>
+                            <span class="material-icons">chevron_right</span>
                         </div>
                     </div>
-                    <div class="settings-item" onclick="alert('건강 측정 알림 설정 기능 개발 예정')">
+                    <div class="settings-item">
                         <div class="settings-item-left">
-                            <div class="settings-item-icon">
-                                <span class="material-icons">alarm</span>
+                            <span class="material-icons">tv</span>
+                            <div class="settings-item-content">
+                                <div class="settings-item-title">KT TV 연동</div>
+                                <div class="settings-item-desc">건강 정보를 TV로 보기</div>
                             </div>
-                            <div class="settings-item-text">건강 측정 알림</div>
                         </div>
                         <div class="settings-item-right">
-                            <div class="settings-item-value">켜짐</div>
-                            <div class="settings-item-arrow">
-                                <span class="material-icons">chevron_right</span>
+                            <span class="material-icons">chevron_right</span>
+                        </div>
+                    </div>
+                    <div class="settings-item">
+                        <div class="settings-item-left">
+                            <span class="material-icons">share</span>
+                            <div class="settings-item-content">
+                                <div class="settings-item-title">데이터 공유</div>
+                                <div class="settings-item-desc">가족과 건강 정보 공유</div>
                             </div>
+                        </div>
+                        <div class="settings-item-right">
+                            <span class="material-icons">chevron_right</span>
                         </div>
                     </div>
                 </div>
+            </div>
 
+            <div class="settings-section">
                 <div class="settings-group">
-                    <div class="settings-group-title">데이터</div>
-                    <div class="settings-item" onclick="alert('데이터 내보내기 기능 개발 예정')">
+                    <div class="settings-item">
                         <div class="settings-item-left">
-                            <div class="settings-item-icon">
-                                <span class="material-icons">file_download</span>
+                            <span class="material-icons">help</span>
+                            <div class="settings-item-content">
+                                <div class="settings-item-title">도움말</div>
+                                <div class="settings-item-desc">사용 가이드</div>
                             </div>
-                            <div class="settings-item-text">데이터 내보내기</div>
                         </div>
                         <div class="settings-item-right">
-                            <div class="settings-item-arrow">
-                                <span class="material-icons">chevron_right</span>
-                            </div>
+                            <span class="material-icons">chevron_right</span>
                         </div>
                     </div>
-                    <div class="settings-item" onclick="if(confirm('모든 데이터를 삭제하시겠습니까?')) alert('데이터가 삭제되었습니다.')">
+                    <div class="settings-item">
                         <div class="settings-item-left">
-                            <div class="settings-item-icon">
-                                <span class="material-icons">delete</span>
+                            <span class="material-icons">info</span>
+                            <div class="settings-item-content">
+                                <div class="settings-item-title">앱 정보</div>
+                                <div class="settings-item-desc">버전 1.0.0</div>
                             </div>
-                            <div class="settings-item-text">데이터 초기화</div>
                         </div>
                         <div class="settings-item-right">
-                            <div class="settings-item-arrow">
-                                <span class="material-icons">chevron_right</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="settings-group">
-                    <div class="settings-group-title">정보</div>
-                    <div class="settings-item" onclick="alert('KT Smart Health Care v1.0.0')">
-                        <div class="settings-item-left">
-                            <div class="settings-item-icon">
-                                <span class="material-icons">info</span>
-                            </div>
-                            <div class="settings-item-text">앱 정보</div>
-                        </div>
-                        <div class="settings-item-right">
-                            <div class="settings-item-value">v1.0.0</div>
-                            <div class="settings-item-arrow">
-                                <span class="material-icons">chevron_right</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="settings-item" onclick="alert('서비스 약관 페이지 개발 예정')">
-                        <div class="settings-item-left">
-                            <div class="settings-item-icon">
-                                <span class="material-icons">description</span>
-                            </div>
-                            <div class="settings-item-text">서비스 약관</div>
-                        </div>
-                        <div class="settings-item-right">
-                            <div class="settings-item-arrow">
-                                <span class="material-icons">chevron_right</span>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="settings-item" onclick="alert('개인정보 처리방침 페이지 개발 예정')">
-                        <div class="settings-item-left">
-                            <div class="settings-item-icon">
-                                <span class="material-icons">privacy_tip</span>
-                            </div>
-                            <div class="settings-item-text">개인정보 처리방침</div>
-                        </div>
-                        <div class="settings-item-right">
-                            <div class="settings-item-arrow">
-                                <span class="material-icons">chevron_right</span>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="settings-group">
-                    <div class="settings-group-title">계정</div>
-                    <div class="settings-item" onclick="if(confirm('로그아웃 하시겠습니까?')) alert('로그아웃되었습니다.')">
-                        <div class="settings-item-left">
-                            <div class="settings-item-icon">
-                                <span class="material-icons">logout</span>
-                            </div>
-                            <div class="settings-item-text">로그아웃</div>
-                        </div>
-                        <div class="settings-item-right">
-                            <div class="settings-item-arrow">
-                                <span class="material-icons">chevron_right</span>
-                            </div>
+                            <span class="material-icons">chevron_right</span>
                         </div>
                     </div>
                 </div>
@@ -1490,7 +2080,7 @@
         </div>
     </div>
 
-    <!-- 모달들 -->
+    <!-- 혈압 측정 모달 -->
     <div class="modal" id="add-blood-pressure">
         <div class="modal-content">
             <div class="modal-header">
@@ -1501,26 +2091,31 @@
             </div>
             <form onsubmit="event.preventDefault(); saveBloodPressure();">
                 <div class="form-group">
-                    <label class="form-label">수축기 혈압 (mmHg)</label>
-                    <input type="number" class="form-input" placeholder="120" min="70" max="200" required>
+                    <label class="form-label">수축기 (mmHg)</label>
+                    <input type="number" class="form-input" id="systolic" placeholder="120" min="70" max="200" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">이완기 혈압 (mmHg)</label>
-                    <input type="number" class="form-input" placeholder="80" min="40" max="130" required>
+                    <label class="form-label">이완기 (mmHg)</label>
+                    <input type="number" class="form-input" id="diastolic" placeholder="80" min="40" max="130" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">맥박 (회/분)</label>
+                    <input type="number" class="form-input" id="pulse" placeholder="72" min="40" max="150">
                 </div>
                 <div class="form-group">
                     <label class="form-label">측정 시간</label>
-                    <input type="datetime-local" class="form-input" required>
+                    <input type="datetime-local" class="form-input" id="bp-time" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">메모 (선택)</label>
-                    <input type="text" class="form-input" placeholder="예: 운동 후 측정">
+                    <input type="text" class="form-input" id="bp-memo" placeholder="예: 운동 후 측정">
                 </div>
                 <button type="submit" class="btn">저장하기</button>
             </form>
         </div>
     </div>
 
+    <!-- 혈당 측정 모달 -->
     <div class="modal" id="add-blood-sugar">
         <div class="modal-content">
             <div class="modal-header">
@@ -1532,11 +2127,11 @@
             <form onsubmit="event.preventDefault(); saveBloodSugar();">
                 <div class="form-group">
                     <label class="form-label">혈당 수치 (mg/dL)</label>
-                    <input type="number" class="form-input" placeholder="95" min="50" max="400" required>
+                    <input type="number" class="form-input" id="sugar-value" placeholder="95" min="50" max="400" required>
                 </div>
                 <div class="form-group">
-                    <label class="form-label">측정 시기</label>
-                    <select class="form-input" required>
+                    <label class="form-label">측정 시점</label>
+                    <select class="form-input" id="sugar-type" required>
                         <option value="">선택하세요</option>
                         <option value="fasting">공복</option>
                         <option value="before-meal">식전</option>
@@ -1546,17 +2141,18 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">측정 시간</label>
-                    <input type="datetime-local" class="form-input" required>
+                    <input type="datetime-local" class="form-input" id="sugar-time" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">메모 (선택)</label>
-                    <input type="text" class="form-input" placeholder="예: 식사 내용">
+                    <input type="text" class="form-input" id="sugar-memo" placeholder="예: 식사 내용">
                 </div>
                 <button type="submit" class="btn">저장하기</button>
             </form>
         </div>
     </div>
 
+    <!-- 복용약 추가 모달 -->
     <div class="modal" id="add-medicine">
         <div class="modal-content">
             <div class="modal-header">
@@ -1568,15 +2164,15 @@
             <form onsubmit="event.preventDefault(); saveMedicine();">
                 <div class="form-group">
                     <label class="form-label">약 이름</label>
-                    <input type="text" class="form-input" placeholder="예: 혈압약" required>
+                    <input type="text" class="form-input" id="medicine-name" placeholder="예: 혈압약" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">복용 시간</label>
-                    <input type="time" class="form-input" required>
+                    <input type="time" class="form-input" id="medicine-time" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">복용 주기</label>
-                    <select class="form-input" required>
+                    <select class="form-input" id="medicine-frequency" required>
                         <option value="">선택하세요</option>
                         <option value="daily">매일</option>
                         <option value="weekly">주 단위</option>
@@ -1585,7 +2181,7 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">복용 방법</label>
-                    <select class="form-input" required>
+                    <select class="form-input" id="medicine-method" required>
                         <option value="">선택하세요</option>
                         <option value="before-meal">식전</option>
                         <option value="after-meal">식후</option>
@@ -1594,13 +2190,14 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">메모 (선택)</label>
-                    <input type="text" class="form-input" placeholder="예: 물과 함께 복용">
+                    <input type="text" class="form-input" id="medicine-memo" placeholder="예: 물과 함께 복용">
                 </div>
                 <button type="submit" class="btn">저장하기</button>
             </form>
         </div>
     </div>
 
+    <!-- 운동 기록 모달 -->
     <div class="modal" id="add-exercise">
         <div class="modal-content">
             <div class="modal-header">
@@ -1612,7 +2209,7 @@
             <form onsubmit="event.preventDefault(); saveExercise();">
                 <div class="form-group">
                     <label class="form-label">운동 종류</label>
-                    <select class="form-input" required>
+                    <select class="form-input" id="exercise-type" required>
                         <option value="">선택하세요</option>
                         <option value="walking">걷기/산책</option>
                         <option value="running">달리기</option>
@@ -1625,21 +2222,102 @@
                 </div>
                 <div class="form-group">
                     <label class="form-label">운동 시간 (분)</label>
-                    <input type="number" class="form-input" placeholder="30" min="1" max="300" required>
+                    <input type="number" class="form-input" id="exercise-duration" placeholder="30" min="1" max="300" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">거리 (km, 선택)</label>
-                    <input type="number" class="form-input" placeholder="2.5" step="0.1" min="0">
+                    <input type="number" class="form-input" id="exercise-distance" placeholder="2.5" step="0.1" min="0">
                 </div>
                 <div class="form-group">
                     <label class="form-label">운동 시간</label>
-                    <input type="datetime-local" class="form-input" required>
+                    <input type="datetime-local" class="form-input" id="exercise-time" required>
                 </div>
                 <div class="form-group">
                     <label class="form-label">메모 (선택)</label>
-                    <input type="text" class="form-input" placeholder="예: 공원에서 산책">
+                    <input type="text" class="form-input" id="exercise-memo" placeholder="예: 공원에서 산책">
                 </div>
                 <button type="submit" class="btn">저장하기</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 프로필 수정 모달 -->
+    <div class="modal" id="edit-profile">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">프로필 수정</h3>
+                <button class="modal-close" onclick="closeModal('edit-profile')">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <form onsubmit="event.preventDefault(); saveProfile();">
+                <div class="form-group">
+                    <label class="form-label">이름</label>
+                    <input type="text" class="form-input" id="profile-name" value="김건강" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">이메일</label>
+                    <input type="email" class="form-input" id="profile-email" value="kim.health@kt.com" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">전화번호</label>
+                    <input type="tel" class="form-input" id="profile-phone" value="010-1234-5678" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">생년월일</label>
+                    <input type="date" class="form-input" id="profile-birth" value="1970-01-01" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">성별</label>
+                    <select class="form-input" id="profile-gender" required>
+                        <option value="male">남성</option>
+                        <option value="female">여성</option>
+                        <option value="other">기타</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">저장하기</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 비밀번호 변경 모달 -->
+    <div class="modal" id="change-password">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">비밀번호 변경</h3>
+                <button class="modal-close" onclick="closeModal('change-password')">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <form onsubmit="event.preventDefault(); changePassword();">
+                <div class="form-group">
+                    <label class="form-label">현재 비밀번호</label>
+                    <input type="password" class="form-input" id="current-password" placeholder="현재 비밀번호를 입력하세요" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">새 비밀번호</label>
+                    <input type="password" class="form-input" id="new-password" placeholder="8자 이상 입력하세요" minlength="8" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">새 비밀번호 확인</label>
+                    <input type="password" class="form-input" id="confirm-password" placeholder="새 비밀번호를 다시 입력하세요" minlength="8" required>
+                </div>
+                <button type="submit" class="btn">변경하기</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- 기록 수정 모달 -->
+    <div class="modal" id="edit-record">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="edit-record-title">기록 수정</h3>
+                <button class="modal-close" onclick="closeModal('edit-record')">
+                    <span class="material-icons">close</span>
+                </button>
+            </div>
+            <form id="edit-record-form">
+                <!-- 동적으로 생성됨 -->
             </form>
         </div>
     </div>
@@ -1672,7 +2350,53 @@
         </a>
     </div>
 
+    </div>
+    <!-- 메인 콘텐츠 끝 -->
+
     <script>
+        // 스플래시 스크린 제어
+        function hideSplash() {
+            const splash = document.getElementById('splashScreen');
+            const mainContent = document.getElementById('mainContent');
+            
+            splash.classList.add('hide');
+            mainContent.classList.add('show');
+            
+            // 애니메이션 후 스플래시 스크린 완전히 제거
+            setTimeout(() => {
+                splash.style.display = 'none';
+            }, 500);
+        }
+
+        // 자동으로 3초 후 스플래시 스크린 숨김 (선택사항)
+        // setTimeout(hideSplash, 3000);
+
+        // 데이터 저장소
+        const healthData = {
+            bloodPressure: JSON.parse(localStorage.getItem('bloodPressure')) || [],
+            bloodSugar: JSON.parse(localStorage.getItem('bloodSugar')) || [],
+            exercise: JSON.parse(localStorage.getItem('exercise')) || [],
+            medicine: JSON.parse(localStorage.getItem('medicine')) || []
+        };
+
+        // 프로필 데이터
+        const profileData = JSON.parse(localStorage.getItem('profile')) || {
+            name: '김건강',
+            email: 'kim.health@kt.com',
+            phone: '010-1234-5678',
+            birth: '1970-01-01',
+            gender: 'male'
+        };
+
+        // GNB 메뉴 토글
+        function toggleMenu() {
+            const menu = document.getElementById('sideMenu');
+            const overlay = document.querySelector('.side-menu-overlay');
+            menu.classList.toggle('active');
+            overlay.classList.toggle('active');
+        }
+
+        // 테마 토글
         function toggleTheme() {
             const body = document.body;
             const themeToggle = document.querySelector('.theme-toggle .material-icons');
@@ -1688,6 +2412,7 @@
             }
         }
 
+        // 페이지 초기화
         window.addEventListener('DOMContentLoaded', () => {
             const savedTheme = localStorage.getItem('theme');
             const themeToggle = document.querySelector('.theme-toggle .material-icons');
@@ -1697,14 +2422,22 @@
                 themeToggle.textContent = 'light_mode';
             }
 
+            // 현재 시간 설정
             const now = new Date();
             now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
             const dateTimeInputs = document.querySelectorAll('input[type="datetime-local"]');
             dateTimeInputs.forEach(input => {
                 input.value = now.toISOString().slice(0, 16);
             });
+
+            // 프로필 로드
+            loadProfile();
+
+            // 기록 로드
+            loadRecords();
         });
 
+        // 페이지 전환
         function showPage(pageId) {
             document.querySelectorAll('.page').forEach(page => {
                 page.classList.remove('active');
@@ -1721,6 +2454,7 @@
                 navItems[0].classList.add('active');
             } else if (pageId === 'records-page') {
                 navItems[1].classList.add('active');
+                loadRecords();
             } else if (pageId === 'health-tips-page') {
                 navItems[2].classList.add('active');
             } else if (pageId === 'settings-page') {
@@ -1730,6 +2464,7 @@
             window.scrollTo(0, 0);
         }
 
+        // 모달 열기/닫기
         function openModal(modalId) {
             document.getElementById(modalId).classList.add('active');
             document.body.style.overflow = 'hidden';
@@ -1740,6 +2475,7 @@
             document.body.style.overflow = '';
         }
 
+        // 모달 외부 클릭시 닫기
         document.querySelectorAll('.modal').forEach(modal => {
             modal.addEventListener('click', (e) => {
                 if (e.target === modal) {
@@ -1749,24 +2485,434 @@
             });
         });
 
+        // 혈압 저장
         function saveBloodPressure() {
+            const systolic = document.getElementById('systolic').value;
+            const diastolic = document.getElementById('diastolic').value;
+            const pulse = document.getElementById('pulse').value;
+            const time = document.getElementById('bp-time').value;
+            const memo = document.getElementById('bp-memo').value;
+
+            const record = {
+                id: Date.now(),
+                systolic,
+                diastolic,
+                pulse,
+                time,
+                memo,
+                date: new Date(time).toLocaleString('ko-KR')
+            };
+
+            healthData.bloodPressure.unshift(record);
+            localStorage.setItem('bloodPressure', JSON.stringify(healthData.bloodPressure));
+
             alert('혈압 기록이 저장되었습니다!');
             closeModal('add-blood-pressure');
+            loadRecords();
+            
+            // 폼 초기화
+            document.getElementById('systolic').value = '';
+            document.getElementById('diastolic').value = '';
+            document.getElementById('pulse').value = '';
+            document.getElementById('bp-memo').value = '';
         }
 
+        // 혈당 저장
         function saveBloodSugar() {
+            const value = document.getElementById('sugar-value').value;
+            const type = document.getElementById('sugar-type').value;
+            const time = document.getElementById('sugar-time').value;
+            const memo = document.getElementById('sugar-memo').value;
+
+            const typeLabels = {
+                'fasting': '공복',
+                'before-meal': '식전',
+                'after-meal': '식후 2시간',
+                'bedtime': '취침 전'
+            };
+
+            const record = {
+                id: Date.now(),
+                value,
+                type,
+                typeLabel: typeLabels[type],
+                time,
+                memo,
+                date: new Date(time).toLocaleString('ko-KR')
+            };
+
+            healthData.bloodSugar.unshift(record);
+            localStorage.setItem('bloodSugar', JSON.stringify(healthData.bloodSugar));
+
             alert('혈당 기록이 저장되었습니다!');
             closeModal('add-blood-sugar');
+            loadRecords();
+
+            // 폼 초기화
+            document.getElementById('sugar-value').value = '';
+            document.getElementById('sugar-type').value = '';
+            document.getElementById('sugar-memo').value = '';
         }
 
+        // 복용약 저장
         function saveMedicine() {
+            const name = document.getElementById('medicine-name').value;
+            const time = document.getElementById('medicine-time').value;
+            const frequency = document.getElementById('medicine-frequency').value;
+            const method = document.getElementById('medicine-method').value;
+            const memo = document.getElementById('medicine-memo').value;
+
+            const frequencyLabels = {
+                'daily': '매일',
+                'weekly': '주 단위',
+                'monthly': '월 단위'
+            };
+
+            const methodLabels = {
+                'before-meal': '식전',
+                'after-meal': '식후',
+                'anytime': '식사와 무관'
+            };
+
+            const record = {
+                id: Date.now(),
+                name,
+                time,
+                frequency,
+                frequencyLabel: frequencyLabels[frequency],
+                method,
+                methodLabel: methodLabels[method],
+                memo
+            };
+
+            healthData.medicine.unshift(record);
+            localStorage.setItem('medicine', JSON.stringify(healthData.medicine));
+
             alert('복용약이 추가되었습니다!');
             closeModal('add-medicine');
+            loadRecords();
+
+            // 폼 초기화
+            document.getElementById('medicine-name').value = '';
+            document.getElementById('medicine-time').value = '';
+            document.getElementById('medicine-frequency').value = '';
+            document.getElementById('medicine-method').value = '';
+            document.getElementById('medicine-memo').value = '';
         }
 
+        // 운동 저장
         function saveExercise() {
+            const type = document.getElementById('exercise-type').value;
+            const duration = document.getElementById('exercise-duration').value;
+            const distance = document.getElementById('exercise-distance').value;
+            const time = document.getElementById('exercise-time').value;
+            const memo = document.getElementById('exercise-memo').value;
+
+            const typeLabels = {
+                'walking': '걷기/산책',
+                'running': '달리기',
+                'stretching': '스트레칭',
+                'gym': '헬스/근력운동',
+                'swimming': '수영',
+                'cycling': '자전거',
+                'other': '기타'
+            };
+
+            const record = {
+                id: Date.now(),
+                type,
+                typeLabel: typeLabels[type],
+                duration,
+                distance,
+                time,
+                memo,
+                date: new Date(time).toLocaleString('ko-KR')
+            };
+
+            healthData.exercise.unshift(record);
+            localStorage.setItem('exercise', JSON.stringify(healthData.exercise));
+
             alert('운동 기록이 저장되었습니다!');
             closeModal('add-exercise');
+            loadRecords();
+
+            // 폼 초기화
+            document.getElementById('exercise-type').value = '';
+            document.getElementById('exercise-duration').value = '';
+            document.getElementById('exercise-distance').value = '';
+            document.getElementById('exercise-memo').value = '';
+        }
+
+        // 프로필 로드
+        function loadProfile() {
+            document.getElementById('displayName').textContent = profileData.name;
+            document.getElementById('displayEmail').textContent = profileData.email;
+            document.getElementById('displayPhone').textContent = profileData.phone;
+            
+            // 프로필 수정 폼에도 적용
+            if (document.getElementById('profile-name')) {
+                document.getElementById('profile-name').value = profileData.name;
+                document.getElementById('profile-email').value = profileData.email;
+                document.getElementById('profile-phone').value = profileData.phone;
+                document.getElementById('profile-birth').value = profileData.birth;
+                document.getElementById('profile-gender').value = profileData.gender;
+            }
+        }
+
+        // 프로필 저장
+        function saveProfile() {
+            profileData.name = document.getElementById('profile-name').value;
+            profileData.email = document.getElementById('profile-email').value;
+            profileData.phone = document.getElementById('profile-phone').value;
+            profileData.birth = document.getElementById('profile-birth').value;
+            profileData.gender = document.getElementById('profile-gender').value;
+
+            localStorage.setItem('profile', JSON.stringify(profileData));
+            loadProfile();
+
+            alert('프로필이 수정되었습니다!');
+            closeModal('edit-profile');
+        }
+
+        // 비밀번호 변경
+        function changePassword() {
+            const currentPassword = document.getElementById('current-password').value;
+            const newPassword = document.getElementById('new-password').value;
+            const confirmPassword = document.getElementById('confirm-password').value;
+
+            if (newPassword !== confirmPassword) {
+                alert('새 비밀번호가 일치하지 않습니다.');
+                return;
+            }
+
+            if (newPassword.length < 8) {
+                alert('비밀번호는 8자 이상이어야 합니다.');
+                return;
+            }
+
+            // 실제로는 서버에서 처리해야 함
+            alert('비밀번호가 변경되었습니다!');
+            closeModal('change-password');
+
+            // 폼 초기화
+            document.getElementById('current-password').value = '';
+            document.getElementById('new-password').value = '';
+            document.getElementById('confirm-password').value = '';
+        }
+
+        // 기록 불러오기
+        function loadRecords() {
+            loadBloodPressureRecords();
+            loadBloodSugarRecords();
+            loadExerciseRecords();
+            loadMedicineRecords();
+        }
+
+        // 혈압 기록 표시
+        function loadBloodPressureRecords() {
+            const list = document.getElementById('bloodPressureList');
+            if (!list) return;
+
+            if (healthData.bloodPressure.length === 0) {
+                list.innerHTML = '<div class="empty-state"><span class="material-icons">favorite</span><p>아직 혈압 기록이 없습니다</p></div>';
+                return;
+            }
+
+            list.innerHTML = healthData.bloodPressure.map(record => `
+                <div class="record-item">
+                    <div class="record-item-header">
+                        <div class="record-type">
+                            <span class="material-icons">favorite</span>
+                            <span>혈압</span>
+                        </div>
+                        <div class="record-actions">
+                            <button class="record-action-btn edit" onclick="editRecord('bloodPressure', ${record.id})">
+                                <span class="material-icons">edit</span>
+                            </button>
+                            <button class="record-action-btn delete" onclick="deleteRecord('bloodPressure', ${record.id})">
+                                <span class="material-icons">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="record-data">
+                        <div class="record-field">
+                            <div class="record-field-label">수축기</div>
+                            <div class="record-field-value">${record.systolic} mmHg</div>
+                        </div>
+                        <div class="record-field">
+                            <div class="record-field-label">이완기</div>
+                            <div class="record-field-value">${record.diastolic} mmHg</div>
+                        </div>
+                        ${record.pulse ? `
+                        <div class="record-field">
+                            <div class="record-field-label">맥박</div>
+                            <div class="record-field-value">${record.pulse} 회/분</div>
+                        </div>
+                        ` : ''}
+                        <div class="record-field">
+                            <div class="record-field-label">측정 시간</div>
+                            <div class="record-field-value" style="font-size: 14px;">${record.date}</div>
+                        </div>
+                    </div>
+                    ${record.memo ? `<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); font-size: 14px; color: var(--text-secondary);">메모: ${record.memo}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // 혈당 기록 표시
+        function loadBloodSugarRecords() {
+            const list = document.getElementById('bloodSugarList');
+            if (!list) return;
+
+            if (healthData.bloodSugar.length === 0) {
+                list.innerHTML = '<div class="empty-state"><span class="material-icons">water_drop</span><p>아직 혈당 기록이 없습니다</p></div>';
+                return;
+            }
+
+            list.innerHTML = healthData.bloodSugar.map(record => `
+                <div class="record-item">
+                    <div class="record-item-header">
+                        <div class="record-type">
+                            <span class="material-icons">water_drop</span>
+                            <span>혈당</span>
+                        </div>
+                        <div class="record-actions">
+                            <button class="record-action-btn edit" onclick="editRecord('bloodSugar', ${record.id})">
+                                <span class="material-icons">edit</span>
+                            </button>
+                            <button class="record-action-btn delete" onclick="deleteRecord('bloodSugar', ${record.id})">
+                                <span class="material-icons">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="record-data">
+                        <div class="record-field">
+                            <div class="record-field-label">수치</div>
+                            <div class="record-field-value">${record.value} mg/dL</div>
+                        </div>
+                        <div class="record-field">
+                            <div class="record-field-label">측정 시점</div>
+                            <div class="record-field-value" style="font-size: 16px;">${record.typeLabel}</div>
+                        </div>
+                        <div class="record-field">
+                            <div class="record-field-label">측정 시간</div>
+                            <div class="record-field-value" style="font-size: 14px;">${record.date}</div>
+                        </div>
+                    </div>
+                    ${record.memo ? `<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); font-size: 14px; color: var(--text-secondary);">메모: ${record.memo}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // 운동 기록 표시
+        function loadExerciseRecords() {
+            const list = document.getElementById('exerciseList');
+            if (!list) return;
+
+            if (healthData.exercise.length === 0) {
+                list.innerHTML = '<div class="empty-state"><span class="material-icons">directions_run</span><p>아직 운동 기록이 없습니다</p></div>';
+                return;
+            }
+
+            list.innerHTML = healthData.exercise.map(record => `
+                <div class="record-item">
+                    <div class="record-item-header">
+                        <div class="record-type">
+                            <span class="material-icons">directions_run</span>
+                            <span>운동</span>
+                        </div>
+                        <div class="record-actions">
+                            <button class="record-action-btn edit" onclick="editRecord('exercise', ${record.id})">
+                                <span class="material-icons">edit</span>
+                            </button>
+                            <button class="record-action-btn delete" onclick="deleteRecord('exercise', ${record.id})">
+                                <span class="material-icons">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="record-data">
+                        <div class="record-field">
+                            <div class="record-field-label">운동 종류</div>
+                            <div class="record-field-value" style="font-size: 16px;">${record.typeLabel}</div>
+                        </div>
+                        <div class="record-field">
+                            <div class="record-field-label">운동 시간</div>
+                            <div class="record-field-value">${record.duration}분</div>
+                        </div>
+                        ${record.distance ? `
+                        <div class="record-field">
+                            <div class="record-field-label">거리</div>
+                            <div class="record-field-value">${record.distance} km</div>
+                        </div>
+                        ` : ''}
+                        <div class="record-field">
+                            <div class="record-field-label">운동 시간</div>
+                            <div class="record-field-value" style="font-size: 14px;">${record.date}</div>
+                        </div>
+                    </div>
+                    ${record.memo ? `<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); font-size: 14px; color: var(--text-secondary);">메모: ${record.memo}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // 복용약 기록 표시
+        function loadMedicineRecords() {
+            const list = document.getElementById('medicineList');
+            if (!list) return;
+
+            if (healthData.medicine.length === 0) {
+                list.innerHTML = '<div class="empty-state"><span class="material-icons">medication</span><p>아직 복용약 기록이 없습니다</p></div>';
+                return;
+            }
+
+            list.innerHTML = healthData.medicine.map(record => `
+                <div class="record-item">
+                    <div class="record-item-header">
+                        <div class="record-type">
+                            <span class="material-icons">medication</span>
+                            <span>${record.name}</span>
+                        </div>
+                        <div class="record-actions">
+                            <button class="record-action-btn edit" onclick="editRecord('medicine', ${record.id})">
+                                <span class="material-icons">edit</span>
+                            </button>
+                            <button class="record-action-btn delete" onclick="deleteRecord('medicine', ${record.id})">
+                                <span class="material-icons">delete</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="record-data">
+                        <div class="record-field">
+                            <div class="record-field-label">복용 시간</div>
+                            <div class="record-field-value">${record.time}</div>
+                        </div>
+                        <div class="record-field">
+                            <div class="record-field-label">복용 주기</div>
+                            <div class="record-field-value" style="font-size: 16px;">${record.frequencyLabel}</div>
+                        </div>
+                        <div class="record-field">
+                            <div class="record-field-label">복용 방법</div>
+                            <div class="record-field-value" style="font-size: 16px;">${record.methodLabel}</div>
+                        </div>
+                    </div>
+                    ${record.memo ? `<div style="margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border-color); font-size: 14px; color: var(--text-secondary);">메모: ${record.memo}</div>` : ''}
+                </div>
+            `).join('');
+        }
+
+        // 기록 삭제
+        function deleteRecord(type, id) {
+            if (!confirm('정말 삭제하시겠습니까?')) return;
+
+            healthData[type] = healthData[type].filter(record => record.id !== id);
+            localStorage.setItem(type, JSON.stringify(healthData[type]));
+            loadRecords();
+            alert('삭제되었습니다!');
+        }
+
+        // 기록 수정 (간단한 구현)
+        function editRecord(type, id) {
+            alert('수정 기능은 각 항목의 추가 모달을 통해 새로 입력해주세요.\n향후 업데이트에서 수정 기능이 추가될 예정입니다.');
         }
     </script>
 </body>
