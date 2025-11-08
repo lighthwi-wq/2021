@@ -1540,6 +1540,53 @@
             color: white;
             font-size: 42px;
             font-weight: 800;
+            overflow: hidden;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .profile-avatar:hover {
+            transform: scale(1.05);
+            box-shadow: 0 8px 24px rgba(220, 0, 12, 0.3);
+        }
+
+        .profile-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-avatar-text {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .profile-avatar-overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            font-size: 11px;
+            font-weight: 600;
+            padding: 6px;
+            text-align: center;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .profile-avatar:hover .profile-avatar-overlay {
+            opacity: 1;
+        }
+
+        .profile-avatar-input {
+            display: none;
         }
 
         .profile-name {
@@ -1973,7 +2020,12 @@
 
             <!-- 프로필 정보 표시 -->
             <div class="profile-info">
-                <div class="profile-avatar">김</div>
+                <div class="profile-avatar" id="profileAvatar" onclick="document.getElementById('profilePhotoInput').click()">
+                    <span id="avatarText">김</span>
+                    <img id="avatarImage" style="display: none;">
+                    <div class="profile-avatar-overlay">사진 변경</div>
+                </div>
+                <input type="file" id="profilePhotoInput" class="profile-avatar-input" accept="image/*" onchange="uploadProfilePhoto(event)">
                 <div class="profile-name" id="displayName">김건강</div>
                 <div class="profile-email" id="displayEmail">kim.health@kt.com</div>
                 <div class="profile-phone" id="displayPhone">010-1234-5678</div>
@@ -2251,6 +2303,17 @@
                 </button>
             </div>
             <form onsubmit="event.preventDefault(); saveProfile();">
+                <div class="form-group">
+                    <label class="form-label">프로필 사진</label>
+                    <div style="display: flex; flex-direction: column; align-items: center; gap: 16px;">
+                        <div class="profile-avatar" id="preview-avatar" style="width: 80px; height: 80px; font-size: 32px;">
+                            <span class="profile-avatar-text">김</span>
+                            <img style="display: none;">
+                        </div>
+                        <input type="file" id="profile-photo" accept="image/*" class="form-input" onchange="previewProfilePhoto(event)" style="padding: 12px;">
+                        <button type="button" class="btn-secondary" onclick="removeProfilePhoto()" style="width: auto; padding: 10px 20px; font-size: 14px;">사진 제거</button>
+                    </div>
+                </div>
                 <div class="form-group">
                     <label class="form-label">이름</label>
                     <input type="text" class="form-input" id="profile-name" value="김건강" required>
@@ -2649,6 +2712,18 @@
             document.getElementById('displayEmail').textContent = profileData.email;
             document.getElementById('displayPhone').textContent = profileData.phone;
             
+            // 프로필 사진 로드
+            const savedPhoto = localStorage.getItem('profilePhoto');
+            if (savedPhoto) {
+                const avatarImage = document.getElementById('avatarImage');
+                const avatarText = document.getElementById('avatarText');
+                if (avatarImage && avatarText) {
+                    avatarImage.src = savedPhoto;
+                    avatarImage.style.display = 'block';
+                    avatarText.style.display = 'none';
+                }
+            }
+            
             // 프로필 수정 폼에도 적용
             if (document.getElementById('profile-name')) {
                 document.getElementById('profile-name').value = profileData.name;
@@ -2656,7 +2731,103 @@
                 document.getElementById('profile-phone').value = profileData.phone;
                 document.getElementById('profile-birth').value = profileData.birth;
                 document.getElementById('profile-gender').value = profileData.gender;
+                
+                // 모달의 프로필 사진도 로드
+                if (savedPhoto) {
+                    updateModalProfilePhoto(savedPhoto);
+                }
             }
+        }
+
+        // 프로필 사진 업로드 (설정 페이지)
+        function uploadProfilePhoto(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                alert('이미지 파일만 업로드 가능합니다.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const photoData = e.target.result;
+                localStorage.setItem('profilePhoto', photoData);
+                
+                // 메인 프로필 사진 업데이트
+                const avatarImage = document.getElementById('avatarImage');
+                const avatarText = document.getElementById('avatarText');
+                avatarImage.src = photoData;
+                avatarImage.style.display = 'block';
+                avatarText.style.display = 'none';
+                
+                alert('프로필 사진이 변경되었습니다!');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 프로필 사진 미리보기 (모달)
+        function previewProfilePhoto(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            if (!file.type.startsWith('image/')) {
+                alert('이미지 파일만 업로드 가능합니다.');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                updateModalProfilePhoto(e.target.result);
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 모달 프로필 사진 업데이트
+        function updateModalProfilePhoto(photoData) {
+            const previewAvatar = document.getElementById('preview-avatar');
+            const avatarText = previewAvatar.querySelector('.profile-avatar-text');
+            
+            let img = previewAvatar.querySelector('img');
+            if (!img) {
+                img = document.createElement('img');
+                previewAvatar.appendChild(img);
+            }
+            
+            img.src = photoData;
+            img.style.display = 'block';
+            avatarText.style.display = 'none';
+        }
+
+        // 프로필 사진 제거
+        function removeProfilePhoto() {
+            if (!confirm('프로필 사진을 제거하시겠습니까?')) return;
+            
+            localStorage.removeItem('profilePhoto');
+            
+            // 메인 프로필 사진 초기화
+            const avatarImage = document.getElementById('avatarImage');
+            const avatarText = document.getElementById('avatarText');
+            if (avatarImage && avatarText) {
+                avatarImage.style.display = 'none';
+                avatarText.style.display = 'flex';
+            }
+            
+            // 모달 프로필 사진 초기화
+            const previewAvatar = document.getElementById('preview-avatar');
+            const modalAvatarText = previewAvatar.querySelector('.profile-avatar-text');
+            const modalImg = previewAvatar.querySelector('img');
+            
+            if (modalImg) {
+                modalImg.style.display = 'none';
+            }
+            if (modalAvatarText) {
+                modalAvatarText.style.display = 'flex';
+            }
+            
+            document.getElementById('profile-photo').value = '';
+            
+            alert('프로필 사진이 제거되었습니다!');
         }
 
         // 프로필 저장
@@ -2667,11 +2838,25 @@
             profileData.birth = document.getElementById('profile-birth').value;
             profileData.gender = document.getElementById('profile-gender').value;
 
-            localStorage.setItem('profile', JSON.stringify(profileData));
-            loadProfile();
-
-            alert('프로필이 수정되었습니다!');
-            closeModal('edit-profile');
+            // 프로필 사진도 저장 (모달에서 변경한 경우)
+            const fileInput = document.getElementById('profile-photo');
+            if (fileInput.files && fileInput.files[0]) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    localStorage.setItem('profilePhoto', e.target.result);
+                    localStorage.setItem('profile', JSON.stringify(profileData));
+                    loadProfile();
+                    alert('프로필이 수정되었습니다!');
+                    closeModal('edit-profile');
+                };
+                reader.readAsDataURL(file);
+            } else {
+                localStorage.setItem('profile', JSON.stringify(profileData));
+                loadProfile();
+                alert('프로필이 수정되었습니다!');
+                closeModal('edit-profile');
+            }
         }
 
         // 비밀번호 변경
