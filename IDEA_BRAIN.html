@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IDEA BRAIN</title>
+    
+    <!-- Google Fonts - Noto Sans KR -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&display=swap" rel="stylesheet">
+    
+    <!-- Material Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    
+    <!-- Quill Editor CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.snow.css" rel="stylesheet">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', sans-serif;
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+
+        .material-symbols-rounded {
+            font-family: 'Material Symbols Rounded';
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+
+        /* Dark/Light Mode */
+        body.dark {
+            background: #0a0a0a;
+            color: #e5e7eb;
+        }
+
+        body.light {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            color: #1f2937;
+        }
+
+        /* Header */
+        .header-dark {
+            background: rgba(10, 10, 10, 0.8);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+        }
+
+        .header-light {
+            background: rgba(255, 255, 255, 0.8);
+            border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+            backdrop-filter: blur(20px);
+        }
+
+        /* Icon Buttons */
+        .icon-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+        }
+
+        .icon-btn:hover {
+            transform: translateY(-2px) scale(1.05);
+        }
+
+        .icon-calendar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+        }
+
+        .icon-search {
+            background: linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%);
+            box-shadow: 0 8px 24px rgba(132, 250, 176, 0.3);
+        }
+
+        /* Cards */
+        .card-dark {
+            background: linear-gradient(135deg, rgba(30, 30, 30, 0.8) 0%, rgba(20, 20, 20, 0.6) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(20px);
+        }
+
+        .card-light {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(248, 249, 250, 0.9) 100%);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            backdrop-filter: blur(20px);
+        }
+
+        .card-hover {
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            cursor: pointer;
+        }
+
+        .card-hover:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.15);
+        }
+
+        /* FAB */
+        .fab {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 64px;
+            height: 64px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.5);
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 100;
+        }
+
+        .fab:hover {
+            transform: scale(1.15) rotate(90deg);
+        }
+
+        /* Modal */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+            padding: 1rem;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 24px;
+            width: 100%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.4);
+        }
+
+        body.dark .modal-content {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+        }
+
+        /* Quill Editor */
+        #editor {
+            min-height: 300px;
+        }
+
+        .ql-toolbar.ql-snow {
+            border-radius: 16px 16px 0 0 !important;
+            border: none !important;
+            padding: 12px !important;
+        }
+
+        .ql-container.ql-snow {
+            border-radius: 0 0 16px 16px !important;
+            border: none !important;
+        }
+
+        body.dark .ql-toolbar.ql-snow {
+            background: rgba(55, 65, 81, 0.5) !important;
+        }
+
+        body.light .ql-toolbar.ql-snow {
+            background: rgba(249, 250, 251, 0.8) !important;
+        }
+
+        body.dark .ql-container.ql-snow {
+            background: rgba(31, 41, 55, 0.5) !important;
+        }
+
+        body.light .ql-container.ql-snow {
+            background: rgba(255, 255, 255, 0.8) !important;
+        }
+
+        body.dark .ql-editor {
+            color: #e5e7eb !important;
+        }
+
+        body.light .ql-editor {
+            color: #1f2937 !important;
+        }
+
+        body.dark .ql-stroke {
+            stroke: #9ca3af !important;
+        }
+
+        body.light .ql-stroke {
+            stroke: #6b7280 !important;
+        }
+
+        body.dark .ql-fill {
+            fill: #9ca3af !important;
+        }
+
+        body.light .ql-fill {
+            fill: #6b7280 !important;
+        }
+
+        body.dark .ql-picker-label {
+            color: #9ca3af !important;
+        }
+
+        body.light .ql-picker-label {
+            color: #6b7280 !important;
+        }
+
+        .ql-editor {
+            font-family: 'Noto Sans KR', sans-serif !important;
+            font-size: 15px;
+            line-height: 1.6;
+        }
+
+        /* Input Fields */
+        .input-field {
+            width: 100%;
+            padding: 1rem 1.25rem;
+            border-radius: 14px;
+            border: 2px solid transparent;
+            font-size: 1rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        body.dark .input-field {
+            background: rgba(55, 65, 81, 0.5);
+            color: #e5e7eb;
+        }
+
+        body.light .input-field {
+            background: rgba(249, 250, 251, 0.9);
+            color: #1f2937;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            transform: translateY(-2px);
+        }
+
+        /* Theme Toggle */
+        .theme-toggle {
+            width: 64px;
+            height: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 20px;
+            position: relative;
+            cursor: pointer;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 4px 16px rgba(102, 126, 234, 0.3);
+        }
+
+        .theme-toggle-circle {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            width: 32px;
+            height: 32px;
+            background: white;
+            border-radius: 50%;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        body.light .theme-toggle {
+            background: linear-gradient(135deg, #ffd89b 0%, #19547b 100%);
+        }
+
+        body.light .theme-toggle-circle {
+            transform: translateX(24px);
+        }
+
+        /* Tags */
+        .tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%);
+            color: #818cf8;
+            border: 1.5px solid rgba(99, 102, 241, 0.3);
+            border-radius: 12px;
+            font-size: 0.875rem;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        /* Calendar */
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .calendar-day:hover {
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(168, 85, 247, 0.15) 100%);
+            transform: scale(1.1);
+        }
+
+        .calendar-day.has-idea {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            color: white !important;
+            font-weight: 700;
+        }
+
+        /* View Toggle */
+        .view-toggle-btn {
+            padding: 0.625rem 1.25rem;
+            border-radius: 12px;
+            border: none;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .view-toggle-btn.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .view-toggle-btn:not(.active) {
+            background: transparent;
+            color: #9ca3af;
+        }
+
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 0.875rem 1.75rem;
+            border-radius: 14px;
+            font-weight: 700;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 8px 24px rgba(102, 126, 234, 0.3);
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.4);
+        }
+
+        /* Utils */
+        .hidden { display: none !important; }
+        .grid-view {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 1.5rem;
+        }
+        .list-view {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .label {
+            display: block;
+            margin-bottom: 0.625rem;
+            font-weight: 700;
+            font-size: 0.875rem;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        body.dark .label { color: #d1d5db; }
+        body.light .label { color: #4b5563; }
+    </style>
+</head>
+<body class="dark">
+    <!-- Splash Screen -->
+    <div id="splashScreen" style="position: fixed; inset: 0; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); transition: opacity 0.8s ease, visibility 0.8s ease;">
+        <div style="text-align: center; animation: splashFadeIn 1s ease-out;">
+            <!-- Animated Logo -->
+            <div style="position: relative; margin-bottom: 2rem;">
+                <div style="width: 120px; height: 120px; margin: 0 auto; position: relative;">
+                    <!-- Outer Ring Animation -->
+                    <div style="position: absolute; inset: 0; border: 4px solid rgba(255, 255, 255, 0.3); border-radius: 50%; animation: pulse 2s ease-in-out infinite;"></div>
+                    
+                    <!-- Middle Ring Animation -->
+                    <div style="position: absolute; inset: 8px; border: 3px solid rgba(255, 255, 255, 0.5); border-radius: 50%; animation: pulse 2s ease-in-out infinite 0.3s;"></div>
+                    
+                    <!-- Inner Circle with Icon -->
+                    <div style="position: absolute; inset: 16px; background: white; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2); animation: rotate 3s linear infinite;">
+                        <span class="material-symbols-rounded" style="font-size: 48px; color: #667eea; font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 48; animation: iconPulse 2s ease-in-out infinite;">lightbulb</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- App Name -->
+            <h1 style="font-size: 2.5rem; font-weight: 900; color: white; margin-bottom: 0.5rem; letter-spacing: -0.025em; text-shadow: 0 4px 12px rgba(0, 0, 0, 0.2); animation: slideUp 1s ease-out 0.3s both;">
+                IDEA BRAIN
+            </h1>
+            
+            <!-- Tagline -->
+            <p style="font-size: 1.125rem; color: rgba(255, 255, 255, 0.9); font-weight: 500; margin-bottom: 3rem; animation: slideUp 1s ease-out 0.5s both;">
+                당신의 아이디어를 빛나게
+            </p>
+            
+            <!-- Loading Animation -->
+            <div style="display: flex; gap: 0.5rem; justify-content: center; animation: slideUp 1s ease-out 0.7s both;">
+                <div style="width: 12px; height: 12px; background: white; border-radius: 50%; animation: bounce 1.4s ease-in-out infinite;"></div>
+                <div style="width: 12px; height: 12px; background: white; border-radius: 50%; animation: bounce 1.4s ease-in-out infinite 0.2s;"></div>
+                <div style="width: 12px; height: 12px; background: white; border-radius: 50%; animation: bounce 1.4s ease-in-out infinite 0.4s;"></div>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes splashFadeIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        @keyframes pulse {
+            0%, 100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+            50% {
+                transform: scale(1.1);
+                opacity: 0.5;
+            }
+        }
+
+        @keyframes rotate {
+            from {
+                transform: rotate(0deg);
+            }
+            to {
+                transform: rotate(360deg);
+            }
+        }
+
+        @keyframes iconPulse {
+            0%, 100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes bounce {
+            0%, 80%, 100% {
+                transform: translateY(0);
+            }
+            40% {
+                transform: translateY(-12px);
+            }
+        }
+
+        .splash-hidden {
+            opacity: 0 !important;
+            visibility: hidden !important;
+        }
+    </style>
+
+    <header id="header" class="header-dark sticky top-0 z-50" style="opacity: 0; transition: opacity 0.5s ease;">
+        <div style="max-width: 1200px; margin: 0 auto; padding: 1rem 1.5rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <h1 style="font-size: 2rem; font-weight: 900; background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">
+                    IDEA BRAIN
+                </h1>
+                
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div class="theme-toggle" onclick="toggleTheme()">
+                        <div class="theme-toggle-circle" id="themeIcon">
+                            <span class="material-symbols-rounded" style="font-size: 20px; color: #667eea;">dark_mode</span>
+                        </div>
+                    </div>
+                    
+                    <button onclick="toggleCalendar()" class="icon-btn icon-calendar">
+                        <span class="material-symbols-rounded" style="color: white;">calendar_month</span>
+                    </button>
+                    
+                    <button onclick="toggleSearch()" class="icon-btn icon-search">
+                        <span class="material-symbols-rounded" style="color: white;">search</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div id="searchBar" class="hidden" style="margin-top: 1rem;">
+                <input type="text" id="searchInput" class="input-field" placeholder="아이디어 검색..." oninput="handleSearch()">
+            </div>
+        </div>
+    </header>
+
+    <main id="mainContent" style="max-width: 1200px; margin: 0 auto; padding: 1.5rem; padding-bottom: 6rem; opacity: 0; transition: opacity 0.5s ease;">
+        <div style="display: flex; gap: 0.625rem; margin-bottom: 1.5rem; background: rgba(75, 85, 99, 0.15); padding: 0.5rem; border-radius: 16px; width: fit-content;">
+            <button id="listViewBtn" onclick="switchView('list')" class="view-toggle-btn active">
+                <span class="material-symbols-rounded" style="font-size: 20px;">view_list</span>
+                <span>목록</span>
+            </button>
+            <button id="gridViewBtn" onclick="switchView('grid')" class="view-toggle-btn">
+                <span class="material-symbols-rounded" style="font-size: 20px;">grid_view</span>
+                <span>그리드</span>
+            </button>
+        </div>
+
+        <div id="ideasContainer" class="list-view"></div>
+
+        <div id="calendarView" class="hidden">
+            <div id="calendarCard" class="card-dark" style="padding: 2rem; border-radius: 24px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem;">
+                    <button onclick="changeMonth(-1)" style="padding: 0.75rem; border-radius: 12px; border: none; cursor: pointer; background: rgba(99, 102, 241, 0.1);">
+                        <span class="material-symbols-rounded" style="color: #818cf8;">chevron_left</span>
+                    </button>
+                    <h2 id="currentMonth" style="font-size: 1.5rem; font-weight: 900;"></h2>
+                    <button onclick="changeMonth(1)" style="padding: 0.75rem; border-radius: 12px; border: none; cursor: pointer; background: rgba(99, 102, 241, 0.1);">
+                        <span class="material-symbols-rounded" style="color: #818cf8;">chevron_right</span>
+                    </button>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.5rem; margin-bottom: 0.75rem;">
+                    <div style="text-align: center; font-size: 0.875rem; font-weight: 700; color: #ef4444; padding: 0.5rem;">일</div>
+                    <div style="text-align: center; font-size: 0.875rem; font-weight: 700; color: #9ca3af; padding: 0.5rem;">월</div>
+                    <div style="text-align: center; font-size: 0.875rem; font-weight: 700; color: #9ca3af; padding: 0.5rem;">화</div>
+                    <div style="text-align: center; font-size: 0.875rem; font-weight: 700; color: #9ca3af; padding: 0.5rem;">수</div>
+                    <div style="text-align: center; font-size: 0.875rem; font-weight: 700; color: #9ca3af; padding: 0.5rem;">목</div>
+                    <div style="text-align: center; font-size: 0.875rem; font-weight: 700; color: #9ca3af; padding: 0.5rem;">금</div>
+                    <div style="text-align: center; font-size: 0.875rem; font-weight: 700; color: #3b82f6; padding: 0.5rem;">토</div>
+                </div>
+                
+                <div id="calendarDays" style="display: grid; grid-template-columns: repeat(7, 1fr); gap: 0.625rem;"></div>
+            </div>
+        </div>
+
+        <div id="emptyState" class="hidden" style="text-align: center; padding: 5rem 1rem;">
+            <span class="material-symbols-rounded" style="font-size: 5rem; background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #f093fb 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">lightbulb</span>
+            <h3 style="font-size: 1.5rem; font-weight: 700; margin: 1rem 0 0.75rem;">아직 아이디어가 없습니다</h3>
+            <p style="color: #9ca3af; font-size: 1.125rem;">+ 버튼을 눌러 첫 아이디어를 추가해보세요</p>
+        </div>
+    </main>
+
+    <div class="fab" onclick="openModal()" style="opacity: 0; transition: opacity 0.5s ease 0.2s;" id="fabButton">
+        <span class="material-symbols-rounded" style="color: white; font-size: 28px;">add</span>
+    </div>
+
+    <div id="modal" class="modal-overlay hidden" onclick="handleModalClick(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div style="padding: 1.75rem; border-bottom: 1px solid rgba(0,0,0,0.05);">
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <h2 id="modalTitle" style="font-size: 1.75rem; font-weight: 900;">새 아이디어</h2>
+                    <button onclick="closeModal()" style="padding: 0.5rem; border: none; background: rgba(99, 102, 241, 0.1); cursor: pointer; border-radius: 12px;">
+                        <span class="material-symbols-rounded" style="color: #6b7280;">close</span>
+                    </button>
+                </div>
+            </div>
+            
+            <div style="padding: 2rem;">
+                <div style="margin-bottom: 1.75rem;">
+                    <label class="label">제목</label>
+                    <input type="text" id="ideaTitle" class="input-field" placeholder="아이디어 제목을 입력하세요">
+                </div>
+
+                <div style="margin-bottom: 1.75rem;">
+                    <label class="label">태그</label>
+                    <div id="tagsList" style="display: flex; flex-wrap: wrap; gap: 0.625rem; margin-bottom: 0.875rem;"></div>
+                    <div style="display: flex; gap: 0.625rem;">
+                        <input type="text" id="tagInput" class="input-field" placeholder="태그 입력 후 Enter" onkeypress="handleTagEnter(event)" style="flex: 1;">
+                        <button onclick="addTag()" class="btn-primary" style="display: flex; align-items: center; gap: 0.5rem;">
+                            <span class="material-symbols-rounded" style="font-size: 20px;">add</span>
+                            <span>추가</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1.75rem;">
+                    <label class="label">이미지</label>
+                    <input type="file" id="imageInput" accept="image/*" style="display: none;" onchange="handleImageUpload(event)">
+                    <button onclick="document.getElementById('imageInput').click()" style="width: 100%; padding: 1.25rem; border-radius: 16px; border: 2px dashed rgba(99, 102, 241, 0.3); background: rgba(99, 102, 241, 0.05); cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.75rem; color: #818cf8; font-weight: 700;">
+                        <span class="material-symbols-rounded" style="font-size: 28px;">add_photo_alternate</span>
+                        <span>이미지 업로드</span>
+                    </button>
+                    <div id="imagePreview" class="hidden" style="margin-top: 1.25rem; position: relative;">
+                        <img id="previewImg" style="width: 100%; border-radius: 16px;">
+                        <button onclick="removeImage()" style="position: absolute; top: 0.75rem; right: 0.75rem; width: 40px; height: 40px; border-radius: 50%; background: #ef4444; color: white; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center;">
+                            <span class="material-symbols-rounded" style="font-size: 20px;">close</span>
+                        </button>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1.75rem;">
+                    <label class="label">내용</label>
+                    <div id="editor"></div>
+                </div>
+
+                <div style="display: flex; gap: 0.875rem;">
+                    <button id="deleteBtn" onclick="deleteIdea()" class="hidden" style="flex: 1; padding: 1rem; border-radius: 14px; border: none; background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); color: white; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: 'Noto Sans KR', sans-serif;">
+                        <span class="material-symbols-rounded" style="font-size: 20px;">delete</span>
+                        <span>삭제</span>
+                    </button>
+                    <button onclick="saveIdea()" style="flex: 1; padding: 1rem; border-radius: 14px; border: none; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; font-weight: 700; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; font-family: 'Noto Sans KR', sans-serif;">
+                        <span class="material-symbols-rounded" style="font-size: 20px;">save</span>
+                        <span>저장</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quill JS - Load BEFORE our script -->
+    <script src="https://cdn.jsdelivr.net/npm/quill@2.0.2/dist/quill.js"></script>
+    
+    <script>
+        let quill = null;
+        let currentEditId = null;
+        let currentTags = [];
+        let currentImage = null;
+        let currentView = 'list';
+        let currentCalendarDate = new Date();
+
+        // Initialize when DOM is ready
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded, initializing...');
+            initializeApp();
+        });
+
+        function initializeApp() {
+            // Check if Quill is available
+            if (typeof Quill === 'undefined') {
+                console.error('Quill not loaded yet, retrying...');
+                setTimeout(initializeApp, 100);
+                return;
+            }
+
+            console.log('Quill loaded successfully!');
+            
+            // Initialize Quill with all features
+            const toolbarOptions = [
+                [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
+                [{ 'font': [] }],
+                [{ 'size': ['small', false, 'large', 'huge'] }],
+                ['bold', 'italic', 'underline', 'strike'],
+                [{ 'color': [] }, { 'background': [] }],
+                [{ 'script': 'sub'}, { 'script': 'super' }],
+                [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+                [{ 'indent': '-1'}, { 'indent': '+1' }],
+                [{ 'direction': 'rtl' }],
+                [{ 'align': [] }],
+                ['blockquote', 'code-block'],
+                ['link', 'image', 'video'],
+                ['clean']
+            ];
+
+            quill = new Quill('#editor', {
+                theme: 'snow',
+                placeholder: '아이디어를 자유롭게 작성하세요...',
+                modules: {
+                    toolbar: toolbarOptions
+                }
+            });
+
+            console.log('Quill initialized successfully!');
+
+            // Load data
+            loadTheme();
+            loadIdeas();
+            updateCalendar();
+
+            // Hide splash screen after everything is loaded
+            setTimeout(function() {
+                const splash = document.getElementById('splashScreen');
+                const header = document.getElementById('header');
+                const mainContent = document.getElementById('mainContent');
+                const fabButton = document.getElementById('fabButton');
+                
+                splash.classList.add('splash-hidden');
+                
+                // Show main content with fade-in
+                setTimeout(function() {
+                    header.style.opacity = '1';
+                    mainContent.style.opacity = '1';
+                    fabButton.style.opacity = '1';
+                }, 400);
+                
+                // Remove splash screen from DOM after animation
+                setTimeout(function() {
+                    splash.remove();
+                }, 800);
+            }, 2000); // Show splash for 2 seconds
+        }
+
+        function loadTheme() {
+            const theme = localStorage.getItem('theme') || 'dark';
+            document.body.className = theme;
+            updateThemeUI();
+        }
+
+        function toggleTheme() {
+            const newTheme = document.body.classList.contains('dark') ? 'light' : 'dark';
+            document.body.className = newTheme;
+            localStorage.setItem('theme', newTheme);
+            updateThemeUI();
+        }
+
+        function updateThemeUI() {
+            const isDark = document.body.classList.contains('dark');
+            const header = document.getElementById('header');
+            const themeIcon = document.getElementById('themeIcon');
+            const calendarCard = document.getElementById('calendarCard');
+            
+            header.className = isDark ? 'header-dark sticky top-0 z-50' : 'header-light sticky top-0 z-50';
+            themeIcon.innerHTML = isDark ? 
+                '<span class="material-symbols-rounded" style="font-size: 20px; color: #667eea;">dark_mode</span>' : 
+                '<span class="material-symbols-rounded" style="font-size: 20px; color: #fbbf24;">light_mode</span>';
+            
+            if (calendarCard) {
+                calendarCard.className = isDark ? 'card-dark' : 'card-light';
+                calendarCard.style.cssText = 'padding: 2rem; border-radius: 24px;';
+            }
+        }
+
+        function openModal(ideaId = null) {
+            if (!quill) {
+                alert('에디터가 아직 로드되지 않았습니다. 잠시 후 다시 시도해주세요.');
+                return;
+            }
+
+            currentEditId = ideaId;
+            const modal = document.getElementById('modal');
+            const modalTitle = document.getElementById('modalTitle');
+            const deleteBtn = document.getElementById('deleteBtn');
+
+            if (ideaId) {
+                const ideas = getIdeas();
+                const idea = ideas.find(i => i.id === ideaId);
+                
+                if (idea) {
+                    modalTitle.textContent = '아이디어 수정';
+                    document.getElementById('ideaTitle').value = idea.title;
+                    quill.root.innerHTML = idea.content;
+                    currentTags = [...idea.tags];
+                    currentImage = idea.image;
+                    renderTags();
+                    
+                    if (currentImage) {
+                        showImagePreview(currentImage);
+                    }
+                    
+                    deleteBtn.classList.remove('hidden');
+                }
+            } else {
+                modalTitle.textContent = '새 아이디어';
+                resetModal();
+                deleteBtn.classList.add('hidden');
+            }
+
+            modal.classList.remove('hidden');
+        }
+
+        function closeModal() {
+            document.getElementById('modal').classList.add('hidden');
+            resetModal();
+        }
+
+        function handleModalClick(event) {
+            if (event.target.id === 'modal') {
+                closeModal();
+            }
+        }
+
+        function resetModal() {
+            currentEditId = null;
+            document.getElementById('ideaTitle').value = '';
+            if (quill) quill.setText('');
+            currentTags = [];
+            currentImage = null;
+            renderTags();
+            hideImagePreview();
+        }
+
+        function addTag() {
+            const input = document.getElementById('tagInput');
+            const tag = input.value.trim();
+            
+            if (tag && !currentTags.includes(tag)) {
+                currentTags.push(tag);
+                renderTags();
+                input.value = '';
+            }
+        }
+
+        function removeTag(tag) {
+            currentTags = currentTags.filter(t => t !== tag);
+            renderTags();
+        }
+
+        function renderTags() {
+            const tagsList = document.getElementById('tagsList');
+            tagsList.innerHTML = currentTags.map(tag => `
+                <span class="tag">
+                    ${tag}
+                    <button onclick="removeTag('${tag}')" style="background: none; border: none; cursor: pointer; color: inherit; padding: 0; display: flex; align-items: center;">
+                        <span class="material-symbols-rounded" style="font-size: 16px;">close</span>
+                    </button>
+                </span>
+            `).join('');
+        }
+
+        function handleTagEnter(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addTag();
+            }
+        }
+
+        function handleImageUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                // Check file size (max 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    alert('이미지 크기는 5MB 이하여야 합니다.');
+                    return;
+                }
+
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    currentImage = e.target.result;
+                    showImagePreview(currentImage);
+                };
+                reader.onerror = function() {
+                    alert('이미지를 읽는데 실패했습니다.');
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function showImagePreview(src) {
+            document.getElementById('imagePreview').classList.remove('hidden');
+            document.getElementById('previewImg').src = src;
+        }
+
+        function hideImagePreview() {
+            document.getElementById('imagePreview').classList.add('hidden');
+            document.getElementById('previewImg').src = '';
+        }
+
+        function removeImage() {
+            currentImage = null;
+            hideImagePreview();
+            document.getElementById('imageInput').value = '';
+        }
+
+        function saveIdea() {
+            if (!quill) {
+                alert('에디터가 준비되지 않았습니다.');
+                return;
+            }
+
+            const title = document.getElementById('ideaTitle').value.trim();
+            const content = quill.root.innerHTML;
+
+            if (!title) {
+                alert('제목을 입력해주세요.');
+                return;
+            }
+
+            const ideas = getIdeas();
+            const idea = {
+                id: currentEditId || Date.now(),
+                title,
+                content,
+                tags: currentTags,
+                image: currentImage,
+                createdAt: currentEditId ? ideas.find(i => i.id === currentEditId).createdAt : new Date().toISOString(),
+                updatedAt: new Date().toISOString()
+            };
+
+            if (currentEditId) {
+                const index = ideas.findIndex(i => i.id === currentEditId);
+                ideas[index] = idea;
+            } else {
+                ideas.unshift(idea);
+            }
+
+            saveIdeas(ideas);
+            loadIdeas();
+            closeModal();
+            updateCalendar();
+        }
+
+        function deleteIdea() {
+            if (!confirm('정말 이 아이디어를 삭제하시겠습니까?')) return;
+
+            const ideas = getIdeas();
+            const filtered = ideas.filter(i => i.id !== currentEditId);
+            saveIdeas(filtered);
+            loadIdeas();
+            closeModal();
+            updateCalendar();
+        }
+
+        function loadIdeas(searchTerm = '') {
+            let ideas = getIdeas();
+            
+            if (searchTerm) {
+                ideas = ideas.filter(idea => 
+                    idea.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    idea.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+                );
+            }
+
+            const container = document.getElementById('ideasContainer');
+            const emptyState = document.getElementById('emptyState');
+
+            if (ideas.length === 0) {
+                container.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            container.innerHTML = ideas.map(idea => createIdeaCard(idea)).join('');
+        }
+
+        function createIdeaCard(idea) {
+            const date = new Date(idea.createdAt);
+            const formattedDate = `${date.getFullYear()}.${String(date.getMonth() + 1).padStart(2, '0')}.${String(date.getDate()).padStart(2, '0')}`;
+            const contentPreview = idea.content.replace(/<[^>]*>/g, '').substring(0, 120);
+            const isDark = document.body.classList.contains('dark');
+            const cardClass = isDark ? 'card-dark' : 'card-light';
+            
+            return `
+                <div class="${cardClass} card-hover" onclick="openModal(${idea.id})" style="padding: 1.75rem; border-radius: 24px;">
+                    ${idea.image ? `
+                        <div style="position: relative; margin-bottom: 1.25rem; border-radius: 16px; overflow: hidden;">
+                            <img src="${idea.image}" style="width: 100%; height: 220px; object-fit: cover;">
+                        </div>
+                    ` : ''}
+                    
+                    <h3 style="font-size: 1.375rem; font-weight: 900; margin-bottom: 0.875rem; letter-spacing: -0.025em;">${idea.title}</h3>
+                    
+                    ${contentPreview ? `
+                        <p style="color: ${isDark ? '#9ca3af' : '#6b7280'}; margin-bottom: 1.25rem; font-size: 0.9375rem; line-height: 1.6;">
+                            ${contentPreview}${contentPreview.length >= 120 ? '...' : ''}
+                        </p>
+                    ` : ''}
+                    
+                    ${idea.tags.length > 0 ? `
+                        <div style="display: flex; flex-wrap: wrap; gap: 0.625rem; margin-bottom: 1.25rem;">
+                            ${idea.tags.map(tag => `<span class="tag">${tag}</span>`).join('')}
+                        </div>
+                    ` : ''}
+                    
+                    <div style="display: flex; align-items: center; gap: 1.25rem; font-size: 0.8125rem; color: ${isDark ? '#6b7280' : '#9ca3af'}; font-weight: 600;">
+                        <div style="display: flex; align-items: center; gap: 0.375rem;">
+                            <span class="material-symbols-rounded" style="font-size: 16px;">calendar_today</span>
+                            <span>${formattedDate}</span>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 0.375rem;">
+                            <span class="material-symbols-rounded" style="font-size: 16px;">schedule</span>
+                            <span>${date.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })}</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function switchView(view) {
+            currentView = view;
+            const container = document.getElementById('ideasContainer');
+            const listBtn = document.getElementById('listViewBtn');
+            const gridBtn = document.getElementById('gridViewBtn');
+            
+            if (view === 'grid') {
+                container.className = 'grid-view';
+                listBtn.className = 'view-toggle-btn';
+                gridBtn.className = 'view-toggle-btn active';
+            } else {
+                container.className = 'list-view';
+                listBtn.className = 'view-toggle-btn active';
+                gridBtn.className = 'view-toggle-btn';
+            }
+            
+            loadIdeas();
+        }
+
+        function toggleSearch() {
+            const searchBar = document.getElementById('searchBar');
+            searchBar.classList.toggle('hidden');
+            if (!searchBar.classList.contains('hidden')) {
+                document.getElementById('searchInput').focus();
+            } else {
+                document.getElementById('searchInput').value = '';
+                loadIdeas();
+            }
+        }
+
+        function handleSearch() {
+            const searchTerm = document.getElementById('searchInput').value;
+            loadIdeas(searchTerm);
+        }
+
+        function toggleCalendar() {
+            const calendarView = document.getElementById('calendarView');
+            const ideasContainer = document.getElementById('ideasContainer');
+            const viewToggle = document.querySelector('[style*="display: flex; gap: 0.625rem"]');
+            
+            calendarView.classList.toggle('hidden');
+            ideasContainer.classList.toggle('hidden');
+            if (viewToggle) viewToggle.classList.toggle('hidden');
+            
+            if (!calendarView.classList.contains('hidden')) {
+                updateCalendar();
+            } else {
+                loadIdeas();
+            }
+        }
+
+        function updateCalendar() {
+            const year = currentCalendarDate.getFullYear();
+            const month = currentCalendarDate.getMonth();
+            
+            document.getElementById('currentMonth').textContent = `${year}년 ${month + 1}월`;
+
+            const firstDay = new Date(year, month, 1).getDay();
+            const lastDate = new Date(year, month + 1, 0).getDate();
+            
+            const calendarDays = document.getElementById('calendarDays');
+            calendarDays.innerHTML = '';
+
+            const ideas = getIdeas();
+            const ideaDates = new Set(ideas.map(idea => {
+                const d = new Date(idea.createdAt);
+                return `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
+            }));
+
+            for (let i = 0; i < firstDay; i++) {
+                calendarDays.innerHTML += `<div class="calendar-day"></div>`;
+            }
+
+            for (let day = 1; day <= lastDate; day++) {
+                const dateKey = `${year}-${month}-${day}`;
+                const hasIdea = ideaDates.has(dateKey);
+                const isToday = new Date().toDateString() === new Date(year, month, day).toDateString();
+                
+                calendarDays.innerHTML += `
+                    <div class="calendar-day ${hasIdea ? 'has-idea' : ''}" 
+                         style="${isToday ? 'box-shadow: 0 0 0 2px #6366f1;' : ''}"
+                         onclick="filterByDate(${year}, ${month}, ${day})">
+                        ${day}
+                    </div>
+                `;
+            }
+        }
+
+        function changeMonth(direction) {
+            currentCalendarDate.setMonth(currentCalendarDate.getMonth() + direction);
+            updateCalendar();
+        }
+
+        function filterByDate(year, month, day) {
+            const ideas = getIdeas();
+            const filtered = ideas.filter(idea => {
+                const d = new Date(idea.createdAt);
+                return d.getFullYear() === year && d.getMonth() === month && d.getDate() === day;
+            });
+
+            if (filtered.length > 0) {
+                toggleCalendar();
+                const container = document.getElementById('ideasContainer');
+                container.innerHTML = filtered.map(idea => createIdeaCard(idea)).join('');
+            }
+        }
+
+        function getIdeas() {
+            return JSON.parse(localStorage.getItem('ideas') || '[]');
+        }
+
+        function saveIdeas(ideas) {
+            localStorage.setItem('ideas', JSON.stringify(ideas));
+        }
+    </script>
+</body>
+</html>
