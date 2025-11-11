@@ -431,6 +431,7 @@
 
         /* 툴바 */
         .toolbar {
+            
             background: white;
             border-bottom: 1px solid #e2e8f0;
             padding: 8px 10px;
@@ -441,6 +442,9 @@
             position: relative;
             z-index: 10;
         }
+
+        .flex-spacer { flex: 1 1 auto; }
+
 
         .toolbar-btn {
             background: white;
@@ -1493,6 +1497,7 @@
             </button>
             
             
+            <div class="flex-spacer"></div>
             <button class="toolbar-btn" id="modeToggleBtn" onclick="toggleUIMode()" title="모드 전환 (easy mode / default mode)">
                 <span class="material-icons">tune</span>
                 <span id="modeToggleLabel">easy mode</span>
