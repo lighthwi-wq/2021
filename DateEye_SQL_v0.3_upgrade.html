@@ -1343,6 +1343,27 @@
         body.dark-mode h3 {
             color: #ffffff;
         }
+    
+        /* ===== Easy Mode ===== */
+        body.easy-mode .easy-hide {
+            display: none !important;
+        }
+        body.easy-mode .toolbar-btn.primary-action {
+            border-color: #2b6cb0;
+            box-shadow: 0 0 0 2px rgba(43,108,176,0.15);
+        }
+        /* Emphasize the Execute button in Easy mode */
+        body.easy-mode #executeBtn {
+            background: #2196F3;
+            color: #ffffff;
+            border-color: #2196F3;
+        }
+        body.easy-mode #executeBtn:hover {
+            background: #1976D2;
+        }
+        /* Slightly calmer canvas for easy mode */
+        body.easy-mode .editor-area { background: #f8fafc; }
+
     </style>
 </head>
 <body>
@@ -1471,7 +1492,12 @@
                 <span>테이블 디자이너</span>
             </button>
             
-            <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="다크모드 전환">
+            
+            <button class="toolbar-btn" id="modeToggleBtn" onclick="toggleUIMode()" title="모드 전환 (Easy / Default)">
+                <span class="material-icons">tune</span>
+                <span id="modeToggleLabel">Easy</span>
+            </button>
+<button class="dark-mode-toggle" onclick="toggleDarkMode()" title="다크모드 전환">
                 <span class="material-icons" id="darkModeIcon">dark_mode</span>
             </button>
         </div>
@@ -3968,6 +3994,69 @@ INSERT INTO table_name (column1, column2) VALUES (value1, value2);"
         }
 
         console.log('DateEye SQL Professional v1.0 - Advanced Validation Engine (SQL Gate/DBeaver Level)');
+    
+        // ===== Easy/Default UI Mode Toggle =====
+        function applyUIMode(mode) {
+            const body = document.body;
+            const label = document.getElementById('modeToggleLabel');
+            if (mode === 'easy') {
+                body.classList.add('easy-mode');
+                if (label) label.textContent = 'Default';
+            } else {
+                body.classList.remove('easy-mode');
+                if (label) label.textContent = 'Easy';
+            }
+        }
+        function toggleUIMode() {
+            const current = localStorage.getItem('uiMode') || 'default';
+            const next = current === 'easy' ? 'default' : 'easy';
+            localStorage.setItem('uiMode', next);
+            applyUIMode(next);
+        }
+        function markEasyHideTargets() {
+            // 1) Menu-bar: hide 편집, 도구, 보기, 도움말 in Easy mode
+            const menuItems = document.querySelectorAll('.menu-bar .menu-item');
+            menuItems.forEach(mi => {
+                const text = (mi.childNodes[0]?.textContent || mi.textContent || '').trim();
+                if (['편집', '도구', '보기', '도움말'].includes(text)) {
+                    mi.classList.add('easy-hide');
+                }
+            });
+            // 2) Toolbar buttons: keep New/Open/Save/Execute visible; hide Format/Validate/Clear/Table Designer
+            const toolbarButtons = document.querySelectorAll('.toolbar .toolbar-btn');
+            toolbarButtons.forEach(btn => {
+                const labelEl = btn.querySelector('span:nth-of-type(2)');
+                const label = (labelEl ? labelEl.textContent : '').trim();
+                if (['포맷','검증','지우기','테이블 디자이너'].includes(label)) {
+                    btn.classList.add('easy-hide');
+                }
+                // tag execute for emphasis
+                if (label === '실행') {
+                    btn.id = 'executeBtn';
+                }
+            });
+            // 3) Result tabs: hide messages/history in Easy mode
+            document.querySelectorAll('.result-tab').forEach(tab => {
+                const t = tab.textContent.trim();
+                if (['메시지','실행 기록'].includes(t)) {
+                    tab.classList.add('easy-hide');
+                }
+            });
+            // 4) Properties panel (right): hide in Easy mode to declutter, but keep DOM for functionality
+            const props = document.getElementById('propertiesPanel');
+            if (props) props.classList.add('easy-hide');
+        }
+        // Hook into window.onload extension
+        (function() {
+            const _origOnLoad = window.onload;
+            window.onload = function() {
+                if (typeof _origOnLoad === 'function') { _origOnLoad(); }
+                markEasyHideTargets();
+                const saved = localStorage.getItem('uiMode') || 'default';
+                applyUIMode(saved);
+            };
+        })();
+
     </script>
 </body>
 </html>
