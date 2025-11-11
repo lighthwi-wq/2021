@@ -1493,9 +1493,9 @@
             </button>
             
             
-            <button class="toolbar-btn" id="modeToggleBtn" onclick="toggleUIMode()" title="모드 전환 (Easy / Default)">
+            <button class="toolbar-btn" id="modeToggleBtn" onclick="toggleUIMode()" title="모드 전환 (easy mode / default mode)">
                 <span class="material-icons">tune</span>
-                <span id="modeToggleLabel">Easy</span>
+                <span id="modeToggleLabel">easy mode</span>
             </button>
 <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="다크모드 전환">
                 <span class="material-icons" id="darkModeIcon">dark_mode</span>
@@ -4001,10 +4001,10 @@ INSERT INTO table_name (column1, column2) VALUES (value1, value2);"
             const label = document.getElementById('modeToggleLabel');
             if (mode === 'easy') {
                 body.classList.add('easy-mode');
-                if (label) label.textContent = 'Default';
+                if (label) label.textContent = 'default mode';
             } else {
                 body.classList.remove('easy-mode');
-                if (label) label.textContent = 'Easy';
+                if (label) label.textContent = 'easy mode';
             }
         }
         function toggleUIMode() {
