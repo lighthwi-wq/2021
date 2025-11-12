@@ -1558,7 +1558,89 @@
         /* Slightly calmer canvas for easy mode */
         body.easy-mode .editor-area { background: #f8fafc; }
 
-    </style>
+    
+/* === Patch: Dark-mode hover fix for properties panel === */
+body.dark-mode .properties-content .property-item:hover {
+    background: #0f0f12 !important; /* subtle, not gray-over-white */
+}
+
+/* === Patch: 5:5 vertical split with draggable resizer === */
+.resizer-vertical {
+    height: 6px;
+    cursor: ns-resize;
+    background: linear-gradient(to bottom, rgba(0,0,0,0.08), rgba(0,0,0,0.02));
+    border-top: 1px solid rgba(0,0,0,0.06);
+    border-bottom: 1px solid rgba(0,0,0,0.06);
+    flex: 0 0 auto;
+}
+body.dark-mode .resizer-vertical {
+    background: linear-gradient(to bottom, rgba(255,255,255,0.08), rgba(255,255,255,0.02));
+    border-top: 1px solid #1e1e1e;
+    border-bottom: 1px solid #1e1e1e;
+}
+
+/* Ensure editor/result areas can flex */
+#editorContainer { flex: 1 1 80%; min-height: 0; }
+#resultPanel { flex: 1 1 20%; min-height: 0; height: auto !important; }
+
+
+/* === Resizer hardening (per-container) === */
+.resizer-vertical {
+  height: 8px;
+  cursor: ns-resize;
+  position: relative;
+  z-index: 5;
+  pointer-events: auto;
+  user-select: none;
+}
+body.dragging-resize {
+  cursor: ns-resize !important;
+}
+body.dragging-resize * {
+  user-select: none !important;
+}
+
+</style>
+
+<style>
+/* === Easy Mode: Thin borders to match Default mode === */
+body.easy-mode #editorContainer,
+body.easy-mode #resultPanel,
+body.easy-mode .result-panel,
+body.easy-mode .query-editor,
+body.easy-mode .editor,
+body.easy-mode .editor-wrapper,
+body.easy-mode .editor-shell,
+body.easy-mode .result-content,
+body.easy-mode .result-header,
+body.easy-mode .result-info,
+body.easy-mode .result-tabs,
+body.easy-mode .grid-container,
+body.easy-mode .grid-table,
+body.easy-mode .properties-panel,
+body.easy-mode .properties-content,
+body.easy-mode .property-item {
+  border-width: 1px !important;
+  border-style: solid;
+  border-color: var(--border-color, rgba(0,0,0,0.12)) !important;
+}
+
+/* If Easy mode had thicker separators, normalize them */
+body.easy-mode .resizer-vertical {
+  border-top-width: 1px !important;
+  border-bottom-width: 1px !important;
+}
+</style>
+
+
+<style>
+/* === Lock to fixed 80:20 split (Result 80 / Editor 20) === */
+.resizer-vertical {
+  cursor: default !important;
+  pointer-events: none !important;
+}
+</style>
+
 </head>
 <body class="dark-mode">
     <div class="main-container">
@@ -1768,13 +1850,14 @@
                 <div id="editorContainer" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0;">
                     <!-- 에디터들이 동적으로 추가됨 -->
                 </div>
-
+                <div class="resizer-vertical" id="editorResultResizer" title="드래그하여 높이 조절"></div>
                 <!-- 결과 패널 -->
                 <div class="result-panel" id="resultPanel">
                     <div class="result-tabs">
                         <div class="result-tab active" data-tab="data" onclick="switchResultTab('data')">데이터</div>
                         <div class="result-tab" data-tab="messages" onclick="switchResultTab('messages')">메시지</div>
                         <div class="result-tab" data-tab="history" onclick="switchResultTab('history')">실행 기록</div>
+                        <div class="result-tab" data-tab="dashboard" onclick="switchResultTab('dashboard')">시각화 대시보드</div>
                     </div>
                     <div class="result-content" id="resultContent">
                         <!-- 결과 정보 패널 -->
@@ -1804,6 +1887,16 @@
                         </div>
                         
                         <div id="resultGrid">
+                            <!-- Dashboard content (hidden until tab active) -->
+                            <div id="dashboardContent" style="display:none;">
+                                <div style="display:flex; gap:12px; align-items:center; margin: 6px 0 12px 0;">
+                                    <span class="material-icons">insights</span>
+                                    <div style="font-size:13px;">결과 그리드의 데이터를 자동으로 감지하여 막대/선 그래프로 시각화합니다.</div>
+                                </div>
+                                <canvas id="chartCanvas" height="220"></canvas>
+                                <div id="chartHint" style="font-size:12px; opacity:0.75; margin-top:8px;">컬럼 헤더와 숫자형 데이터 열을 기준으로 기본 그래프를 구성합니다.</div>
+                            </div>
+
                             <p style="color: #a0aec0; text-align: center; margin-top: 50px;">쿼리를 실행하면 결과가 여기에 표시됩니다.</p>
                         </div>
                     </div>
@@ -4605,5 +4698,243 @@ INSERT INTO table_name (column1, column2) VALUES (value1, value2);"
     })();
     </script>
     
+
+<!-- Chart.js for dashboard -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+(function(){
+  const _origSwitch = (typeof window.switchResultTab === 'function') ? window.switchResultTab : null;
+
+  function setActiveTab(tab){
+    document.querySelectorAll('.result-tab').forEach(function(el){
+      if(el.getAttribute('data-tab') === tab){
+        el.classList.add('active');
+      } else {
+        el.classList.remove('active');
+      }
+    });
+  }
+
+  function showSection(tab){
+    const grid = document.getElementById('resultGrid');
+    const dash = document.getElementById('dashboardContent');
+    if(!grid || !dash){ return; }
+    if(tab === 'dashboard'){
+      dash.style.display = 'block';
+      const info = document.getElementById('resultInfo');
+      if(info){ info.classList.add('show'); }
+      grid.style.display = 'block';
+      try { renderDashboardFromTable(); } catch(e){ console.warn(e); }
+      const rc = document.getElementById('resultContent');
+      if(rc){ rc.scrollTop = rc.scrollHeight; }
+    } else {
+      grid.style.display = 'block';
+      if(dash) dash.style.display = 'none';
+    }
+  }
+
+  let __chart;
+  function renderDashboardFromTable(){
+    const table = document.querySelector('#resultGrid table');
+    const canvas = document.getElementById('chartCanvas');
+    if(!table || !canvas){ return; }
+
+    const thead = table.querySelector('thead');
+    const headers = thead ? Array.from(thead.querySelectorAll('th')).map(th => th.textContent.trim()) : [];
+    const rows = Array.from(table.querySelectorAll('tbody tr')).map(tr => 
+      Array.from(tr.querySelectorAll('td')).map(td => td.textContent.trim())
+    );
+
+    if(headers.length === 0 || rows.length === 0){ return; }
+
+    function isNumeric(val){
+      return /^-?\d+(?:[\.,]\d+)?$/.test(val.replace(/,/g,''));
+    }
+
+    const colCount = headers.length;
+    let catIndex = 0;
+    for(let c=0; c<colCount; c++){
+      const sampleVals = rows.slice(0, Math.min(rows.length, 5)).map(r => r[c]);
+      const numericRatio = sampleVals.filter(isNumeric).length / (sampleVals.length || 1);
+      if(numericRatio < 0.6){ catIndex = c; break; }
+    }
+
+    const numericCols = [];
+    for(let c=0; c= Math.min(rows.length, 5)).map(r => r[c]);
+      const numericRatio = sampleVals.filter(isNumeric).length / (sampleVals.length || 1);
+      if(numericRatio >= 0.6){ numericCols.push(c); }
+    }
+
+    if(numericCols.length === 0){
+      if(colCount > 1) numericCols.push(1);
+      else return;
+    }
+
+    const labels = rows.map(r => r[catIndex]);
+    const datasets = numericCols.slice(0, 3).map((cIdx, i) => ({
+      label: headers[cIdx] || ('값 ' + (i+1)),
+      data: rows.map(r => {
+        const v = (r[cIdx] || '0').replace(/,/g,'');
+        const num = parseFloat(v);
+        return isNaN(num) ? 0 : num;
+      }),
+      fill: false
+    }));
+
+    const ctx = canvas.getContext('2d');
+    if(__chart){ __chart.destroy(); }
+    __chart = new Chart(ctx, {
+      type: datasets.length > 1 ? 'line' : 'bar',
+      data: { labels, datasets },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: { legend: { display: true }, title: { display: false } },
+        scales: { x: { ticks: { autoSkip: true, maxTicksLimit: 12 } }, y: { beginAtZero: true } }
+      }
+    });
+  }
+
+  window.switchResultTab = function(tab){
+    setActiveTab(tab);
+    showSection(tab);
+    if(_origSwitch && (tab === 'messages' || tab === 'history')){
+      try { _origSwitch(tab); } catch(e){ console.warn(e); }
+    }
+  };
+
+  (function initVerticalResizer(){
+    const resizer = document.getElementById('editorResultResizer');
+    const editor = document.getElementById('editorContainer');
+    const result = document.getElementById('resultPanel');
+    if(!resizer || !editor || !result) return;
+
+    editor.style.flex = '1 1 80%';
+    result.style.flex = '1 1 20%';
+    let startY = 0, startEditorHeight = 0, startResultHeight = 0;
+
+    function onMouseDown(e){
+      e.preventDefault();
+      startY = e.clientY;
+      startEditorHeight = editor.getBoundingClientRect().height;
+      startResultHeight = result.getBoundingClientRect().height;
+      document.addEventListener('mousemove', onMouseMove);
+      document.addEventListener('mouseup', onMouseUp);
+    }
+    function onMouseMove(e){
+      const dy = e.clientY - startY;
+      const newEditor = startEditorHeight + dy;
+      const newResult = startResultHeight - dy;
+      const total = newEditor + newResult;
+      const editorPct = Math.max(10, Math.min(90, (newEditor / total) * 100));
+      const resultPct = 100 - editorPct;
+      editor.style.flex = `1 1 ${editorPct}%`;
+      result.style.flex = `1 1 ${resultPct}%`;
+    }
+    function onMouseUp(){
+      document.removeEventListener('mousemove', onMouseMove);
+      document.removeEventListener('mouseup', onMouseUp);
+    }
+    resizer.addEventListener('mousedown', onMouseDown);
+  })();
+
+  const _origExport = window.exportResults;
+  window.exportResults = function(){ if(_origExport){ _origExport(); } try{ renderDashboardFromTable(); }catch(e){} };
+  window.addEventListener('resize', function(){ try{ renderDashboardFromTable(); }catch(e){} });
+  window.renderDashboardFromTable = renderDashboardFromTable;
+})();
+</script>
+
+
+<script>
+(function(){
+  // Generic initializer: bind all vertical resizers so each controls its prev/next flex siblings
+  function initAllVerticalResizers(){
+    const resizers = Array.from(document.querySelectorAll('.resizer-vertical'));
+    resizers.forEach((resizer) => {
+      if(resizer.__boundResize) return; // avoid double-binding
+      const top = resizer.previousElementSibling;
+      const bottom = resizer.nextElementSibling;
+      if(!top || !bottom) return;
+      // Verify they're in a flex column parent
+      const parent = resizer.parentElement;
+      if(!parent) return;
+      const parentStyle = getComputedStyle(parent);
+      if(parentStyle.display !== 'flex' || parentStyle.flexDirection !== 'column'){
+        // If not column, we can still compute using heights, but flex-basis updates work best with column
+      }
+
+      let startY = 0, startTopH = 0, startBottomH = 0;
+      function startDrag(y){
+        document.body.classList.add('dragging-resize');
+        const topRect = top.getBoundingClientRect();
+        const bottomRect = bottom.getBoundingClientRect();
+        startTopH = topRect.height;
+        startBottomH = bottomRect.height;
+        startY = y;
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', endDrag);
+        window.addEventListener('touchmove', onTouchMove, {passive:false});
+        window.addEventListener('touchend', endDrag);
+      }
+      function onMouseDown(e){
+        e.preventDefault();
+        startDrag(e.clientY);
+      }
+      function onTouchStart(e){
+        if(!e.touches || !e.touches.length) return;
+        e.preventDefault();
+        startDrag(e.touches[0].clientY);
+      }
+      function onMouseMove(e){
+        e.preventDefault();
+        updateHeights(e.clientY);
+      }
+      function onTouchMove(e){
+        if(!e.touches || !e.touches.length) return;
+        e.preventDefault();
+        updateHeights(e.touches[0].clientY);
+      }
+      function updateHeights(currentY){
+        const dy = currentY - startY;
+        const newTop = startTopH + dy;
+        const newBottom = startBottomH - dy;
+        const total = newTop + newBottom;
+        if(total <= 0) return;
+        const topPct = Math.max(10, Math.min(90, (newTop / total) * 100));
+        const bottomPct = 100 - topPct;
+        top.style.flex = `1 1 ${topPct}%`;
+        bottom.style.flex = `1 1 ${bottomPct}%`;
+      }
+      function endDrag(){
+        document.body.classList.remove('dragging-resize');
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', endDrag);
+        window.removeEventListener('touchmove', onTouchMove);
+        window.removeEventListener('touchend', endDrag);
+      }
+      resizer.addEventListener('mousedown', onMouseDown);
+      resizer.addEventListener('touchstart', onTouchStart, {passive:false});
+      resizer.__boundResize = true;
+    });
+  }
+
+  // Call the generic initializer on DOM ready
+  if(document.readyState === 'loading'){
+    document.addEventListener('DOMContentLoaded', function(){ setTimeout(initAllVerticalResizers, 0); setTimeout(initAllVerticalResizers, 250); });
+  } else {
+    setTimeout(initAllVerticalResizers, 0);
+    setTimeout(initAllVerticalResizers, 250);
+  }
+
+  // Also observe DOM mutations (tabs/mode toggles may re-render)
+  const mo = new MutationObserver(() => { initAllVerticalResizers(); });
+  mo.observe(document.documentElement, {childList: true, subtree: true});
+
+  // Expose for manual calls
+  window.initAllVerticalResizers = initAllVerticalResizers;
+})();
+</script>
+
 </body>
 </html>
