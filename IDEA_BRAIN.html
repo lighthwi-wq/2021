@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>IDEA BRAIN • 2025 Enhanced</title>
+  <title><span class=\"ib-logo\">IDEA BRAIN</span></title>
 
   <!-- Fonts (Noto Sans KR only) -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -85,17 +85,17 @@
     mark{background:color-mix(in srgb,var(--accent-2) 25%,transparent);color:inherit;padding:2px 4px;border-radius:4px}
 
     .viewbar{display:flex;gap:var(--sp-6);margin:var(--sp-12) 0 var(--sp-16);padding:var(--sp-4);border-radius:var(--r-lg);background:color-mix(in srgb,var(--bg-elev) 90%,transparent);width:max-content;box-shadow:0 2px 8px rgba(0,0,0,.08)}
-    .vbtn{display:flex;align-items:center;gap:var(--sp-6);border:none;border-radius:var(--r-md);padding:var(--sp-8) var(--sp-14);font-weight:800;cursor:pointer;transition:all .25s cubic-bezier(.2,.8,.2,1);color:inherit;position:relative;overflow:hidden;background:transparent}
+    .vbtn{display:flex;align-items:center;gap:var(--sp-6);border:none;border-radius:var(--r-md);padding:var(--sp-8) var(--sp-14);font-weight:800;cursor:pointer;transition:all .25s cubic-bezier(.2,.8,.2,1);color:var(--accent-1);position:relative;overflow:hidden;background:transparent}
     .vbtn::before{content:'';position:absolute;inset:0;background:var(--accent-grad);opacity:0;transition:all .25s cubic-bezier(.2,.8,.2,1);border-radius:var(--r-md)}
-    html.dark .vbtn{color:rgba(255,255,255,.7)}
-    html.light .vbtn{color:rgba(0,0,0,.6)}
-    .vbtn .ico{transition:all .25s cubic-bezier(.2,.8,.2,1);position:relative;z-index:1}
+    html.dark .vbtn{color:var(--accent-1)}
+    html.light .vbtn{color:var(--accent-1)}
+    .vbtn .ico{transition:all .25s cubic-bezier(.2,.8,.2,1);position:relative;z-index:1;fill:currentColor}
     .vbtn:hover:not(.active){transform:scale(1.02)}
     .vbtn:hover:not(.active) .ico{transform:scale(1.1)}
     .vbtn:active:not(.active){transform:scale(.95)}
     .vbtn.active{color:#fff;transform:scale(1)}
     .vbtn.active::before{opacity:1}
-    .vbtn.active .ico{transform:scale(1)}
+    .vbtn.active .ico{transform:scale(1);fill:#fff}
 
     main{max-width:1040px;margin:0 auto;padding:var(--sp-16);padding-bottom:8.5rem}
     .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:var(--sp-16)}
@@ -143,27 +143,28 @@
     .empty h3{font-size:var(--fs-18);color:var(--text);margin:var(--sp-10) 0 var(--sp-8)}
 
     /* iOS Style Bottom Navigation - Clean & Minimal */
-    .gnb{position:fixed;left:0;right:0;bottom:0;z-index:60;backdrop-filter:saturate(180%) blur(20px);background:color-mix(in srgb,var(--bg-elev) 92%, transparent);border-top:1px solid var(--hairline);padding:calc(env(safe-area-inset-bottom) + 6px) 0 6px;box-shadow:0 -2px 16px rgba(0,0,0,.08)}
+    .gnb{position:fixed;left:0;right:0;bottom:0;z-index:60;backdrop-filter:saturate(180%) blur(20px);background:linear-gradient(135deg,#6d79ff,#8a5cff 55%,#b06bff);border-top:1px solid rgba(255,255,255,.15);padding:calc(env(safe-area-inset-bottom) + 8px) 0 8px;box-shadow:0 -4px 24px rgba(109,121,255,.4)}
     .gnb-inner{max-width:1040px;margin:0 auto;display:flex;justify-content:space-around;align-items:center;gap:8px;padding:0 16px}
     .gnb-btn{min-width:56px;height:56px;display:flex;align-items:center;justify-content:center;border:none;border-radius:14px;background:transparent;cursor:pointer;transition:all .25s cubic-bezier(.2,.8,.2,1);position:relative;padding:0;flex:1;max-width:72px}
-    .gnb-btn::before{content:'';position:absolute;inset:6px;background:color-mix(in srgb,var(--accent-1) 12%,transparent);border-radius:10px;opacity:0;transform:scale(.8);transition:all .25s cubic-bezier(.2,.8,.2,1)}
-    .gnb-btn-add::before{background:var(--accent-grad)}
-    .gnb-ico{width:26px;height:26px;transition:all .25s cubic-bezier(.2,.8,.2,1);position:relative;z-index:1;color:var(--muted)}
+    .gnb-btn::before{content:'';position:absolute;inset:6px;background:rgba(255,255,255,.15);border-radius:10px;opacity:0;transform:scale(.8);transition:all .25s cubic-bezier(.2,.8,.2,1)}
+    .gnb-btn-add::before{background:rgba(255,255,255,.25)}
+    .gnb-ico{width:28px;height:28px;transition:all .25s cubic-bezier(.2,.8,.2,1);position:relative;z-index:1;color:rgba(255,255,255,.75)}
+    .gnb-btn .label{display:none}
     .gnb-btn:active{transform:scale(.92)}
     .gnb-btn:active::before{transform:scale(.88)}
     .gnb-btn:active .gnb-ico{transform:scale(.88)}
     .gnb-btn.active::before{opacity:1;transform:scale(1)}
-    .gnb-btn.active .gnb-ico{color:var(--accent-1);transform:scale(1);stroke-width:2.5}
+    .gnb-btn.active .gnb-ico{color:#fff;transform:scale(1.05);filter:drop-shadow(0 2px 8px rgba(0,0,0,.3))}
     .gnb-btn-add.active .gnb-ico{color:#fff}
-    html.dark .gnb{background:rgba(18,19,22,.85);border-top-color:rgba(255,255,255,.1)}
-    html.light .gnb{background:rgba(255,255,255,.85);border-top-color:rgba(0,0,0,.1)}
-    html.dark .gnb-ico{color:rgba(255,255,255,.65)}
-    html.light .gnb-ico{color:rgba(0,0,0,.55)}
-    html.dark .gnb-btn.active .gnb-ico{color:var(--accent-1)}
-    html.light .gnb-btn.active .gnb-ico{color:var(--accent-1)}
+    html.dark .gnb{background:linear-gradient(135deg,#6d79ff,#8a5cff 55%,#b06bff);border-top-color:rgba(255,255,255,.15)}
+    html.light .gnb{background:linear-gradient(135deg,#6d79ff,#8a5cff 55%,#b06bff);border-top-color:rgba(255,255,255,.15)}
+    html.dark .gnb-ico{color:rgba(255,255,255,.75)}
+    html.light .gnb-ico{color:rgba(255,255,255,.75)}
+    html.dark .gnb-btn.active .gnb-ico{color:#fff}
+    html.light .gnb-btn.active .gnb-ico{color:#fff}
     @media (hover: hover){
-      .gnb-btn:hover:not(.active)::before{opacity:.5;transform:scale(.95)}
-      .gnb-btn:hover:not(.active) .gnb-ico{color:var(--accent-1);transform:scale(1.08)}
+      .gnb-btn:hover:not(.active)::before{opacity:.6;transform:scale(.95)}
+      .gnb-btn:hover:not(.active) .gnb-ico{color:rgba(255,255,255,.95);transform:scale(1.12)}
     }
 
     /* Drag preview toast - Enhanced */
@@ -259,7 +260,7 @@
     @keyframes subfade{from{opacity:0;transform:translateY(8px)}to{opacity:.95;transform:none}}
     .splash-card{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;animation:splashZoom .8s var(--ease)}
     @keyframes splashZoom{from{opacity:0;transform:scale(.8)}to{opacity:1;transform:scale(1)}}
-    .splash-logo{font-weight:900;font-size:calc(2.4 * var(--fs-28));letter-spacing:-.035em;color:#fff;text-align:center;text-shadow:0 4px 24px rgba(0,0,0,.3);animation:logoFloat 3s ease-in-out infinite}
+    .splash-logo{font-weight:900;font-size:calc(2.0 * var(--fs-28));letter-spacing:-.035em;color:#fff;text-align:center;text-shadow:0 4px 24px rgba(0,0,0,.3);animation:logoFloat 3s ease-in-out infinite}
     @keyframes logoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-8px)}}
     .splash-sub{animation:subfade .6s var(--ease) .3s backwards}
     .splash-icon{animation:iconSpin 1s var(--ease) .2s backwards, iconFloat 3s ease-in-out .8s infinite}
@@ -281,8 +282,462 @@
     .search-loading{padding:1.5rem;text-align:center;color:var(--muted);font-size:var(--fs-13)}
     .search-loading::after{content:'...';animation:dots 1.5s steps(4,end) infinite}
     @keyframes dots{0%,20%{content:'.'}40%{content:'..'}60%,100%{content:'...'}}
-  </style>
+  
+/* --- Fix: High-contrast text on active purple tab; ensure text above overlay --- */
+.viewbar .vbtn > * { position: relative; z-index: 1; }
+.viewbar .vbtn { color: var(--accent-1) !important; }
+.viewbar .vbtn .ico { color: var(--accent-1) !important; fill: var(--accent-1) !important; }
+.viewbar .vbtn.active,
+html.dark .viewbar .vbtn.active,
+html.light .viewbar .vbtn.active { color: #fff !important; }
+.viewbar .vbtn.active .ico { stroke: #fff !important; fill: #fff !important; color: #fff !important; }
+
+
+/* --- GNB Icon-only design --- */
+.gnb-btn{ position:relative; display:flex; align-items:center; justify-content:center; padding:10px; border-radius:14px; transition:transform .22s var(--ease), background .22s var(--ease); }
+.gnb-btn .gnb-ico{ width:28px; height:28px; transition:transform .22s var(--ease), opacity .22s var(--ease), filter .22s var(--ease); }
+.gnb-btn .label{ display:none !important; }
+.gnb-btn.active{ background:rgba(255,255,255,.15); }
+.gnb-btn.active .gnb-ico{ transform:scale(1.08); }
+@keyframes gnbPop { 0%{transform:scale(1);} 60%{transform:scale(1.15);} 100%{transform:scale(1.08);} }
+.gnb-btn.active .gnb-ico{ animation: gnbPop .28s var(--ease); }
+
+
+/* --- Icon-only viewbar (Material-like) --- */
+.viewbar .vbtn .ico{ width:28px; height:28px; stroke:none !important; fill:currentColor !important; border-radius:6px; }
+.viewbar .vbtn{ padding:8px 10px; }
+
+
+/* --- Larger, Material-like filled GNB icons --- */
+.gnb-btn .gnb-ico{ width:32px !important; height:32px !important; stroke:none !important; fill:currentColor !important; }
+
+
+
+/* === Stronger icon contrast & auto inversion on colored backgrounds === */
+.icon-contrast, .toolbar .icon-btn, .viewbar .vbtn .ico, .gnb-ico {
+  color: currentColor !important;
+}
+html.dark .toolbar .icon-btn { color: rgba(255,255,255,.9) !important; }
+html.light .toolbar .icon-btn { color: rgba(0,0,0,.82) !important; }
+/* Active view buttons are always white on accent background */
+.viewbar .vbtn.active { color:#fff !important; }
+.viewbar .vbtn.active .ico { fill:#fff !important; stroke:none !important; }
+/* Improve icon rendering sharpness */
+svg { shape-rendering: geometricPrecision; text-rendering: optimizeLegibility; image-rendering: optimizeQuality; }
+
+/* === Material Symbols Rounded setup === */
+.msr {
+  font-family: 'Material Symbols Rounded';
+  font-weight: 500;
+  font-style: normal;
+  font-size: 24px; /* default */
+  line-height: 1;
+  letter-spacing: normal;
+  text-transform: none;
+  display: inline-block;
+  white-space: nowrap;
+  word-wrap: normal;
+  direction: ltr;
+  -webkit-font-feature-settings: 'liga';
+  -webkit-font-smoothing: antialiased;
+  font-variation-settings: 'FILL' 1, 'wght' 600, 'GRAD' 0, 'opsz' 24;
+}
+
+/* Remove rounded square overlay from bottom nav icons */
+.gnb-btn::before{ display:none !important; }
+.gnb-btn.active{ background: transparent !important; }
+
+/* Material icon sizes for bottom GNB and viewbar */
+.gnb-btn .gnb-ico { font-size: 32px !important; } /* slightly bigger per request */
+.viewbar .vbtn .msr { font-size: 26px !important; }
+
+/* Ensure inversion (white) when active over purple tab */
+.viewbar .vbtn.active .msr { color: #fff !important; }
+
+/* Strengthen default contrast for icons */
+html.dark .msr { color: rgba(255,255,255,.88); }
+html.light .msr { color: rgba(0,0,0,.82); }
+
+
+/* === Bootstrap Icons sizing & contrast === */
+.gnb-btn .gnb-ico { font-size: 32px !important; line-height: 1; }
+.viewbar .vbtn i { font-size: 26px !important; line-height: 1; }
+
+/* default tone */
+html.dark i.bi { color: rgba(255,255,255,.9); }
+html.light i.bi { color: rgba(0,0,0,.85); }
+
+/* active over purple -> force white */
+.viewbar .vbtn.active i.bi { color: #fff !important; }
+
+/* remove any pseudo backgrounds previously applied */
+.gnb-btn::before { display:none !important; }
+.gnb-btn.active { background: transparent !important; }
+
+
+/* === Embossed White Icon Style (GNB) === */
+.gnb-btn .gnb-ico { 
+  color: #ffffff !important;
+  font-size: 32px !important;
+  line-height: 1;
+  /* layered shadows for volume */
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.35),   /* top highlight */
+    0 2px 3px rgba(0,0,0,0.32),       /* core drop */
+    0 8px 16px rgba(0,0,0,0.18);      /* soft spread */
+  filter: drop-shadow(0 1px 0 rgba(0,0,0,0.12));
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.gnb-btn:hover .gnb-ico,
+.gnb-btn:focus-visible .gnb-ico {
+  transform: translateY(-1px) scale(1.04);
+  transition: transform .16s ease, text-shadow .2s ease;
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.4),
+    0 3px 5px rgba(0,0,0,0.36),
+    0 10px 20px rgba(0,0,0,0.2);
+}
+
+.gnb-btn.active .gnb-ico {
+  transform: translateY(-1px) scale(1.06);
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.45),
+    0 4px 8px rgba(0,0,0,0.38),
+    0 14px 28px rgba(0,0,0,0.22);
+}
+
+/* Ensure no background pills remain */
+.gnb-btn::before{ display:none !important; }
+.gnb-btn{ background: transparent !important; }
+
+
+/* === Tailwind-esque Interaction Suite ========================= */
+/* Targets: buttons, menu items, tabs, chips, GNB, LNB */
+button, .btn, .vbtn, .gnb-btn, .menu-item, .tab-btn, .chip, .lnb a, .gnb a {
+  position: relative;
+  transition: transform .15s ease, box-shadow .2s ease, background-color .2s ease, color .2s ease, opacity .2s ease;
+  will-change: transform;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Hover lift */
+button:hover, .btn:hover, .vbtn:hover, .gnb-btn:hover, .menu-item:hover, .tab-btn:hover, .chip:hover, .lnb a:hover, .gnb a:hover {
+  transform: translateY(-1px);
+}
+
+/* Active press */
+button:active, .btn:active, .vbtn:active, .gnb-btn:active, .menu-item:active, .tab-btn:active, .chip:active, .lnb a:active, .gnb a:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Focus ring (Tailwind-like) */
+button:focus-visible, .btn:focus-visible, .vbtn:focus-visible, .gnb-btn:focus-visible, .menu-item:focus-visible, .tab-btn:focus-visible, .chip:focus-visible, .lnb a:focus-visible, .gnb a:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.45), 0 1px 1px rgba(0,0,0,.08);
+  border-radius: 12px; /* soft rounding */
+}
+
+/* Subtle hover bg on non-transparent controls */
+html.light button:hover, html.light .btn:hover, html.light .vbtn:hover, html.light .menu-item:hover, html.light .tab-btn:hover, html.light .chip:hover {
+  background-color: rgba(17,24,39,0.04);
+}
+html.dark button:hover, html.dark .btn:hover, html.dark .vbtn:hover, html.dark .menu-item:hover, html.dark .tab-btn:hover, html.dark .chip:hover {
+  background-color: rgba(255,255,255,0.06);
+}
+
+/* Elevated active states */
+button.active, .btn.active, .vbtn.active, .menu-item.active, .tab-btn.active, .lnb a.active, .gnb a.active {
+  box-shadow: 0 8px 24px rgba(0,0,0,.18), 0 2px 6px rgba(0,0,0,.12);
+}
+
+/* GNB stays backgroundless but still gets micro-interactions */
+.gnb-btn:hover { filter: brightness(1.02); }
+.gnb-btn:active { filter: brightness(0.98); }
+
+/* Ripple effect */
+.fx-ripple {
+  overflow: hidden;
+}
+.fx-ripple .rpl {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+  inset: auto;
+  width: 12px; height: 12px;
+  transform: translate(-50%, -50%) scale(0);
+  opacity: .25;
+  background: currentColor;
+  animation: rpl .6s ease-out forwards;
+}
+@keyframes rpl {
+  to { transform: translate(-50%, -50%) scale(18); opacity: 0; }
+}
+
+/* Motion preference */
+@media (prefers-reduced-motion: reduce) {
+  button, .btn, .vbtn, .gnb-btn, .menu-item, .tab-btn, .chip, .lnb a, .gnb a { transition: none; }
+  .rpl { animation: none !important; opacity: 0 !important; }
+}
+/* === End Tailwind-esque Interaction Suite ===================== */
+
+
+/* === Modern Brand Logo ========================= */
+.ib-logo{
+  font-family: 'Plus Jakarta Sans', ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, 'Apple SD Gothic Neo', 'Noto Sans KR', sans-serif;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: .18em;
+  display:inline-block;
+  line-height:1.1;
+  transform: translateZ(0); /* avoid blurriness */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+/* Default sizing: slightly smaller than before */
+.header .ib-logo{ font-size: clamp(16px, 3.2vw, 22px); }
+.splash .ib-logo{ font-size: clamp(20px, 5.2vw, 28px); } /* splash also smaller than prior */
+html.light .ib-logo{ color: #0f172a; }  /* slate-900 */
+html.dark .ib-logo{ color: #ffffff; }
+
+/* Subtle modern depth */
+.ib-logo{
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.22),
+    0 10px 24px rgba(0,0,0,0.08);
+}
+html.dark .ib-logo{
+  text-shadow:
+    0 1px 0 rgba(255,255,255,0.08),
+    0 10px 24px rgba(0,0,0,0.28);
+}
+
+/* === Tailwind-ish Mobile Smoothness ========= */
+:root{
+  --ease-spring: cubic-bezier(.2,.8,.2,1);
+  --dur-fast: .15s;
+  --dur-med: .24s;
+  --dur-slow: .38s;
+}
+
+/* Apply smoother easing globally to interactive elements */
+button, .btn, .vbtn, .gnb-btn, .menu-item, .tab-btn, .chip, .lnb a, .gnb a {
+  transition-timing-function: var(--ease-spring);
+}
+
+/* Header subtle elevation on scroll */
+.header, .topbar{
+  transition: box-shadow var(--dur-med) var(--ease-spring), backdrop-filter var(--dur-med) var(--ease-spring);
+  backdrop-filter: none;
+}
+.scrolled .header, .scrolled .topbar{
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+  backdrop-filter: saturate(1.1) blur(4px);
+}
+
+/* Page/content enter motion (first paint) */
+@keyframes ib-fade-slide-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.main, .content, .grid, .list, .view {
+  animation: ib-fade-slide-in var(--dur-slow) var(--ease-spring) both;
+}
+
+/* Bottom GNB slight spring on reveal */
+.gnb{
+  transition: transform var(--dur-med) var(--ease-spring), box-shadow var(--dur-med) var(--ease-spring);
+}
+.gnb.show { transform: translateY(0); }
+.gnb.hide { transform: translateY(6px); }
+
+/* Cards / list rows gentle hover & active for touch */
+.card, .list-item{
+  transition: transform var(--dur-med) var(--ease-spring), box-shadow var(--dur-med) var(--ease-spring), background-color var(--dur-med) var(--ease-spring);
+}
+.card:active, .list-item:active{ transform: scale(.99); }
+html.light .card:hover, html.light .list-item:hover{ background-color: rgba(15,23,42,.03); }
+html.dark .card:hover, html.dark .list-item:hover{ background-color: rgba(255,255,255,.04); }
+
+/* Respect reduce motion */
+@media (prefers-reduced-motion: reduce){
+  .main, .content, .grid, .list, .view{ animation: none !important; }
+}
+
+
+/* === Logo glossy ink highlight (subtle 1–2%) ===================== */
+.ib-logo{ position: relative; }
+.ib-logo::after{
+  content: attr(data-text);
+  position: absolute; inset: 0;
+  pointer-events: none;
+  /* subtle ink gloss: very light gradient, blended */
+  background: linear-gradient(to bottom, rgba(255,255,255,.14) 0%, rgba(255,255,255,0) 22%, rgba(0,0,0,0) 78%, rgba(0,0,0,.06) 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  mix-blend-mode: soft-light;
+  opacity: .28;
+  transform: translateZ(0);
+}
+
+/* === Sticky-Compress section headers ============================= */
+.sticky-compress{
+  position: sticky;
+  top: var(--sticky-top, 56px); /* adjust if your header height differs */
+  z-index: 5;
+  background: inherit;
+  transform-origin: top;
+  transition: background-color .2s var(--ease-spring);
+  will-change: transform, background-color;
+  padding-top: .35rem; padding-bottom: .25rem;
+}
+html.light .sticky-compress{ background-color: rgba(255,255,255,.72); backdrop-filter: blur(4px); }
+html.dark .sticky-compress{ background-color: rgba(17,24,39,.5); backdrop-filter: blur(4px); }
+
+/* default scale; JS updates via --compress-ratio to between 0.92~1 */
+.sticky-compress{ transform: scaleY(var(--compress-scale, 1)); }
+
+/* === FAB bounce (elastic 1.06 -> 1.0) ============================ */
+@keyframes ib-bounce {
+  0% { transform: translateY(-1px) scale(1.00); }
+  30% { transform: translateY(-1px) scale(1.06); }
+  100% { transform: translateY(0) scale(1.00); }
+}
+.fab-bounce{ animation: ib-bounce .28s var(--ease-spring); }
+
+/* Optional: make FAB slightly elevated by default */
+#navAdd.gnb-btn .gnb-ico{ filter: drop-shadow(0 4px 10px rgba(0,0,0,.18)); }
+
+
+/* === Fine-tuning Variables ===================================== */
+:root{
+  /* Compress range (1.00 -> between 0.94~0.98) */
+  --compress-min: 0.96;  /* settable within 0.94~0.98 */
+  --compress-max: 0.98;
+  --sticky-top: 56px;     /* header height / sticky anchor */
+  --fab-dur: .26s;        /* 0.22s ~ 0.34s */
+  /* Logo gloss controls */
+  --logo-gloss-angle: 180deg;  /* top-to-bottom by default */
+  --logo-gloss-top: 16%;       /* 10% ~ 20% suggested */
+}
+
+/* Update sticky-compress to use CSS var */
+.sticky-compress{
+  top: var(--sticky-top);
+  transform: scaleY(var(--compress-scale, 1));
+}
+
+/* FAB bounce duration adjustable */
+@keyframes ib-bounce {
+  0% { transform: translateY(-1px) scale(1.00); }
+  30% { transform: translateY(-1px) scale(1.06); }
+  100% { transform: translateY(0) scale(1.00); }
+}
+.fab-bounce{ animation: ib-bounce var(--fab-dur) var(--ease-spring); }
+
+/* Logo glossy ink highlight using angle & top stop */
+.ib-logo::after{
+  background: linear-gradient(var(--logo-gloss-angle),
+    rgba(255,255,255,.14) 0%,
+    rgba(255,255,255,0) var(--logo-gloss-top),
+    rgba(0,0,0,0) calc(100% - 22%),
+    rgba(0,0,0,.06) 100%
+  );
+  opacity: .26; /* slightly softened after tuning */
+}
+
+/* === Platform-specific touch pressure =========================== */
+.platform-ios button:active,
+.platform-ios .btn:active,
+.platform-ios .vbtn:active,
+.platform-ios .menu-item:active,
+.platform-ios .tab-btn:active,
+.platform-ios .chip:active,
+.platform-ios .lnb a:active,
+.platform-ios .gnb a:active {
+  transform: translateY(0) scale(0.985); /* lighter press on iOS */
+  transition-duration: .16s;
+}
+
+.platform-android button:active,
+.platform-android .btn:active,
+.platform-android .vbtn:active,
+.platform-android .menu-item:active,
+.platform-android .tab-btn:active,
+.platform-android .chip:active,
+.platform-android .lnb a:active,
+.platform-android .gnb a:active {
+  transform: translateY(0) scale(0.98);  /* slightly deeper press */
+  transition-duration: .18s;
+}
+
+
+/* === Brand size tuned to 2/3 =================================== */
+.brand{ font-size: clamp(1.47rem, 2.933vw, 1.8rem) !important; }
+.splash .splash-logo{ font-size: calc(1.3333 * var(--fs-28)) !important; } /* 2/3 of previous 2.0*fs-28 */
+
+
+/* === Smooth, Modern Interactions ================================ */
+:root{
+  --fx-ease: cubic-bezier(.22,.9,.2,1);
+  --fx-fast: .16s;
+  --fx-med: .24s;
+  --fx-slow: .36s;
+}
+button, .btn, .vbtn, .menu-item, .tab-btn, .chip, .lnb a, .gnb a {
+  transition:
+    transform var(--fx-fast) var(--fx-ease),
+    background-color var(--fx-med) var(--fx-ease),
+    color var(--fx-med) var(--fx-ease),
+    box-shadow var(--fx-slow) var(--fx-ease),
+    opacity var(--fx-fast) var(--fx-ease);
+  will-change: transform;
+  -webkit-tap-highlight-color: transparent;
+}
+button:hover, .btn:hover, .vbtn:hover, .menu-item:hover, .tab-btn:hover, .chip:hover, .lnb a:hover, .gnb a:hover { transform: translateY(-1px); }
+button:active, .btn:active, .vbtn:active, .menu-item:active, .tab-btn:active, .chip:active, .lnb a:active, .gnb a:active { transform: translateY(0) scale(0.985); }
+button:focus-visible, .btn:focus-visible, .vbtn:focus-visible, .menu-item:focus-visible, .tab-btn:focus-visible, .chip:focus-visible, .lnb a:focus-visible, .gnb a:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(99,102,241,.45), 0 1px 1px rgba(0,0,0,.08);
+  border-radius: 12px;
+}
+/* page/section mount */
+@keyframes fx-in { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+.main, .content, .grid, .list, section { animation: fx-in var(--fx-slow) var(--fx-ease) both; }
+@media (prefers-reduced-motion: reduce){
+  button, .btn, .vbtn, .menu-item, .tab-btn, .chip, .lnb a, .gnb a { transition: none; }
+  .main, .content, .grid, .list, section { animation: none !important; }
+}
+/* subtle hover backdrop */
+html.light button:hover, html.light .btn:hover, html.light .vbtn:hover, html.light .menu-item:hover, html.light .tab-btn:hover, html.light .chip:hover {
+  background-color: rgba(17,24,39,0.04);
+}
+html.dark button:hover, html.dark .btn:hover, html.dark .vbtn:hover, html.dark .menu-item:hover, html.dark .tab-btn:hover, html.dark .chip:hover {
+  background-color: rgba(255,255,255,0.06);
+}
+/* ripple */
+.fx-ripple{ overflow: hidden; position: relative; }
+.fx-ripple .rpl{
+  position: absolute; border-radius: 9999px; pointer-events: none;
+  width: 12px; height: 12px; opacity: .22; background: currentColor;
+  transform: translate(-50%,-50%) scale(0);
+  animation: rpl .6s var(--fx-ease) forwards;
+}
+@keyframes rpl{ to{ transform: translate(-50%,-50%) scale(18); opacity: 0; } }
+
+</style>
+
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@200..700,FILL@0..1,GRAD@-50..200,opsz@20..48&display=swap" rel="stylesheet">
+
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
 </head>
+
+
+
 <body>
   <!-- Enhanced Splash Screen -->
   <div id="splash" class="splash" aria-hidden="true">
@@ -310,17 +765,17 @@
           <path d="M128 52v152" fill="none" stroke-width="10"/>
         </g>
       </svg>
-      <div class="splash-logo">IDEA BRAIN</div>
-      <div class="brand-sub logo">Innovative Design & Engineering for Advanced Business Research and Applied Intelligence Network</div>
-      <button id="skipSplash" class="skip-btn" type="button" aria-label="Skip to main">시작하기</button>
+      <div class="splash-logo"><span class=\"ib-logo\">IDEA BRAIN</span></div>
+      <div class="brand-sub logo"> 20 FEVER, 21 CREATIVE </div>
+      <button id="skipSplash" class="skip-btn" type="button" aria-label="Skip to main">START</button>
     </div>
   </div>
 
-  <header id="header">
+  <header id="header" class="header">
     <div class="wrap">
       <div class="row">
         <div class="brand-wrap">
-          <div class="brand">IDEA BRAIN</div>
+          <div class="brand"><span class=\"ib-logo\">IDEA BRAIN</span></div>
         </div>
         <div class="toolbar">
           <button class="icon-btn" id="themeBtn" title="테마 전환" aria-label="테마 전환">
@@ -357,22 +812,8 @@
 
   <main>
     <div class="viewbar" id="viewBar">
-      <button class="vbtn active" id="listBtn" aria-pressed="true">
-        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-          <path d="M8 6h13M8 12h13M8 18h13"/>
-          <circle cx="4" cy="6" r="1" fill="currentColor" stroke="none"/>
-          <circle cx="4" cy="12" r="1" fill="currentColor" stroke="none"/>
-          <circle cx="4" cy="18" r="1" fill="currentColor" stroke="none"/>
-        </svg>목록
-      </button>
-      <button class="vbtn" id="gridBtn" aria-pressed="false">
-        <svg class="ico" viewBox="0 0 24 24" fill="currentColor" stroke="none">
-          <rect x="3" y="3" width="8" height="8" rx="2"/>
-          <rect x="13" y="3" width="8" height="8" rx="2"/>
-          <rect x="3" y="13" width="8" height="8" rx="2"/>
-          <rect x="13" y="13" width="8" height="8" rx="2"/>
-        </svg>그리드
-      </button>
+      <button class="vbtn active" id="listBtn" aria-pressed="true"><i class="bi bi-list"></i></button>
+      <button class="vbtn" id="gridBtn" aria-pressed="false"><i class="bi bi-grid-3x3-gap-fill"></i></button>
     </div>
 
     <section id="ideas" class="list"></section>
@@ -442,38 +883,11 @@
   <!-- Enhanced Bottom GNB with iOS Style Icons -->
   <nav class="gnb" role="navigation" aria-label="하단 내비게이션">
     <div class="gnb-inner">
-      <button class="gnb-btn active" id="navHome" aria-label="홈">
-        <svg class="gnb-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-          <path d="M9 22V12h6v10"/>
-        </svg>
-      </button>
-      <button class="gnb-btn" id="navCalendar" aria-label="캘린더">
-        <svg class="gnb-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
-          <line x1="16" y1="2" x2="16" y2="6"/>
-          <line x1="8" y1="2" x2="8" y2="6"/>
-          <line x1="3" y1="10" x2="21" y2="10"/>
-        </svg>
-      </button>
-      <button class="gnb-btn gnb-btn-add" id="navAdd" aria-label="추가">
-        <svg class="gnb-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
-      </button>
-      <button class="gnb-btn" id="navSearch" aria-label="검색">
-        <svg class="gnb-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="8"/>
-          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-      </button>
-      <button class="gnb-btn" id="navSettings" aria-label="설정">
-        <svg class="gnb-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="12" r="3"/>
-          <path d="M12 1v6m0 6v6M5.64 5.64l4.24 4.24m4.24 4.24l4.24 4.24M1 12h6m6 0h6M5.64 18.36l4.24-4.24m4.24-4.24l4.24-4.24"/>
-        </svg>
-      </button>
+      <button class="gnb-btn active" id="navHome" aria-label="홈"><i class="bi bi-house-door-fill gnb-ico" aria-hidden="true"></i></button>
+      <button class="gnb-btn" id="navCalendar" aria-label="캘린더"><i class="bi bi-calendar3-event gnb-ico" aria-hidden="true"></i></button>
+      <button class="gnb-btn gnb-btn-add" id="navAdd" aria-label="추가"><i class="bi bi-plus-circle-fill gnb-ico" aria-hidden="true"></i></button>
+      <button class="gnb-btn" id="navSearch" aria-label="검색"><i class="bi bi-search gnb-ico" aria-hidden="true"></i></button>
+      <button class="gnb-btn" id="navSettings" aria-label="설정"><i class="bi bi-gear-fill gnb-ico" aria-hidden="true"></i></button>
     </div>
   </nav>
 
@@ -949,26 +1363,36 @@
     // Init
     window.addEventListener('DOMContentLoaded',()=>{
       loadTheme();
-      quill=new Quill('#editor',{ 
-        theme:'snow',
-        placeholder: '아이디어를 자유롭게 작성하세요...',
-        modules: {
-          toolbar: [
-            [{ 'header': [1, 2, 3, 4, 5, 6, false] }],
-            [{ 'font': [] }],
-            [{ 'size': ['small', false, 'large', 'huge'] }],
-            ['bold', 'italic', 'underline', 'strike'],
-            [{ 'color': [] }, { 'background': [] }],
-            [{ 'script': 'sub'}, { 'script': 'super' }],
-            [{ 'list': 'ordered'}, { 'list': 'bullet' }, { 'list': 'check' }],
-            [{ 'indent': '-1'}, { 'indent': '+1' }],
-            [{ 'align': [] }],
-            ['blockquote', 'code-block'],
-            ['link', 'image', 'video'],
-            ['clean']
-          ]
-        }
-      });
+      quill=
+new Quill('#editor',{
+  theme:'snow',
+  placeholder:'아이디어를 자유롭게 작성하세요...',
+  modules:{
+    toolbar:[
+      [{ 'header':[1,2,3,4,5,6,false] }],
+      [{ 'font':[] }],
+      [{ 'size':['small',false,'large','huge'] }],
+      ['bold','italic','underline','strike'],
+      [{ 'color':[] },{ 'background':[] }],
+      [{ 'script':'sub' },{ 'script':'super' }],
+      [{ 'list':'ordered' },{ 'list':'bullet' },{ 'list':'check' }],
+      [{ 'indent':'-1' },{ 'indent':'+1' }],
+      [{ 'align':[] }],
+      ['blockquote','code-block'],
+      ['link','image','video'],
+      ['clean']
+    ],
+    history:{ delay:400, maxStack:300, userOnly:true },
+    keyboard:{
+      bindings:{
+        tab:{ key:9, handler:function(range, ctx){ this.quill.format('indent','+1'); return false; } },
+        shift_tab:{ key:9, shiftKey:true, handler:function(range, ctx){ this.quill.format('indent','-1'); return false; } },
+        save:{ key:'S', shortKey:true, handler:function(){ document.getElementById('saveBtn')?.click(); return false; } }
+      }
+    }
+  }
+});
+
 
       renderIdeas(); 
       renderCalendar();
@@ -1162,5 +1586,202 @@
       renderCalendar();
     });
   </script>
+
+<script>
+// /* MATERIAL SAFETY TOGGLE */
+(function(){
+  const listBtn = document.getElementById('listBtn');
+  const gridBtn = document.getElementById('gridBtn');
+  const ideas = document.getElementById('ideas');
+  if(listBtn && gridBtn && ideas){
+    const activate = (btnOn, btnOff, modeOn, modeOff) => {
+      btnOn.classList.add('active'); btnOn.setAttribute('aria-pressed','true');
+      btnOff.classList.remove('active'); btnOff.setAttribute('aria-pressed','false');
+      ideas.classList.add(modeOn); ideas.classList.remove(modeOff);
+      // force repaint for icon contrast
+      requestAnimationFrame(()=>{});
+    };
+    listBtn.addEventListener('click', ()=>activate(listBtn, gridBtn, 'list', 'grid'));
+    gridBtn.addEventListener('click', ()=>activate(gridBtn, listBtn, 'grid', 'list'));
+  }
+})();
+</script>
+
+<script>
+// Tailwind-ish Ripple for all interactive elements
+(function(){
+  const selector = 'button, .btn, .vbtn, .gnb-btn, .menu-item, .tab-btn, .chip, .lnb a, .gnb a';
+  const addRipple = (el) => {
+    if(!el.classList.contains('fx-ripple')) el.classList.add('fx-ripple');
+    el.addEventListener('click', function(e){
+      const r = document.createElement('span');
+      r.className = 'rpl';
+      const rect = this.getBoundingClientRect();
+      r.style.left = (e.clientX - rect.left) + 'px';
+      r.style.top  = (e.clientY - rect.top) + 'px';
+      this.appendChild(r);
+      setTimeout(()=>r.remove(), 650);
+    });
+  };
+  document.querySelectorAll(selector).forEach(addRipple);
+
+  // Observe DOM for dynamically added buttons (e.g., modal actions)
+  const obs = new MutationObserver((muts)=>{
+    muts.forEach(m=>{
+      m.addedNodes.forEach(n=>{
+        if(!(n instanceof HTMLElement)) return;
+        if(n.matches && n.matches(selector)) addRipple(n);
+        n.querySelectorAll && n.querySelectorAll(selector).forEach(addRipple);
+      });
+    });
+  });
+  obs.observe(document.documentElement, {childList:true, subtree:true});
+})();
+</script>
+
+
+<script>
+// Header elevation on scroll & GNB slight translation
+(function(){
+  let lastY = 0;
+  const onScroll = () => {
+    const y = window.scrollY || document.documentElement.scrollTop;
+    document.documentElement.classList.toggle('scrolled', y > 8);
+    // optional gnb show/hide micro-shift
+    const gnb = document.querySelector('.gnb');
+    if(!gnb) return;
+    if (y > lastY + 2) gnb.classList.add('hide'), gnb.classList.remove('show');
+    else gnb.classList.add('show'), gnb.classList.remove('hide');
+    lastY = y;
+  };
+  window.addEventListener('scroll', onScroll, {passive:true});
+  onScroll();
+})();
+</script>
+
+
+<script>
+(function(){
+  // 2.1 Logo: duplicate text into data-text for glossy overlay
+  document.querySelectorAll('.ib-logo').forEach(el=>{
+    el.setAttribute('data-text', el.textContent.trim());
+  });
+
+  // 2.2 Sticky-Compress: find likely section headers and mark them
+  const candidates = Array.from(document.querySelectorAll('.section-header, .list h2, .list .section-title, .content h2, .content .section-title'));
+  candidates.forEach(h => h.classList.add('sticky-compress'));
+
+  // Scroll-driven compression
+  const updateCompress = () => {
+    const viewportTop = (document.scrollingElement || document.documentElement).scrollTop;
+    candidates.forEach(h => {
+      const rect = h.getBoundingClientRect();
+      // distance from top; when near the top, compress gently to 0.92
+      const d = Math.max(0, 1 - Math.min(1, (rect.top - (parseInt(getComputedStyle(h).top)||56)) / 48));
+      const scale = 1 - (0.08 * d); // 1 -> 0.92
+      h.style.setProperty('--compress-scale', scale.toFixed(3));
+    });
+  };
+  window.addEventListener('scroll', updateCompress, {passive:true});
+  window.addEventListener('resize', updateCompress);
+  setTimeout(updateCompress, 0);
+
+  // 2.3 FAB bounce: target add button
+  const fab = document.getElementById('navAdd');
+  if(fab){
+    fab.addEventListener('click', ()=>{
+      fab.classList.remove('fab-bounce');
+      // restart animation
+      void fab.offsetWidth;
+      fab.classList.add('fab-bounce');
+    });
+  }
+})();
+</script>
+
+
+<script>
+(function(){
+  // Platform detection for pressure tuning
+  const ua = navigator.userAgent || navigator.vendor || window.opera || "";
+  const isAndroid = /Android/i.test(ua);
+  const isIOS = /iPhone|iPad|iPod/i.test(ua);
+  if(isIOS) document.documentElement.classList.add('platform-ios');
+  else if(isAndroid) document.documentElement.classList.add('platform-android');
+
+  // Compression logic uses --compress-min/max
+  const root = document.documentElement;
+  const getVar = name => parseFloat(getComputedStyle(root).getPropertyValue(name));
+  const minC = () => parseFloat(getComputedStyle(root).getPropertyValue('--compress-min')) || 0.96;
+  const maxC = () => parseFloat(getComputedStyle(root).getPropertyValue('--compress-max')) || 0.98;
+
+  const candidates = Array.from(document.querySelectorAll('.sticky-compress'));
+  const updateCompress = () => {
+    const maxScale = maxC(), minScale = minC();
+    candidates.forEach(h => {
+      const rect = h.getBoundingClientRect();
+      const topPx = parseInt(getComputedStyle(h).top) || 56;
+      // d: 0 (far) -> 1 (stuck)
+      const d = Math.max(0, 1 - Math.min(1, (rect.top - topPx) / 48));
+      const scale = maxScale - (maxScale - minScale) * d;
+      h.style.setProperty('--compress-scale', scale.toFixed(3));
+    });
+  };
+  window.addEventListener('scroll', updateCompress, {passive:true});
+  window.addEventListener('resize', updateCompress);
+  setTimeout(updateCompress, 0);
+
+  // Utility to tweak at runtime from console if needed
+  window.IBUX = {
+    setCompressRange(min=0.96, max=0.98){
+      root.style.setProperty('--compress-min', min);
+      root.style.setProperty('--compress-max', max);
+      updateCompress();
+    },
+    setStickyTop(px=56){
+      root.style.setProperty('--sticky-top', px+'px');
+      updateCompress();
+    },
+    setFabDuration(sec=.26){
+      root.style.setProperty('--fab-dur', sec+'s');
+    },
+    setLogoGloss(angle='180deg', top='16%'){
+      root.style.setProperty('--logo-gloss-angle', angle);
+      root.style.setProperty('--logo-gloss-top', top);
+    }
+  };
+})();
+</script>
+
+
+<script>
+(function(){
+  if(window.__rippleInit) return; window.__rippleInit = true;
+  const selector = 'button, .btn, .vbtn, .menu-item, .tab-btn, .chip, .lnb a, .gnb a';
+  function addRipple(el){
+    if(!el.classList.contains('fx-ripple')) el.classList.add('fx-ripple');
+    el.addEventListener('click', function(e){
+      const r = document.createElement('span');
+      r.className = 'rpl';
+      const rect = this.getBoundingClientRect();
+      r.style.left = (e.clientX - rect.left) + 'px';
+      r.style.top  = (e.clientY - rect.top)  + 'px';
+      this.appendChild(r);
+      setTimeout(()=>r.remove(), 650);
+    }, {passive:true});
+  }
+  document.querySelectorAll(selector).forEach(addRipple);
+  const obs = new MutationObserver(muts => muts.forEach(m => {
+    m.addedNodes.forEach(n => {
+      if(!(n instanceof HTMLElement)) return;
+      if(n.matches && n.matches(selector)) addRipple(n);
+      n.querySelectorAll && n.querySelectorAll(selector).forEach(addRipple);
+    });
+  }));
+  obs.observe(document.documentElement, {childList:true, subtree:true});
+})();
+</script>
+
 </body>
+
 </html>
