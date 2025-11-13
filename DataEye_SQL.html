@@ -81,7 +81,14 @@ body.sidebar-collapsed .nav-item{
   padding:10px; justify-content:center; gap:0;
 }
 .nav-item:hover{background:var(--hover)}
-.nav-item.active{background:var(--accent); color:#ffffff}
+.nav-item.active{
+  background:var(--accent); color:#ffffff; position:relative;
+  animation:pulse 2s ease-in-out infinite;
+}
+@keyframes pulse{
+  0%, 100%{transform:scale(1); box-shadow:0 0 0 0 rgba(47, 129, 247, 0.4)}
+  50%{transform:scale(1.03); box-shadow:0 0 0 4px rgba(47, 129, 247, 0.2)}
+}
 .nav-item .material-icons{font-size:20px; flex-shrink:0}
 .nav-item span:not(.material-icons){
   white-space:nowrap; overflow:hidden; transition:opacity 0.3s ease;
@@ -365,7 +372,7 @@ body.dark .banner-ico{color:var(--accent)}
   <nav class="sidebar-nav">
     <div class="nav-section">
       <div class="nav-section-title">메인</div>
-      <a href="#" class="nav-item active">
+      <a href="#" class="nav-item">
         <span class="material-icons">home</span>
         <span>홈</span>
       </a>
@@ -388,7 +395,7 @@ body.dark .banner-ico{color:var(--accent)}
     
     <div class="nav-section">
       <div class="nav-section-title">개발</div>
-      <a href="https://lighthwi-wq.github.io/2021/DateEye_SQL_v0.3_upgrade.html" class="nav-item">
+      <a href="https://lighthwi-wq.github.io/2021/DateEye_SQL_v0.3_upgrade.html" class="nav-item active">
         <span class="material-icons">code</span>
         <span>쿼리 편집기</span>
       </a>
