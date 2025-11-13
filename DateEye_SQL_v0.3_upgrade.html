@@ -269,6 +269,564 @@
             color: #666;
         }
 
+        /* ===== 자연어 쿼리 입력창 스타일 ===== */
+        .natural-query-container {
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+            border-bottom: 1px solid #e2e8f0;
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        body.dark-mode .natural-query-container {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            border-bottom-color: #3a3a3a;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .natural-query-icon {
+            color: #4a5568;
+            font-size: 24px;
+            animation: pulse 2s infinite;
+        }
+
+        body.dark-mode .natural-query-icon {
+            color: #a0aec0;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.7; }
+        }
+
+        .natural-query-input-wrapper {
+            flex: 1;
+            position: relative;
+        }
+
+        .natural-query-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #cbd5e0;
+            border-radius: 24px;
+            font-size: 14px;
+            background: white;
+            color: #2d3748;
+            transition: all 0.3s ease;
+            outline: none;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .natural-query-input:focus {
+            border-color: #718096;
+            background: white;
+            box-shadow: 0 0 0 4px rgba(113, 128, 150, 0.1);
+        }
+
+        .natural-query-input::placeholder {
+            color: #a0aec0;
+        }
+
+        body.dark-mode .natural-query-input {
+            background: rgba(26, 26, 26, 0.95);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        body.dark-mode .natural-query-input:focus {
+            background: #1a1a1a;
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.1);
+        }
+
+        body.dark-mode .natural-query-input::placeholder {
+            color: #a0aec0;
+        }
+
+        .natural-query-btn {
+            background: #4a5568;
+            color: white;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .natural-query-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            background: #2d3748;
+        }
+
+        .natural-query-btn:active {
+            transform: translateY(0);
+        }
+
+        body.dark-mode .natural-query-btn {
+            background: #4a5568;
+            color: #e2e8f0;
+        }
+
+        body.dark-mode .natural-query-btn:hover {
+            background: #5a6578;
+        }
+
+        .natural-query-toggle {
+            background: rgba(74, 85, 104, 0.2);
+            border: none;
+            color: #4a5568;
+            padding: 8px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .natural-query-toggle:hover {
+            background: rgba(74, 85, 104, 0.3);
+            transform: rotate(180deg);
+        }
+
+        body.dark-mode .natural-query-toggle {
+            background: rgba(160, 174, 192, 0.2);
+            color: #a0aec0;
+        }
+
+        body.dark-mode .natural-query-toggle:hover {
+            background: rgba(160, 174, 192, 0.3);
+        }
+
+        .natural-query-container.collapsed {
+            padding: 8px 16px;
+        }
+
+        .natural-query-container.collapsed .natural-query-input-wrapper,
+        .natural-query-container.collapsed .natural-query-btn {
+            display: none;
+        }
+
+        /* ===== AI 챗봇 플로팅 버튼 ===== */
+        .ai-chatbot-fab {
+            position: fixed;
+            bottom: 32px;
+            right: 32px;
+            width: 64px;
+            height: 64px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #718096 0%, #4a5568 100%);
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+            z-index: 1000;
+            animation: float 3s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+        }
+
+        .ai-chatbot-fab:hover {
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+        }
+
+        .ai-chatbot-fab:active {
+            transform: translateY(-2px) scale(1);
+        }
+
+        body.dark-mode .ai-chatbot-fab {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+        }
+
+        body.dark-mode .ai-chatbot-fab:hover {
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+        }
+
+        .ai-chatbot-fab .material-icons {
+            font-size: 36px;
+        }
+
+        /* AI 처리 중 표시 */
+        .ai-processing-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            backdrop-filter: blur(4px);
+        }
+
+        .ai-processing-overlay.active {
+            display: flex;
+        }
+
+        .ai-processing-content {
+            background: white;
+            padding: 32px 48px;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+            animation: scaleIn 0.3s ease-out;
+        }
+
+        body.dark-mode .ai-processing-content {
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+        }
+
+        .ai-processing-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid #e2e8f0;
+            border-top-color: #4a5568;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        body.dark-mode .ai-processing-spinner {
+            border-color: #3a3a3a;
+            border-top-color: #a0aec0;
+        }
+
+        .ai-processing-text {
+            font-size: 16px;
+            color: #2d3748;
+            font-weight: 500;
+        }
+
+        body.dark-mode .ai-processing-text {
+            color: #ffffff;
+        }
+
+        /* ===== AI 챗봇 모달 ===== */
+        .ai-chatbot-modal {
+            position: fixed;
+            bottom: 110px;
+            right: 32px;
+            width: 400px;
+            height: 600px;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            display: none;
+            flex-direction: column;
+            z-index: 999;
+            animation: slideUpFade 0.3s ease-out;
+        }
+
+        @keyframes slideUpFade {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .ai-chatbot-modal.active {
+            display: flex;
+        }
+
+        body.dark-mode .ai-chatbot-modal {
+            background: #1a1a1a;
+            border: 1px solid #3a3a3a;
+        }
+
+        .ai-chatbot-header {
+            padding: 16px 20px;
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+            border-radius: 16px 16px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        body.dark-mode .ai-chatbot-header {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            border-bottom-color: #3a3a3a;
+        }
+
+        .ai-chatbot-header-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 600;
+            font-size: 16px;
+            color: #2d3748;
+        }
+
+        body.dark-mode .ai-chatbot-header-title {
+            color: #ffffff;
+        }
+
+        .ai-chatbot-header-icon {
+            color: #4a5568;
+            font-size: 28px;
+        }
+
+        body.dark-mode .ai-chatbot-header-icon {
+            color: #a0aec0;
+        }
+
+        .ai-chatbot-close {
+            background: rgba(74, 85, 104, 0.1);
+            border: none;
+            color: #4a5568;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .ai-chatbot-close:hover {
+            background: rgba(74, 85, 104, 0.2);
+            transform: rotate(90deg);
+        }
+
+        body.dark-mode .ai-chatbot-close {
+            background: rgba(160, 174, 192, 0.1);
+            color: #a0aec0;
+        }
+
+        body.dark-mode .ai-chatbot-close:hover {
+            background: rgba(160, 174, 192, 0.2);
+        }
+
+        .ai-chatbot-messages {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        .ai-chatbot-message {
+            display: flex;
+            gap: 10px;
+            animation: slideUpFade 0.3s ease-out;
+        }
+
+        .ai-chatbot-message.user {
+            flex-direction: row-reverse;
+        }
+
+        .ai-chatbot-message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .ai-chatbot-message.ai .ai-chatbot-message-avatar {
+            background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e0 100%);
+            color: #4a5568;
+        }
+
+        body.dark-mode .ai-chatbot-message.ai .ai-chatbot-message-avatar {
+            background: linear-gradient(135deg, #2d3748 0%, #1a202c 100%);
+            color: #a0aec0;
+        }
+
+        .ai-chatbot-message.user .ai-chatbot-message-avatar {
+            background: linear-gradient(135deg, #4a5568 0%, #2d3748 100%);
+            color: white;
+        }
+
+        body.dark-mode .ai-chatbot-message.user .ai-chatbot-message-avatar {
+            background: linear-gradient(135deg, #5a6578 0%, #4a5568 100%);
+        }
+
+        .ai-chatbot-message-content {
+            max-width: 70%;
+            padding: 12px 16px;
+            border-radius: 12px;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .ai-chatbot-message.ai .ai-chatbot-message-content {
+            background: #f7fafc;
+            color: #2d3748;
+            border-bottom-left-radius: 4px;
+        }
+
+        body.dark-mode .ai-chatbot-message.ai .ai-chatbot-message-content {
+            background: #2a2a2a;
+            color: #e2e8f0;
+        }
+
+        .ai-chatbot-message.user .ai-chatbot-message-content {
+            background: #4a5568;
+            color: white;
+            border-bottom-right-radius: 4px;
+        }
+
+        body.dark-mode .ai-chatbot-message.user .ai-chatbot-message-content {
+            background: #5a6578;
+        }
+
+        .ai-chatbot-input-area {
+            padding: 16px 20px;
+            border-top: 1px solid #e2e8f0;
+            background: white;
+            border-radius: 0 0 16px 16px;
+        }
+
+        body.dark-mode .ai-chatbot-input-area {
+            background: #0a0a0a;
+            border-top-color: #3a3a3a;
+        }
+
+        .ai-chatbot-input-wrapper {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .ai-chatbot-input {
+            flex: 1;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 24px;
+            font-size: 14px;
+            background: #f7fafc;
+            color: #2d3748;
+            outline: none;
+            transition: all 0.3s ease;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+
+        .ai-chatbot-input:focus {
+            border-color: #4a5568;
+            background: white;
+        }
+
+        body.dark-mode .ai-chatbot-input {
+            background: #2a2a2a;
+            color: #ffffff;
+            border-color: #3a3a3a;
+        }
+
+        body.dark-mode .ai-chatbot-input:focus {
+            background: #1a1a1a;
+            border-color: #5a6578;
+        }
+
+        .ai-chatbot-send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #4a5568;
+            color: white;
+            border: none;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .ai-chatbot-send-btn:hover {
+            background: #2d3748;
+            transform: scale(1.1);
+        }
+
+        .ai-chatbot-send-btn:active {
+            transform: scale(1);
+        }
+
+        body.dark-mode .ai-chatbot-send-btn {
+            background: #5a6578;
+        }
+
+        body.dark-mode .ai-chatbot-send-btn:hover {
+            background: #6a7588;
+        }
+
+        .ai-chatbot-typing {
+            display: flex;
+            gap: 4px;
+            padding: 12px 16px;
+        }
+
+        .ai-chatbot-typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #a0aec0;
+            animation: typingDot 1.4s infinite;
+        }
+
+        .ai-chatbot-typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .ai-chatbot-typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typingDot {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.7;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        /* 모바일 반응형 */
+        @media (max-width: 768px) {
+            .ai-chatbot-modal {
+                width: calc(100vw - 32px);
+                right: 16px;
+                height: 500px;
+            }
+        }
+
         /* 다크모드 스타일 - 완벽한 반전 */
         body.dark-mode {
             background-color: #000000;
@@ -1848,6 +2406,26 @@ body.easy-mode .resizer-vertical {
                 </div>
 
                 <div id="editorContainer" style="flex: 1; display: flex; flex-direction: column; overflow: hidden; min-height: 0;">
+                    
+                    <!-- 자연어 쿼리 입력창 -->
+                    <div class="natural-query-container" id="naturalQueryContainer">
+                        <span class="material-icons natural-query-icon">psychology</span>
+                        <div class="natural-query-input-wrapper">
+                            <input type="text" 
+                                   class="natural-query-input" 
+                                   id="naturalQueryInput"
+                                   placeholder="자연어로 질문하세요. 예: '모든 사용자의 이름과 이메일을 보여줘'" 
+                                   onkeypress="if(event.key==='Enter') processNaturalQuery()">
+                        </div>
+                        <button class="natural-query-btn" onclick="processNaturalQuery()" title="AI로 SQL 생성">
+                            <span class="material-icons">auto_awesome</span>
+                            <span>생성</span>
+                        </button>
+                        <button class="natural-query-toggle" onclick="toggleNaturalQuery()" title="자연어 입력창 접기/펼치기">
+                            <span class="material-icons">expand_less</span>
+                        </button>
+                    </div>
+                    
                     <!-- 에디터들이 동적으로 추가됨 -->
                 </div>
                 <div class="resizer-vertical" id="editorResultResizer" title="드래그하여 높이 조절"></div>
@@ -2038,6 +2616,59 @@ body.easy-mode .resizer-vertical {
                 <button class="btn btn-secondary" onclick="closeModal('tableDesignerModal')">취소</button>
                 <button class="btn btn-primary" onclick="generateCreateTable()">SQL 생성</button>
             </div>
+        </div>
+    </div>
+
+    <!-- AI 챗봇 플로팅 버튼 -->
+    <button class="ai-chatbot-fab" onclick="toggleAIChatbot()" title="AI 어시스턴트">
+        <span class="material-icons">smart_toy</span>
+    </button>
+
+    <!-- AI 챗봇 모달 -->
+    <div class="ai-chatbot-modal" id="aiChatbotModal">
+        <div class="ai-chatbot-header">
+            <div class="ai-chatbot-header-title">
+                <span class="material-icons ai-chatbot-header-icon">smart_toy</span>
+                <span>AI SQL 어시스턴트</span>
+            </div>
+            <button class="ai-chatbot-close" onclick="toggleAIChatbot()">
+                <span class="material-icons">close</span>
+            </button>
+        </div>
+        <div class="ai-chatbot-messages" id="aiChatbotMessages">
+            <div class="ai-chatbot-message ai">
+                <div class="ai-chatbot-message-avatar">
+                    <span class="material-icons">smart_toy</span>
+                </div>
+                <div class="ai-chatbot-message-content">
+                    안녕하세요! 👋 SQL 쿼리 작성을 도와드리는 AI 어시스턴트입니다.<br><br>
+                    자연어로 질문해주시면 SQL 쿼리로 변환해드립니다.<br><br>
+                    예시:<br>
+                    • "모든 사용자 정보를 보여줘"<br>
+                    • "최근 10개의 주문을 조회해줘"<br>
+                    • "사용자별 주문 개수를 세어줘"
+                </div>
+            </div>
+        </div>
+        <div class="ai-chatbot-input-area">
+            <div class="ai-chatbot-input-wrapper">
+                <input type="text" 
+                       class="ai-chatbot-input" 
+                       id="aiChatbotInput"
+                       placeholder="SQL 쿼리에 대해 질문해보세요..."
+                       onkeypress="if(event.key==='Enter') sendChatbotMessage()">
+                <button class="ai-chatbot-send-btn" onclick="sendChatbotMessage()" title="전송">
+                    <span class="material-icons">send</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- AI 처리 중 오버레이 -->
+    <div class="ai-processing-overlay" id="aiProcessingOverlay">
+        <div class="ai-processing-content">
+            <div class="ai-processing-spinner"></div>
+            <div class="ai-processing-text">AI가 쿼리를 생성하고 있습니다...</div>
         </div>
     </div>
 
@@ -4933,6 +5564,309 @@ INSERT INTO table_name (column1, column2) VALUES (value1, value2);"
 
   // Expose for manual calls
   window.initAllVerticalResizers = initAllVerticalResizers;
+})();
+
+// ===== 자연어 쿼리 및 AI 챗봇 기능 =====
+(function() {
+    // 자연어 입력창 접기/펼치기
+    window.toggleNaturalQuery = function() {
+        const container = document.getElementById('naturalQueryContainer');
+        const toggleIcon = container.querySelector('.natural-query-toggle .material-icons');
+        
+        if (container.classList.contains('collapsed')) {
+            container.classList.remove('collapsed');
+            toggleIcon.textContent = 'expand_less';
+        } else {
+            container.classList.add('collapsed');
+            toggleIcon.textContent = 'expand_more';
+        }
+    };
+
+    // 자연어를 SQL로 변환 (시뮬레이션)
+    window.processNaturalQuery = function() {
+        const input = document.getElementById('naturalQueryInput');
+        const query = input.value.trim();
+        
+        if (!query) {
+            alert('자연어 질문을 입력해주세요.');
+            input.focus();
+            return;
+        }
+
+        // AI 처리 오버레이 표시
+        const overlay = document.getElementById('aiProcessingOverlay');
+        overlay.classList.add('active');
+
+        // AI 처리 시뮬레이션 (2초 후 SQL 생성)
+        setTimeout(function() {
+            const generatedSQL = generateSQLFromNaturalLanguage(query);
+            
+            // 현재 활성 에디터에 SQL 삽입
+            if (activeTabId) {
+                const editor = document.getElementById('editor-' + activeTabId);
+                if (editor) {
+                    // 기존 내용이 있으면 줄바꿈 추가
+                    if (editor.value.trim()) {
+                        editor.value += '\n\n';
+                    }
+                    editor.value += '-- AI 생성 쿼리: ' + query + '\n' + generatedSQL;
+                    
+                    // 탭 상태 업데이트
+                    tabs[activeTabId].content = editor.value;
+                    markTabAsUnsaved(activeTabId);
+                    syncLineNumbers(activeTabId);
+                    
+                    // 에디터에 포커스
+                    editor.focus();
+                    editor.scrollTop = editor.scrollHeight;
+                }
+            }
+            
+            // 오버레이 숨기기
+            overlay.classList.remove('active');
+            
+            // 입력창 초기화
+            input.value = '';
+            
+            // 성공 메시지 표시 (검증 패널 활용)
+            if (activeTabId) {
+                const validationPanel = document.getElementById('validation-' + activeTabId);
+                if (validationPanel) {
+                    validationPanel.style.display = 'block';
+                    validationPanel.innerHTML = '<div class="validation-result"><div class="validation-item success"><span class="material-icons">check_circle</span><div><strong>AI SQL 생성 완료</strong><br>자연어 질문이 SQL 쿼리로 변환되었습니다.</div></div></div>';
+                    
+                    // 3초 후 자동 숨김
+                    setTimeout(function() {
+                        validationPanel.style.display = 'none';
+                    }, 3000);
+                }
+            }
+        }, 2000);
+    };
+
+    // 자연어를 SQL로 변환하는 시뮬레이션 함수
+    function generateSQLFromNaturalLanguage(query) {
+        const lowerQuery = query.toLowerCase();
+        
+        // 패턴 매칭을 통한 SQL 생성
+        if (lowerQuery.includes('모든') || lowerQuery.includes('전체')) {
+            if (lowerQuery.includes('사용자') || lowerQuery.includes('유저')) {
+                if (lowerQuery.includes('이름') && lowerQuery.includes('이메일')) {
+                    return 'SELECT name, email\nFROM users;';
+                } else if (lowerQuery.includes('이름')) {
+                    return 'SELECT name\nFROM users;';
+                } else {
+                    return 'SELECT *\nFROM users;';
+                }
+            } else if (lowerQuery.includes('주문') || lowerQuery.includes('오더')) {
+                return 'SELECT *\nFROM orders;';
+            } else if (lowerQuery.includes('상품') || lowerQuery.includes('제품')) {
+                return 'SELECT *\nFROM products;';
+            }
+        }
+        
+        if (lowerQuery.includes('개수') || lowerQuery.includes('몇') || lowerQuery.includes('카운트')) {
+            if (lowerQuery.includes('사용자') || lowerQuery.includes('유저')) {
+                return 'SELECT COUNT(*) AS user_count\nFROM users;';
+            } else if (lowerQuery.includes('주문')) {
+                return 'SELECT COUNT(*) AS order_count\nFROM orders;';
+            }
+        }
+        
+        if (lowerQuery.includes('평균') || lowerQuery.includes('avg')) {
+            if (lowerQuery.includes('가격') || lowerQuery.includes('금액')) {
+                return 'SELECT AVG(price) AS average_price\nFROM products;';
+            }
+        }
+        
+        if (lowerQuery.includes('최근') || lowerQuery.includes('최신')) {
+            if (lowerQuery.includes('주문')) {
+                return 'SELECT *\nFROM orders\nORDER BY order_date DESC\nLIMIT 10;';
+            } else if (lowerQuery.includes('사용자') || lowerQuery.includes('유저')) {
+                return 'SELECT *\nFROM users\nORDER BY created_at DESC\nLIMIT 10;';
+            }
+        }
+        
+        if (lowerQuery.includes('조인') || lowerQuery.includes('join')) {
+            if (lowerQuery.includes('사용자') && lowerQuery.includes('주문')) {
+                return 'SELECT u.name, u.email, o.order_id, o.order_date\nFROM users u\nINNER JOIN orders o ON u.user_id = o.user_id;';
+            }
+        }
+        
+        if (lowerQuery.includes('그룹') || lowerQuery.includes('group')) {
+            if (lowerQuery.includes('사용자') && lowerQuery.includes('주문')) {
+                return 'SELECT u.name, COUNT(o.order_id) AS order_count\nFROM users u\nLEFT JOIN orders o ON u.user_id = o.user_id\nGROUP BY u.user_id, u.name;';
+            }
+        }
+        
+        // 기본 SELECT 쿼리 반환
+        return 'SELECT *\nFROM users\nLIMIT 10;\n\n-- 자연어 질문: ' + query + '\n-- 더 구체적인 질문을 해주시면 정확한 SQL을 생성할 수 있습니다.';
+    }
+
+    // AI 챗봇 열기/닫기
+    window.toggleAIChatbot = function() {
+        const modal = document.getElementById('aiChatbotModal');
+        modal.classList.toggle('active');
+        
+        // 모달이 열릴 때 입력창에 포커스
+        if (modal.classList.contains('active')) {
+            setTimeout(function() {
+                const input = document.getElementById('aiChatbotInput');
+                if (input) input.focus();
+            }, 300);
+        }
+    };
+
+    // 챗봇 메시지 전송
+    window.sendChatbotMessage = function() {
+        const input = document.getElementById('aiChatbotInput');
+        const message = input.value.trim();
+        
+        if (!message) return;
+        
+        // 사용자 메시지 추가
+        addChatbotMessage(message, 'user');
+        
+        // 입력창 초기화
+        input.value = '';
+        
+        // AI 응답 시뮬레이션
+        showChatbotTyping();
+        
+        setTimeout(function() {
+            hideChatbotTyping();
+            
+            // AI 응답 생성
+            const response = generateChatbotResponse(message);
+            addChatbotMessage(response, 'ai');
+            
+            // SQL이 생성되었다면 자동으로 에디터에 추가
+            const generatedSQL = extractSQLFromResponse(message);
+            if (generatedSQL && activeTabId) {
+                setTimeout(function() {
+                    const editor = document.getElementById('editor-' + activeTabId);
+                    if (editor) {
+                        if (editor.value.trim()) {
+                            editor.value += '\n\n';
+                        }
+                        editor.value += '-- AI 생성 쿼리\n' + generatedSQL;
+                        tabs[activeTabId].content = editor.value;
+                        markTabAsUnsaved(activeTabId);
+                        syncLineNumbers(activeTabId);
+                    }
+                }, 500);
+            }
+        }, 1500);
+    };
+
+    // 챗봇 메시지 추가
+    function addChatbotMessage(content, type) {
+        const messagesContainer = document.getElementById('aiChatbotMessages');
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = 'ai-chatbot-message ' + type;
+        
+        const avatar = document.createElement('div');
+        avatar.className = 'ai-chatbot-message-avatar';
+        avatar.innerHTML = '<span class="material-icons">' + (type === 'ai' ? 'smart_toy' : 'person') + '</span>';
+        
+        const contentDiv = document.createElement('div');
+        contentDiv.className = 'ai-chatbot-message-content';
+        contentDiv.innerHTML = content.replace(/\n/g, '<br>');
+        
+        messageDiv.appendChild(avatar);
+        messageDiv.appendChild(contentDiv);
+        messagesContainer.appendChild(messageDiv);
+        
+        // 스크롤을 맨 아래로
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // 타이핑 인디케이터 표시
+    function showChatbotTyping() {
+        const messagesContainer = document.getElementById('aiChatbotMessages');
+        
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'ai-chatbot-message ai';
+        typingDiv.id = 'chatbotTyping';
+        
+        const avatar = document.createElement('div');
+        avatar.className = 'ai-chatbot-message-avatar';
+        avatar.innerHTML = '<span class="material-icons">smart_toy</span>';
+        
+        const typingContent = document.createElement('div');
+        typingContent.className = 'ai-chatbot-message-content';
+        typingContent.innerHTML = '<div class="ai-chatbot-typing"><div class="ai-chatbot-typing-dot"></div><div class="ai-chatbot-typing-dot"></div><div class="ai-chatbot-typing-dot"></div></div>';
+        
+        typingDiv.appendChild(avatar);
+        typingDiv.appendChild(typingContent);
+        messagesContainer.appendChild(typingDiv);
+        
+        messagesContainer.scrollTop = messagesContainer.scrollHeight;
+    }
+
+    // 타이핑 인디케이터 숨기기
+    function hideChatbotTyping() {
+        const typing = document.getElementById('chatbotTyping');
+        if (typing) typing.remove();
+    }
+
+    // 챗봇 응답 생성
+    function generateChatbotResponse(message) {
+        const lowerMessage = message.toLowerCase();
+        
+        // SQL 쿼리 요청 감지
+        if (lowerMessage.includes('모든') || lowerMessage.includes('전체') || 
+            lowerMessage.includes('조회') || lowerMessage.includes('보여') ||
+            lowerMessage.includes('select') || lowerMessage.includes('검색')) {
+            
+            if (lowerMessage.includes('사용자') || lowerMessage.includes('유저')) {
+                return '사용자 정보를 조회하는 SQL 쿼리를 생성했습니다.<br><br><code>SELECT * FROM users;</code><br><br>에디터에 자동으로 추가되었습니다. ✨';
+            } else if (lowerMessage.includes('주문')) {
+                return '주문 정보를 조회하는 SQL 쿼리를 생성했습니다.<br><br><code>SELECT * FROM orders;</code><br><br>에디터에 자동으로 추가되었습니다. ✨';
+            }
+        }
+        
+        if (lowerMessage.includes('개수') || lowerMessage.includes('카운트') || lowerMessage.includes('count')) {
+            return '데이터 개수를 세는 COUNT 쿼리를 생성했습니다.<br><br><code>SELECT COUNT(*) FROM users;</code><br><br>에디터에 자동으로 추가되었습니다. ✨';
+        }
+        
+        if (lowerMessage.includes('조인') || lowerMessage.includes('join')) {
+            return '테이블을 조인하는 쿼리를 생성했습니다.<br><br><code>SELECT u.*, o.* FROM users u JOIN orders o ON u.id = o.user_id;</code><br><br>에디터에 자동으로 추가되었습니다. ✨';
+        }
+        
+        if (lowerMessage.includes('도움') || lowerMessage.includes('help')) {
+            return '무엇을 도와드릴까요?<br><br>다음과 같은 요청을 처리할 수 있습니다:<br>• 데이터 조회 (SELECT)<br>• 데이터 개수 세기 (COUNT)<br>• 테이블 조인 (JOIN)<br>• 조건 검색 (WHERE)<br>• 정렬 (ORDER BY)<br><br>자연어로 편하게 질문해주세요! 😊';
+        }
+        
+        // 기본 응답
+        return '질문을 이해했습니다. SQL 쿼리를 생성하여 에디터에 추가했습니다.<br><br>더 구체적인 질문을 해주시면 정확한 쿼리를 생성할 수 있습니다. 💡';
+    }
+
+    // 메시지에서 SQL 추출
+    function extractSQLFromResponse(message) {
+        const lowerMessage = message.toLowerCase();
+        
+        if (lowerMessage.includes('사용자') || lowerMessage.includes('유저')) {
+            if (lowerMessage.includes('개수')) {
+                return 'SELECT COUNT(*) AS user_count\nFROM users;';
+            }
+            return 'SELECT *\nFROM users;';
+        }
+        
+        if (lowerMessage.includes('주문')) {
+            if (lowerMessage.includes('최근')) {
+                return 'SELECT *\nFROM orders\nORDER BY order_date DESC\nLIMIT 10;';
+            }
+            return 'SELECT *\nFROM orders;';
+        }
+        
+        if (lowerMessage.includes('조인')) {
+            return 'SELECT u.name, u.email, o.order_id, o.order_date\nFROM users u\nINNER JOIN orders o ON u.user_id = o.user_id;';
+        }
+        
+        return null;
+    }
 })();
 </script>
 
