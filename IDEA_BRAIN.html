@@ -148,6 +148,39 @@
     .gnb-btn{min-width:56px;height:56px;display:flex;align-items:center;justify-content:center;border:none;border-radius:14px;background:transparent;cursor:pointer;transition:all .25s cubic-bezier(.2,.8,.2,1);position:relative;padding:0;flex:1;max-width:72px}
     .gnb-btn::before{content:'';position:absolute;inset:6px;background:rgba(255,255,255,.15);border-radius:10px;opacity:0;transform:scale(.8);transition:all .25s cubic-bezier(.2,.8,.2,1)}
     .gnb-btn-add::before{background:rgba(255,255,255,.25)}
+    
+    /* 토스 스타일 플러스 버튼 강조 */
+    .gnb-btn-add {
+      animation: tossGlow 2s ease-in-out infinite;
+    }
+    .gnb-btn-add .gnb-ico {
+      width: 36px !important;
+      height: 36px !important;
+      filter: drop-shadow(0 4px 12px rgba(255, 255, 255, 0.4));
+    }
+    @keyframes tossGlow {
+      0%, 100% {
+        transform: scale(1);
+        box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.4);
+      }
+      50% {
+        transform: scale(1.08);
+        box-shadow: 0 0 0 8px rgba(255, 255, 255, 0);
+      }
+    }
+    .gnb-btn-add:hover {
+      animation: none;
+      transform: scale(1.15) !important;
+    }
+    .gnb-btn-add:active {
+      animation: tossPulse 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    @keyframes tossPulse {
+      0% { transform: scale(0.92); }
+      50% { transform: scale(1.12); }
+      100% { transform: scale(1); }
+    }
+    
     .gnb-ico{width:28px;height:28px;transition:all .25s cubic-bezier(.2,.8,.2,1);position:relative;z-index:1;color:rgba(255,255,255,.75)}
     .gnb-btn .label{display:none}
     .gnb-btn:active{transform:scale(.92)}
@@ -727,6 +760,127 @@ html.dark button:hover, html.dark .btn:hover, html.dark .vbtn:hover, html.dark .
 }
 @keyframes rpl{ to{ transform: translate(-50%,-50%) scale(18); opacity: 0; } }
 
+/* === 설정 패널 스타일 === */
+.settings-panel {
+  position: fixed;
+  top: 0;
+  right: -100%;
+  width: 90%;
+  max-width: 400px;
+  height: 100vh;
+  background: var(--card);
+  border-left: 1px solid var(--hairline);
+  box-shadow: var(--shadow-lg);
+  z-index: 1000;
+  transition: right 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  overflow-y: auto;
+}
+.settings-panel.show { right: 0; }
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+.settings-overlay.show {
+  opacity: 1;
+  pointer-events: all;
+}
+.settings-header {
+  position: sticky;
+  top: 0;
+  background: var(--bg-elev);
+  padding: var(--sp-16);
+  border-bottom: 1px solid var(--hairline);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  z-index: 10;
+}
+.settings-title {
+  font-size: var(--fs-22);
+  font-weight: 900;
+  letter-spacing: -0.02em;
+}
+.settings-body { padding: var(--sp-16); }
+.settings-section { margin-bottom: var(--sp-24); }
+.settings-section-title {
+  font-size: var(--fs-16);
+  font-weight: 700;
+  margin-bottom: var(--sp-12);
+  color: var(--text);
+}
+.settings-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: var(--sp-12);
+  border-radius: var(--r-md);
+  background: color-mix(in srgb, var(--bg-elev) 90%, transparent);
+  margin-bottom: var(--sp-8);
+  cursor: pointer;
+  transition: all 0.2s var(--ease);
+}
+.settings-item:hover {
+  background: color-mix(in srgb, var(--accent-1) 10%, transparent);
+  transform: translateX(4px);
+}
+.settings-item-label {
+  font-size: var(--fs-14);
+  font-weight: 600;
+}
+.settings-item-desc {
+  font-size: var(--fs-12);
+  color: var(--muted);
+  margin-top: 2px;
+}
+.toggle-switch {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  background: var(--muted);
+  border-radius: 14px;
+  transition: background 0.3s var(--ease);
+  cursor: pointer;
+}
+.toggle-switch.active { background: var(--accent-1); }
+.toggle-switch::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+.toggle-switch.active::after { transform: translateX(20px); }
+.stat-card {
+  background: color-mix(in srgb, var(--accent-1) 8%, transparent);
+  border: 1px solid var(--hairline);
+  border-radius: var(--r-md);
+  padding: var(--sp-16);
+  text-align: center;
+  margin-bottom: var(--sp-12);
+}
+.stat-value {
+  font-size: var(--fs-28);
+  font-weight: 900;
+  color: var(--accent-1);
+  margin-bottom: var(--sp-4);
+}
+.stat-label {
+  font-size: var(--fs-13);
+  color: var(--muted);
+  font-weight: 600;
+}
+
 </style>
 
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:wght@200..700,FILL@0..1,GRAD@-50..200,opsz@20..48&display=swap" rel="stylesheet">
@@ -851,14 +1005,6 @@ html.dark button:hover, html.dark .btn:hover, html.dark .vbtn:hover, html.dark .
     </div>
   </main>
 
-  <!-- Enhanced FAB -->
-  <button class="fab" id="fab" title="새 아이디어" aria-label="새 아이디어">
-    <svg class="ico" viewBox="0 0 24 24" style="width:28px;height:28px" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-      <line x1="12" y1="5" x2="12" y2="19"/>
-      <line x1="5" y1="12" x2="19" y2="12"/>
-    </svg>
-  </button>
-
   <!-- Scroll to Top Button -->
   <button class="scroll-top" id="scrollTop" title="맨 위로" aria-label="맨 위로">
     <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -878,6 +1024,107 @@ html.dark button:hover, html.dark .btn:hover, html.dark .vbtn:hover, html.dark .
     </svg>
     <span class="tt"></span>
     <span class="tg"></span>
+  </div>
+
+  <!-- 설정 패널 -->
+  <div class="settings-overlay" id="settingsOverlay"></div>
+  <div class="settings-panel" id="settingsPanel">
+    <div class="settings-header">
+      <div class="settings-title">설정</div>
+      <button class="icon-btn" id="closeSettings" aria-label="닫기">
+        <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="settings-body">
+      <!-- 통계 섹션 -->
+      <div class="settings-section">
+        <div class="settings-section-title">📊 통계</div>
+        <div class="stat-card">
+          <div class="stat-value" id="totalIdeas">0</div>
+          <div class="stat-label">전체 아이디어</div>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:var(--sp-12)">
+          <div class="stat-card">
+            <div class="stat-value" id="totalTags">0</div>
+            <div class="stat-label">태그 수</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-value" id="dueIdeas">0</div>
+            <div class="stat-label">마감 예정</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 모양 섹션 -->
+      <div class="settings-section">
+        <div class="settings-section-title">🎨 모양</div>
+        <div class="settings-item" id="toggleThemeSetting">
+          <div>
+            <div class="settings-item-label">다크 모드</div>
+            <div class="settings-item-desc">어두운 테마 사용</div>
+          </div>
+          <div class="toggle-switch" id="darkModeToggle"></div>
+        </div>
+      </div>
+
+      <!-- 데이터 섹션 -->
+      <div class="settings-section">
+        <div class="settings-section-title">💾 데이터</div>
+        <div class="settings-item" onclick="exportData()">
+          <div>
+            <div class="settings-item-label">데이터 내보내기</div>
+            <div class="settings-item-desc">JSON 파일로 백업</div>
+          </div>
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="7 10 12 15 17 10"/>
+            <line x1="12" y1="15" x2="12" y2="3"/>
+          </svg>
+        </div>
+        <div class="settings-item" onclick="document.getElementById('importFile').click()">
+          <div>
+            <div class="settings-item-label">데이터 가져오기</div>
+            <div class="settings-item-desc">JSON 파일에서 복원</div>
+          </div>
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+            <polyline points="17 8 12 3 7 8"/>
+            <line x1="12" y1="3" x2="12" y2="15"/>
+          </svg>
+        </div>
+        <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+        <div class="settings-item" onclick="if(confirm('모든 데이터를 삭제하시겠습니까?')) clearAllData()">
+          <div>
+            <div class="settings-item-label" style="color:#ef4444">모든 데이터 삭제</div>
+            <div class="settings-item-desc">복구할 수 없습니다</div>
+          </div>
+          <svg class="ico" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"/>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- 정보 섹션 -->
+      <div class="settings-section">
+        <div class="settings-section-title">ℹ️ 정보</div>
+        <div class="settings-item">
+          <div>
+            <div class="settings-item-label">버전</div>
+            <div class="settings-item-desc">IDEA BRAIN v2.0</div>
+          </div>
+        </div>
+        <div class="settings-item">
+          <div>
+            <div class="settings-item-label">마지막 업데이트</div>
+            <div class="settings-item-desc" id="lastUpdate">-</div>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- Enhanced Bottom GNB with iOS Style Icons -->
@@ -1019,18 +1266,27 @@ html.dark button:hover, html.dark .btn:hover, html.dark .vbtn:hover, html.dark .
     const ideasKey='ideas';
     
     function getIdeas(){ try{return JSON.parse(localStorage.getItem(ideasKey)||'[]')}catch{return[]} }
-    function setIdeas(data){ localStorage.setItem(ideasKey,JSON.stringify(data)) }
+    function setIdeas(data){ localStorage.setItem(ideasKey,JSON.stringify(data)); updateStats(); }
 
     // Theme
     function loadTheme(){ 
       const t=localStorage.getItem('theme')||'dark'; 
-      document.documentElement.className=t; 
+      document.documentElement.className=t;
+      updateDarkModeToggle();
     }
     function toggleTheme(){ 
       const c=document.documentElement.classList; 
       const t=c.contains('light')?'dark':'light'; 
       document.documentElement.className=t; 
-      localStorage.setItem('theme',t); 
+      localStorage.setItem('theme',t);
+      updateDarkModeToggle();
+    }
+    function updateDarkModeToggle() {
+      const toggle = $('#darkModeToggle');
+      if(toggle) {
+        const isDark = document.documentElement.classList.contains('dark');
+        toggle.classList.toggle('active', isDark);
+      }
     }
 
     // Render ideas
@@ -1064,6 +1320,94 @@ html.dark button:hover, html.dark .btn:hover, html.dark .vbtn:hover, html.dark .
     
     function renderTag(t){ 
       return `<span class="tag">#${t}</span>`; 
+    }
+
+    // Settings functions
+    function showSettings() {
+      $('#settingsPanel').classList.add('show');
+      $('#settingsOverlay').classList.add('show');
+      updateStats();
+    }
+
+    function hideSettings() {
+      $('#settingsPanel').classList.remove('show');
+      $('#settingsOverlay').classList.remove('show');
+    }
+
+    function updateStats() {
+      const ideas = getIdeas();
+      const allTags = new Set();
+      let dueCount = 0;
+      const now = new Date();
+      
+      ideas.forEach(i => {
+        if(i.tags) i.tags.forEach(t => allTags.add(t));
+        if(i.dueAt && new Date(i.dueAt) > now) dueCount++;
+      });
+
+      const totalEl = $('#totalIdeas');
+      const tagsEl = $('#totalTags');
+      const dueEl = $('#dueIdeas');
+      const lastUpdateEl = $('#lastUpdate');
+
+      if(totalEl) totalEl.textContent = ideas.length;
+      if(tagsEl) tagsEl.textContent = allTags.size;
+      if(dueEl) dueEl.textContent = dueCount;
+      if(lastUpdateEl && ideas.length > 0) {
+        const latest = ideas.reduce((a, b) => 
+          new Date(a.updatedAt) > new Date(b.updatedAt) ? a : b
+        );
+        lastUpdateEl.textContent = new Date(latest.updatedAt).toLocaleDateString('ko-KR');
+      }
+    }
+
+    function exportData() {
+      const data = getIdeas();
+      const json = JSON.stringify(data, null, 2);
+      const blob = new Blob([json], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `idea-brain-backup-${new Date().toISOString().slice(0,10)}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      alert('데이터를 내보냈습니다! 💾');
+    }
+
+    function importData(event) {
+      const file = event.target.files[0];
+      if (!file) return;
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = JSON.parse(e.target.result);
+          if (Array.isArray(data)) {
+            if (confirm(`${data.length}개의 아이디어를 가져오시겠습니까? 기존 데이터와 병합됩니다.`)) {
+              const existing = getIdeas();
+              const merged = [...data, ...existing];
+              setIdeas(merged);
+              renderIdeas();
+              renderCalendar();
+              alert('데이터를 가져왔습니다! ✅');
+            }
+          } else {
+            alert('올바른 형식의 파일이 아닙니다.');
+          }
+        } catch (err) {
+          alert('파일을 읽는 중 오류가 발생했습니다.');
+        }
+      };
+      reader.readAsText(file);
+      event.target.value = '';
+    }
+
+    function clearAllData() {
+      localStorage.removeItem(ideasKey);
+      renderIdeas();
+      renderCalendar();
+      updateStats();
+      alert('모든 데이터가 삭제되었습니다.');
     }
 
     // Search - Enhanced
@@ -1428,7 +1772,6 @@ new Quill('#editor',{
       });
 
       // Modal controls
-      $('#fab').addEventListener('click',()=>openModal());
       $('#navAdd').addEventListener('click',()=>openModal());
       $('#closeModal').addEventListener('click',closeModal);
       $('#overlay').addEventListener('click',(e)=>{
@@ -1502,17 +1845,6 @@ new Quill('#editor',{
       
       $('#searchInput').addEventListener('input',e=>search(e.target.value));
       
-      // Close search on Escape
-      document.addEventListener('keydown',e=>{
-        if(e.key==='Escape'){
-          if($('#searchBar').style.display !== 'none'){
-            closeSearch();
-          } else if($('#overlay').style.display === 'flex'){
-            closeModal();
-          }
-        }
-      });
-
       // Keyboard shortcut for search (Cmd/Ctrl + K)
       document.addEventListener('keydown',e=>{
         if((e.metaKey || e.ctrlKey) && e.key === 'k'){
@@ -1536,11 +1868,31 @@ new Quill('#editor',{
         updateHeader();
       });
 
-      // Settings button (placeholder)
+      // Settings button
       $('#navSettings').addEventListener('click',()=>{
-        alert('설정 기능은 곧 추가됩니다! 🎉');
+        showSettings();
         $$('.gnb-btn').forEach(btn => btn.classList.remove('active'));
         $('#navSettings').classList.add('active');
+      });
+
+      $('#closeSettings').addEventListener('click', hideSettings);
+      $('#settingsOverlay').addEventListener('click', hideSettings);
+
+      // Settings theme toggle
+      $('#toggleThemeSetting').addEventListener('click', toggleTheme);
+      $('#darkModeToggle').addEventListener('click', toggleTheme);
+
+      // Escape key to close settings
+      document.addEventListener('keydown',e=>{
+        if(e.key==='Escape'){
+          if($('#searchBar').style.display !== 'none'){
+            closeSearch();
+          } else if($('#overlay').style.display === 'flex'){
+            closeModal();
+          } else if($('#settingsPanel').classList.contains('show')){
+            hideSettings();
+          }
+        }
       });
 
       // Table insert functionality
