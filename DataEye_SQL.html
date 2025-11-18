@@ -365,6 +365,188 @@ body.dark .sidebar-brand .logo-light { display: none !important; }
 body.dark .sidebar-brand .logo-dark { display: block !important; }
 body.sidebar-collapsed .sidebar-brand img { opacity: 0; width: 0; }
 
+/* ================= Modal Overlay & Settings Modal ================= */
+.modal-overlay{
+  position:fixed; top:0; left:0; right:0; bottom:0; 
+  background:rgba(0,0,0,0.5); z-index:1000;
+  display:none; align-items:center; justify-content:center;
+  animation:fadeIn 0.2s ease;
+}
+.modal-overlay.active{display:flex}
+@keyframes fadeIn{
+  from{opacity:0}
+  to{opacity:1}
+}
+
+.settings-modal{
+  background:var(--panel); border:1px solid var(--line); 
+  border-radius:12px; width:90%; max-width:800px; 
+  max-height:85vh; display:flex; flex-direction:column;
+  box-shadow:0 20px 60px rgba(0,0,0,0.3);
+  animation:slideUp 0.3s ease;
+}
+@keyframes slideUp{
+  from{transform:translateY(20px); opacity:0}
+  to{transform:translateY(0); opacity:1}
+}
+
+.modal-header{
+  padding:20px 24px; border-bottom:1px solid var(--line);
+  display:flex; align-items:center; justify-content:space-between;
+}
+.modal-title{
+  font-size:16px; font-weight:700; color:var(--ink);
+  display:flex; align-items:center; gap:10px;
+}
+.modal-close{
+  width:32px; height:32px; border-radius:6px; 
+  display:grid; place-items:center; cursor:pointer; 
+  border:1px solid var(--line); background:transparent;
+  transition:0.12s;
+}
+.modal-close:hover{background:var(--hover)}
+.modal-close .material-icons{font-size:20px; color:var(--muted)}
+
+.modal-body{
+  flex:1; overflow-y:auto; padding:0;
+}
+
+.settings-tabs{
+  display:flex; border-bottom:1px solid var(--line);
+  background:var(--chip); position:sticky; top:0; z-index:10;
+}
+.settings-tab{
+  padding:14px 20px; font-size:12px; font-weight:600;
+  cursor:pointer; color:var(--muted); 
+  border-bottom:2px solid transparent; transition:0.12s;
+  display:flex; align-items:center; gap:8px;
+}
+.settings-tab:hover{color:var(--ink); background:var(--hover)}
+.settings-tab.active{
+  color:var(--accent); border-bottom-color:var(--accent);
+  background:var(--panel);
+}
+.settings-tab .material-icons{font-size:18px}
+
+.settings-content{
+  padding:24px;
+}
+.settings-section{
+  display:none;
+}
+.settings-section.active{
+  display:block;
+}
+
+.setting-group{
+  margin-bottom:28px;
+}
+.setting-group-title{
+  font-size:13px; font-weight:700; color:var(--ink);
+  margin-bottom:12px; padding-bottom:8px;
+  border-bottom:1px solid var(--line);
+}
+.setting-item{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:12px 0; gap:16px;
+}
+.setting-item:not(:last-child){
+  border-bottom:1px solid var(--line);
+}
+.setting-label{
+  flex:1;
+}
+.setting-label-title{
+  font-size:12.5px; font-weight:600; color:var(--ink);
+  margin-bottom:4px;
+}
+.setting-label-desc{
+  font-size:11px; color:var(--muted); line-height:1.5;
+}
+.setting-control{
+  flex-shrink:0;
+}
+
+/* Toggle Switch */
+.toggle-switch{
+  position:relative; width:44px; height:24px; cursor:pointer;
+}
+.toggle-switch input{display:none}
+.toggle-slider{
+  position:absolute; top:0; left:0; right:0; bottom:0;
+  background:var(--line); border-radius:24px; transition:0.3s;
+}
+.toggle-slider:before{
+  content:''; position:absolute; height:18px; width:18px;
+  left:3px; bottom:3px; background:white;
+  border-radius:50%; transition:0.3s;
+}
+.toggle-switch input:checked + .toggle-slider{
+  background:var(--accent);
+}
+.toggle-switch input:checked + .toggle-slider:before{
+  transform:translateX(20px);
+}
+
+/* Select Dropdown */
+.setting-select{
+  padding:6px 28px 6px 10px; border:1px solid var(--line);
+  border-radius:6px; background:var(--panel); color:var(--ink);
+  font-size:11.5px; cursor:pointer; min-width:140px;
+  background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 12 12%22><path fill=%22%239aa6b2%22 d=%22M6 9L1 4h10z%22/></svg>');
+  background-repeat:no-repeat; background-position:right 8px center;
+  appearance:none;
+}
+.setting-select:hover{border-color:var(--accent)}
+
+/* Number Input */
+.setting-number{
+  padding:6px 10px; border:1px solid var(--line);
+  border-radius:6px; background:var(--panel); color:var(--ink);
+  font-size:11.5px; width:100px; text-align:right;
+}
+.setting-number:hover{border-color:var(--accent)}
+.setting-number:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(47,129,247,0.1)}
+
+/* Color Picker */
+.setting-color{
+  width:80px; height:32px; border:1px solid var(--line);
+  border-radius:6px; cursor:pointer;
+}
+.setting-color:hover{border-color:var(--accent)}
+
+/* Modal Footer */
+.modal-footer{
+  padding:16px 24px; border-top:1px solid var(--line);
+  display:flex; justify-content:flex-end; gap:10px;
+  background:var(--chip);
+}
+.modal-btn{
+  padding:8px 16px; border-radius:6px; font-size:12px;
+  font-weight:600; cursor:pointer; transition:0.12s;
+  display:inline-flex; align-items:center; gap:6px;
+}
+.modal-btn-cancel{
+  border:1px solid var(--line); background:var(--panel);
+  color:var(--ink);
+}
+.modal-btn-cancel:hover{background:var(--hover)}
+.modal-btn-save{
+  border:1px solid var(--accent); background:var(--accent);
+  color:#ffffff;
+}
+.modal-btn-save:hover{background:var(--accent-2)}
+.modal-btn .material-icons{font-size:16px}
+
+/* Modal Mobile responsive */
+@media(max-width:768px){
+  .settings-tabs{overflow-x:auto; flex-wrap:nowrap}
+  .settings-tab{white-space:nowrap}
+  .setting-item{flex-direction:column; align-items:flex-start}
+  .setting-control{width:100%}
+  .setting-select, .setting-number{width:100%}
+}
+
 </style>
 </head>
 <body class="dark">
@@ -439,7 +621,7 @@ body.sidebar-collapsed .sidebar-brand img { opacity: 0; width: 0; }
     
     <div class="nav-section">
       <div class="nav-section-title">설정</div>
-      <a href="#" class="nav-item">
+      <a href="#" class="nav-item" id="settingsBtn">
         <span class="material-icons">settings</span>
         <span>환경설정</span>
       </a>
@@ -798,6 +980,11 @@ body.sidebar-collapsed .sidebar-brand img { opacity: 0; width: 0; }
 document.body.classList.add('dark');
 document.getElementById('mode').addEventListener('click', () => {
   document.body.classList.toggle('dark');
+  // Sync with settings modal if it exists
+  const darkModeToggleInSettings = document.getElementById('darkModeToggle');
+  if (darkModeToggleInSettings) {
+    darkModeToggleInSettings.checked = document.body.classList.contains('dark');
+  }
 });
 
 // Sidebar toggle
@@ -846,6 +1033,546 @@ document.querySelectorAll('.quick').forEach(card => {
     card.querySelectorAll('.dot').forEach(dot => dot.classList.remove('active'));
   });
 });
+
+</script>
+
+<!-- Settings Modal -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="settings-modal">
+    <div class="modal-header">
+      <div class="modal-title">
+        <span class="material-icons" style="color:var(--accent)">settings</span>
+        환경설정
+      </div>
+      <div class="modal-close" id="closeModal">
+        <span class="material-icons">close</span>
+      </div>
+    </div>
+
+    <div class="settings-tabs">
+      <div class="settings-tab active" data-tab="editor">
+        <span class="material-icons">code</span>
+        쿼리 편집기
+      </div>
+      <div class="settings-tab" data-tab="execution">
+        <span class="material-icons">play_circle</span>
+        쿼리 실행
+      </div>
+      <div class="settings-tab" data-tab="display">
+        <span class="material-icons">table_chart</span>
+        데이터 표시
+      </div>
+      <div class="settings-tab" data-tab="appearance">
+        <span class="material-icons">palette</span>
+        테마 및 외관
+      </div>
+    </div>
+
+    <div class="modal-body">
+      <div class="settings-content">
+        <!-- Editor Settings -->
+        <div class="settings-section active" id="editor">
+          <div class="setting-group">
+            <div class="setting-group-title">편집기 기본 설정</div>
+            
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">폰트 크기</div>
+                <div class="setting-label-desc">SQL 편집기에서 사용할 폰트 크기를 선택하세요</div>
+              </div>
+              <div class="setting-control">
+                <select class="setting-select">
+                  <option value="11">11px (작게)</option>
+                  <option value="12" selected>12px (기본)</option>
+                  <option value="13">13px</option>
+                  <option value="14">14px (크게)</option>
+                  <option value="16">16px (더 크게)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">폰트 패밀리</div>
+                <div class="setting-label-desc">코드 편집 시 사용할 폰트를 선택하세요</div>
+              </div>
+              <div class="setting-control">
+                <select class="setting-select">
+                  <option value="monaco">Monaco</option>
+                  <option value="consolas">Consolas</option>
+                  <option value="courier" selected>Courier New</option>
+                  <option value="menlo">Menlo</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">탭 크기</div>
+                <div class="setting-label-desc">탭 키를 누를 때 들여쓰기 공백 개수</div>
+              </div>
+              <div class="setting-control">
+                <input type="number" class="setting-number" value="4" min="2" max="8" step="1">
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">줄 번호 표시</div>
+                <div class="setting-label-desc">편집기 좌측에 줄 번호를 표시합니다</div>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">자동 줄바꿈</div>
+                <div class="setting-label-desc">긴 코드를 자동으로 다음 줄로 넘깁니다</div>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-group-title">코드 지원 기능</div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">구문 강조</div>
+                <div class="setting-label-desc">SQL 키워드와 함수를 색상으로 구분합니다</div>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">자동 완성</div>
+                <div class="setting-label-desc">테이블명, 컬럼명, 키워드 자동 완성 기능</div>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">괄호 자동 닫기</div>
+                <div class="setting-label-desc">여는 괄호 입력 시 자동으로 닫는 괄호를 추가합니다</div>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Execution Settings -->
+        <div class="settings-section" id="execution">
+          <div class="setting-group">
+            <div class="setting-group-title">쿼리 실행 옵션</div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">실행 전 확인</div>
+                <div class="setting-label-desc">DELETE, UPDATE, DROP 문 실행 전 확인 메시지를 표시합니다</div>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">쿼리 타임아웃</div>
+                <div class="setting-label-desc">쿼리 실행 제한 시간 (초)</div>
+              </div>
+              <div class="setting-control">
+                <input type="number" class="setting-number" value="60" min="10" max="300" step="10">
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">최대 결과 행 수</div>
+                <div class="setting-label-desc">한 번에 표시할 최대 데이터 행 수</div>
+              </div>
+              <div class="setting-control">
+                <select class="setting-select">
+                  <option value="100">100행</option>
+                  <option value="500">500행</option>
+                  <option value="1000" selected>1,000행</option>
+                  <option value="5000">5,000행</option>
+                  <option value="10000">10,000행</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">쿼리 히스토리 저장</div>
+                <div class="setting-label-desc">실행한 쿼리를 자동으로 히스토리에 저장합니다</div>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">실행 시간 표시</div>
+                <div class="setting-label-desc">쿼리 실행 소요 시간을 결과에 표시합니다</div>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-group-title">성능 최적화</div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">쿼리 캐싱</div>
+                <div class="setting-label-desc">동일한 쿼리 결과를 캐시에 저장하여 재사용합니다</div>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Display Settings -->
+        <div class="settings-section" id="display">
+          <div class="setting-group">
+            <div class="setting-group-title">데이터 형식</div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">날짜 형식</div>
+                <div class="setting-label-desc">날짜 데이터 표시 형식을 선택하세요</div>
+              </div>
+              <div class="setting-control">
+                <select class="setting-select">
+                  <option value="yyyy-mm-dd" selected>YYYY-MM-DD</option>
+                  <option value="yyyy/mm/dd">YYYY/MM/DD</option>
+                  <option value="dd-mm-yyyy">DD-MM-YYYY</option>
+                  <option value="mm/dd/yyyy">MM/DD/YYYY</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">숫자 형식</div>
+                <div class="setting-label-desc">숫자 데이터 표시 형식을 선택하세요</div>
+              </div>
+              <div class="setting-control">
+                <select class="setting-select">
+                  <option value="1234567.89" selected>1234567.89 (기본)</option>
+                  <option value="1,234,567.89">1,234,567.89 (천 단위 구분)</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">NULL 값 표시</div>
+                <div class="setting-label-desc">NULL 값을 어떻게 표시할지 선택하세요</div>
+              </div>
+              <div class="setting-control">
+                <select class="setting-select">
+                  <option value="null" selected>NULL</option>
+                  <option value="empty">(빈 값)</option>
+                  <option value="dash">-</option>
+                  <option value="na">N/A</option>
+                </select>
+              </div>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-group-title">테이블 표시</div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">컬럼 헤더 고정</div>
+                <div class="setting-label-desc">스크롤 시 테이블 헤더를 화면 상단에 고정합니다</div>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">행 번호 표시</div>
+                <div class="setting-label-desc">결과 테이블 좌측에 행 번호를 표시합니다</div>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">마우스 오버 하이라이트</div>
+                <div class="setting-label-desc">마우스를 올린 행을 강조 표시합니다</div>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-group-title">데이터 시각화</div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">미니 차트 자동 생성</div>
+                <div class="setting-label-desc">숫자 데이터에 대한 간단한 차트를 자동으로 생성합니다</div>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Appearance Settings -->
+        <div class="settings-section" id="appearance">
+          <div class="setting-group">
+            <div class="setting-group-title">테마 설정</div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">다크 모드</div>
+                <div class="setting-label-desc">어두운 배경의 테마를 사용합니다</div>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" id="darkModeToggle" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">테마 색상</div>
+                <div class="setting-label-desc">인터페이스의 강조 색상을 선택하세요</div>
+              </div>
+              <div class="setting-control">
+                <select class="setting-select">
+                  <option value="blue" selected>파란색 (기본)</option>
+                  <option value="green">초록색</option>
+                  <option value="purple">보라색</option>
+                  <option value="orange">주황색</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">커스텀 강조 색상</div>
+                <div class="setting-label-desc">원하는 색상을 직접 선택할 수 있습니다</div>
+              </div>
+              <div class="setting-control">
+                <input type="color" class="setting-color" value="#0969da">
+              </div>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-group-title">레이아웃</div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">사이드바 기본 상태</div>
+                <div class="setting-label-desc">페이지 로드 시 사이드바 상태를 선택하세요</div>
+              </div>
+              <div class="setting-control">
+                <select class="setting-select">
+                  <option value="expanded" selected>펼침</option>
+                  <option value="collapsed">접힘</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">컴팩트 모드</div>
+                <div class="setting-label-desc">인터페이스 요소의 간격을 줄여 더 많은 내용을 표시합니다</div>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox">
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="setting-group">
+            <div class="setting-group-title">애니메이션</div>
+
+            <div class="setting-item">
+              <div class="setting-label">
+                <div class="setting-label-title">화면 전환 애니메이션</div>
+                <div class="setting-label-desc">페이지 전환 시 부드러운 애니메이션을 표시합니다</div>
+              </div>
+              <div class="setting-control">
+                <label class="toggle-switch">
+                  <input type="checkbox" checked>
+                  <span class="toggle-slider"></span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="modal-btn modal-btn-cancel" id="cancelBtn">
+        <span class="material-icons">close</span>
+        취소
+      </button>
+      <button class="modal-btn modal-btn-save" id="saveBtn">
+        <span class="material-icons">check</span>
+        저장
+      </button>
+    </div>
+  </div>
+</div>
+
+<script>
+// Settings Modal Logic
+const settingsModal = document.getElementById('settingsModal');
+const settingsBtn = document.getElementById('settingsBtn');
+const closeModal = document.getElementById('closeModal');
+const cancelBtn = document.getElementById('cancelBtn');
+const saveBtn = document.getElementById('saveBtn');
+
+// Open modal
+settingsBtn.addEventListener('click', (e) => {
+  e.preventDefault();
+  settingsModal.classList.add('active');
+  document.body.style.overflow = 'hidden';
+});
+
+// Close modal function
+function closeSettingsModal() {
+  settingsModal.classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+// Close modal events
+closeModal.addEventListener('click', closeSettingsModal);
+cancelBtn.addEventListener('click', closeSettingsModal);
+
+// Close modal when clicking outside
+settingsModal.addEventListener('click', (e) => {
+  if (e.target === settingsModal) {
+    closeSettingsModal();
+  }
+});
+
+// Close modal with ESC key
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && settingsModal.classList.contains('active')) {
+    closeSettingsModal();
+  }
+});
+
+// Settings tabs switching
+const settingsTabs = document.querySelectorAll('.settings-tab');
+const settingsSections = document.querySelectorAll('.settings-section');
+
+settingsTabs.forEach(tab => {
+  tab.addEventListener('click', () => {
+    const targetTab = tab.dataset.tab;
+    
+    // Remove active class from all tabs and sections
+    settingsTabs.forEach(t => t.classList.remove('active'));
+    settingsSections.forEach(s => s.classList.remove('active'));
+    
+    // Add active class to clicked tab and corresponding section
+    tab.classList.add('active');
+    const targetSection = document.getElementById(targetTab);
+    if (targetSection) {
+      targetSection.classList.add('active');
+    }
+  });
+});
+
+// Save button action
+saveBtn.addEventListener('click', () => {
+  console.log('Settings saved!');
+  alert('설정이 저장되었습니다!');
+  closeSettingsModal();
+});
+
+// Dark mode toggle in settings sync with main theme toggle
+const darkModeToggleInSettings = document.getElementById('darkModeToggle');
+if (darkModeToggleInSettings) {
+  darkModeToggleInSettings.checked = document.body.classList.contains('dark');
+
+  darkModeToggleInSettings.addEventListener('change', () => {
+    if (darkModeToggleInSettings.checked) {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
+  });
+}
 </script>
 
 </body>
