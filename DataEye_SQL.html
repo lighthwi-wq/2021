@@ -442,8 +442,14 @@ body.dark .modal-overlay{
   font-family: 'Noto Sans', 'Noto Sans KR', -apple-system, sans-serif;
 }
 @keyframes slideUp{
-  from{transform:translateY(20px) scale(0.98); opacity:0}
-  to{transform:translateY(0) scale(1); opacity:1}
+  from{
+    transform: translate(-50%, -50%) scale(0.96);
+    opacity: 0;
+  }
+  to{
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
 }
 
 .modal-header{
