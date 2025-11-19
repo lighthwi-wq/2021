@@ -13,6 +13,7 @@
   --accent:#0969da; --accent-2:#0550ae; --hover:#f3f4f6; --chip:#f6f8fa; --success:#1a7f37;
   --chart-line:#1f6feb; --chart-fill:#dbeafe; --sidebar-width:240px;
   --chart-gradient-1:#3b82f6; --chart-gradient-2:#60a5fa; --chart-gradient-3:#93c5fd;
+  --base-font-size: 12px;
 }
 body.dark{
   --bg:#0d1117; --panel:#0d1117; --ink:#e6edf3; --muted:#9aa6b2; --line:#30363d;
@@ -21,13 +22,46 @@ body.dark{
   --chart-gradient-1:#2563eb; --chart-gradient-2:#3b82f6; --chart-gradient-3:#60a5fa;
 }
 
+/* Theme colors */
+body.theme-green {
+  --accent: #22c55e;
+  --accent-2: #16a34a;
+}
+body.theme-purple {
+  --accent: #a855f7;
+  --accent-2: #9333ea;
+}
+body.theme-orange {
+  --accent: #f97316;
+  --accent-2: #ea580c;
+}
+
+/* Compact mode */
+body.compact-mode {
+  --base-font-size: 11px;
+}
+body.compact-mode .container {
+  padding: 0 12px;
+}
+body.compact-mode .quick {
+  padding: 12px;
+  min-height: 150px;
+}
+
 *{box-sizing:border-box; margin:0; padding:0}
-html,body{height:100%}
+html,body{height:100%; overflow-x: hidden;}
 body{
   background:var(--bg); color:var(--ink); 
   font-family:'Noto Sans KR', system-ui, -apple-system, Segoe UI, Arial, sans-serif; 
-  font-size:12px; line-height:1.5;
+  font-size:var(--base-font-size); line-height:1.5;
   overflow-x:hidden;
+  transition: font-size 0.3s ease;
+}
+
+/* Animation control */
+body.no-animations * {
+  animation: none !important;
+  transition: none !important;
 }
 
 /* ================= Left Sidebar Navigation ================= */
@@ -371,6 +405,8 @@ body.sidebar-collapsed .sidebar-brand img { opacity: 0; width: 0; }
   background:rgba(0,0,0,0.5); z-index:1000;
   display:none; align-items:center; justify-content:center;
   animation:fadeIn 0.2s ease;
+  padding: 20px;
+  overflow-y: auto;
 }
 .modal-overlay.active{display:flex}
 @keyframes fadeIn{
@@ -380,10 +416,12 @@ body.sidebar-collapsed .sidebar-brand img { opacity: 0; width: 0; }
 
 .settings-modal{
   background:var(--panel); border:1px solid var(--line); 
-  border-radius:12px; width:90%; max-width:800px; 
-  max-height:85vh; display:flex; flex-direction:column;
+  border-radius:12px; width:100%; max-width:850px; 
+  max-height:90vh; display:flex; flex-direction:column;
   box-shadow:0 20px 60px rgba(0,0,0,0.3);
   animation:slideUp 0.3s ease;
+  overflow: hidden;
+  margin: auto;
 }
 @keyframes slideUp{
   from{transform:translateY(20px); opacity:0}
@@ -393,6 +431,7 @@ body.sidebar-collapsed .sidebar-brand img { opacity: 0; width: 0; }
 .modal-header{
   padding:20px 24px; border-bottom:1px solid var(--line);
   display:flex; align-items:center; justify-content:space-between;
+  flex-shrink: 0;
 }
 .modal-title{
   font-size:16px; font-weight:700; color:var(--ink);
@@ -409,17 +448,22 @@ body.sidebar-collapsed .sidebar-brand img { opacity: 0; width: 0; }
 
 .modal-body{
   flex:1; overflow-y:auto; padding:0;
+  min-height: 0;
+  overflow-x: hidden;
 }
 
 .settings-tabs{
   display:flex; border-bottom:1px solid var(--line);
   background:var(--chip); position:sticky; top:0; z-index:10;
+  overflow-x: auto;
+  flex-shrink: 0;
 }
 .settings-tab{
   padding:14px 20px; font-size:12px; font-weight:600;
   cursor:pointer; color:var(--muted); 
   border-bottom:2px solid transparent; transition:0.12s;
   display:flex; align-items:center; gap:8px;
+  white-space: nowrap;
 }
 .settings-tab:hover{color:var(--ink); background:var(--hover)}
 .settings-tab.active{
@@ -429,7 +473,9 @@ body.sidebar-collapsed .sidebar-brand img { opacity: 0; width: 0; }
 .settings-tab .material-icons{font-size:18px}
 
 .settings-content{
-  padding:24px;
+  padding:20px 24px 20px 24px;
+  overflow-x: hidden;
+  max-width: 100%;
 }
 .settings-section{
   display:none;
@@ -448,13 +494,18 @@ body.sidebar-collapsed .sidebar-brand img { opacity: 0; width: 0; }
 }
 .setting-item{
   display:flex; justify-content:space-between; align-items:center;
-  padding:12px 0; gap:16px;
+  padding:14px 0; gap:32px;
+  max-width: 100%;
+  margin: 0 12px;
 }
 .setting-item:not(:last-child){
   border-bottom:1px solid var(--line);
 }
 .setting-label{
-  flex:1;
+  flex:1 1 auto;
+  min-width: 0;
+  max-width: calc(100% - 200px);
+  padding-right: 20px;
 }
 .setting-label-title{
   font-size:12.5px; font-weight:600; color:var(--ink);
@@ -462,9 +513,14 @@ body.sidebar-collapsed .sidebar-brand img { opacity: 0; width: 0; }
 }
 .setting-label-desc{
   font-size:11px; color:var(--muted); line-height:1.5;
+  word-wrap: break-word;
 }
 .setting-control{
   flex-shrink:0;
+  flex-basis: auto;
+  display: flex;
+  justify-content: flex-end;
+  min-width: 140px;
 }
 
 /* Toggle Switch */
@@ -493,6 +549,7 @@ body.sidebar-collapsed .sidebar-brand img { opacity: 0; width: 0; }
   padding:6px 28px 6px 10px; border:1px solid var(--line);
   border-radius:6px; background:var(--panel); color:var(--ink);
   font-size:11.5px; cursor:pointer; min-width:140px;
+  max-width: 200px;
   background-image:url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 12 12%22><path fill=%22%239aa6b2%22 d=%22M6 9L1 4h10z%22/></svg>');
   background-repeat:no-repeat; background-position:right 8px center;
   appearance:none;
@@ -504,13 +561,14 @@ body.sidebar-collapsed .sidebar-brand img { opacity: 0; width: 0; }
   padding:6px 10px; border:1px solid var(--line);
   border-radius:6px; background:var(--panel); color:var(--ink);
   font-size:11.5px; width:100px; text-align:right;
+  max-width: 100px;
 }
 .setting-number:hover{border-color:var(--accent)}
 .setting-number:focus{outline:none; border-color:var(--accent); box-shadow:0 0 0 3px rgba(47,129,247,0.1)}
 
 /* Color Picker */
 .setting-color{
-  width:80px; height:32px; border:1px solid var(--line);
+  width:60px; height:32px; border:1px solid var(--line);
   border-radius:6px; cursor:pointer;
 }
 .setting-color:hover{border-color:var(--accent)}
@@ -520,6 +578,7 @@ body.sidebar-collapsed .sidebar-brand img { opacity: 0; width: 0; }
   padding:16px 24px; border-top:1px solid var(--line);
   display:flex; justify-content:flex-end; gap:10px;
   background:var(--chip);
+  flex-shrink: 0;
 }
 .modal-btn{
   padding:8px 16px; border-radius:6px; font-size:12px;
@@ -540,11 +599,16 @@ body.sidebar-collapsed .sidebar-brand img { opacity: 0; width: 0; }
 
 /* Modal Mobile responsive */
 @media(max-width:768px){
+  .modal-overlay{padding: 10px}
+  .settings-modal{max-width: 100%; max-height: 95vh}
+  .settings-content{padding: 16px}
   .settings-tabs{overflow-x:auto; flex-wrap:nowrap}
-  .settings-tab{white-space:nowrap}
-  .setting-item{flex-direction:column; align-items:flex-start}
-  .setting-control{width:100%}
-  .setting-select, .setting-number{width:100%}
+  .settings-tab{white-space:nowrap; font-size: 11px; padding: 12px 16px}
+  .setting-item{flex-direction:column; align-items:flex-start; padding: 12px 0}
+  .setting-label{max-width: 100%; padding-right: 0}
+  .setting-control{width:100%; margin-top: 8px}
+  .setting-select, .setting-number{width:100%; max-width: 100%}
+  .toggle-switch{margin-left: 0}
 }
 
 </style>
@@ -1494,7 +1558,141 @@ document.querySelectorAll('.quick').forEach(card => {
 </div>
 
 <script>
-// Settings Modal Logic
+// ============= Settings Management =============
+const settings = {
+  // Editor settings
+  syntaxHighlight: true,
+  autoComplete: true,
+  autoClose: true,
+  
+  // Execution settings
+  confirmBeforeExec: true,
+  queryTimeout: 60,
+  maxRows: 1000,
+  saveHistory: true,
+  showExecTime: true,
+  queryCaching: true,
+  
+  // Display settings
+  dateFormat: 'yyyy-mm-dd',
+  numberFormat: 'comma',
+  nullDisplay: 'NULL',
+  
+  // Appearance settings
+  darkMode: true,
+  themeColor: 'blue',
+  customColor: '#0969da',
+  fontSize: 12,
+  compactMode: false,
+  animations: true
+};
+
+// Load settings from localStorage
+function loadSettings() {
+  const savedSettings = localStorage.getItem('dataeyeSettings');
+  if (savedSettings) {
+    Object.assign(settings, JSON.parse(savedSettings));
+  }
+  applySettings();
+}
+
+// Save settings to localStorage
+function saveSettings() {
+  localStorage.setItem('dataeyeSettings', JSON.stringify(settings));
+}
+
+// Apply settings to UI
+function applySettings() {
+  // Dark mode
+  if (settings.darkMode) {
+    document.body.classList.add('dark');
+  } else {
+    document.body.classList.remove('dark');
+  }
+  
+  // Theme color
+  document.body.classList.remove('theme-green', 'theme-purple', 'theme-orange');
+  if (settings.themeColor !== 'blue') {
+    document.body.classList.add(`theme-${settings.themeColor}`);
+  }
+  
+  // Custom color
+  if (settings.themeColor === 'custom' && settings.customColor) {
+    document.documentElement.style.setProperty('--accent', settings.customColor);
+  }
+  
+  // Font size
+  if (settings.fontSize) {
+    document.documentElement.style.setProperty('--base-font-size', `${settings.fontSize}px`);
+  }
+  
+  // Compact mode
+  if (settings.compactMode) {
+    document.body.classList.add('compact-mode');
+  } else {
+    document.body.classList.remove('compact-mode');
+  }
+  
+  // Animations
+  if (!settings.animations) {
+    document.body.classList.add('no-animations');
+  } else {
+    document.body.classList.remove('no-animations');
+  }
+}
+
+// Update settings UI inputs
+function updateSettingsUI() {
+  // Editor settings
+  const syntaxToggle = document.querySelector('#editor input[type="checkbox"]:nth-of-type(1)');
+  const autoCompleteToggle = document.querySelector('#editor input[type="checkbox"]:nth-of-type(2)');
+  const autoCloseToggle = document.querySelector('#editor input[type="checkbox"]:nth-of-type(3)');
+  
+  if (syntaxToggle) syntaxToggle.checked = settings.syntaxHighlight;
+  if (autoCompleteToggle) autoCompleteToggle.checked = settings.autoComplete;
+  if (autoCloseToggle) autoCloseToggle.checked = settings.autoClose;
+  
+  // Execution settings
+  const confirmToggle = document.querySelector('#execution input[type="checkbox"]:nth-of-type(1)');
+  const queryTimeoutInput = document.querySelector('#execution input[type="number"]:nth-of-type(1)');
+  const maxRowsSelect = document.querySelector('#execution select');
+  const historyToggle = document.querySelector('#execution input[type="checkbox"]:nth-of-type(2)');
+  const execTimeToggle = document.querySelector('#execution input[type="checkbox"]:nth-of-type(3)');
+  const cacheToggle = document.querySelector('#execution input[type="checkbox"]:nth-of-type(4)');
+  
+  if (confirmToggle) confirmToggle.checked = settings.confirmBeforeExec;
+  if (queryTimeoutInput) queryTimeoutInput.value = settings.queryTimeout;
+  if (maxRowsSelect) maxRowsSelect.value = settings.maxRows;
+  if (historyToggle) historyToggle.checked = settings.saveHistory;
+  if (execTimeToggle) execTimeToggle.checked = settings.showExecTime;
+  if (cacheToggle) cacheToggle.checked = settings.queryCaching;
+  
+  // Display settings
+  const dateFormatSelect = document.querySelector('#display select:nth-of-type(1)');
+  const numberFormatSelect = document.querySelector('#display select:nth-of-type(2)');
+  const nullDisplaySelect = document.querySelector('#display select:nth-of-type(3)');
+  
+  if (dateFormatSelect) dateFormatSelect.value = settings.dateFormat;
+  if (numberFormatSelect) numberFormatSelect.value = settings.numberFormat;
+  if (nullDisplaySelect) nullDisplaySelect.value = settings.nullDisplay;
+  
+  // Appearance settings
+  const darkModeToggle = document.getElementById('darkModeToggle');
+  const themeColorSelect = document.querySelector('#appearance select:nth-of-type(1)');
+  const fontSizeSelect = document.querySelector('#appearance select:nth-of-type(2)');
+  const compactToggle = document.querySelector('#appearance input[type="checkbox"]:nth-of-type(2)');
+  const animationsToggle = document.querySelector('#appearance input[type="checkbox"]:nth-of-type(3)');
+  const customColorInput = document.querySelector('#appearance input[type="color"]');
+  
+  if (darkModeToggle) darkModeToggle.checked = settings.darkMode;
+  if (themeColorSelect) themeColorSelect.value = settings.themeColor;
+  if (fontSizeSelect) fontSizeSelect.value = settings.fontSize;
+  if (compactToggle) compactToggle.checked = settings.compactMode;
+  if (animationsToggle) animationsToggle.checked = settings.animations;
+  if (customColorInput) customColorInput.value = settings.customColor;
+}
+
+// ============= Settings Modal Logic =============
 const settingsModal = document.getElementById('settingsModal');
 const settingsBtn = document.getElementById('settingsBtn');
 const closeModal = document.getElementById('closeModal');
@@ -1504,6 +1702,7 @@ const saveBtn = document.getElementById('saveBtn');
 // Open modal
 settingsBtn.addEventListener('click', (e) => {
   e.preventDefault();
+  updateSettingsUI();
   settingsModal.classList.add('active');
   document.body.style.overflow = 'hidden';
 });
@@ -1532,7 +1731,7 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// Settings tabs switching
+// ============= Settings tabs switching =============
 const settingsTabs = document.querySelectorAll('.settings-tab');
 const settingsSections = document.querySelectorAll('.settings-section');
 
@@ -1540,11 +1739,9 @@ settingsTabs.forEach(tab => {
   tab.addEventListener('click', () => {
     const targetTab = tab.dataset.tab;
     
-    // Remove active class from all tabs and sections
     settingsTabs.forEach(t => t.classList.remove('active'));
     settingsSections.forEach(s => s.classList.remove('active'));
     
-    // Add active class to clicked tab and corresponding section
     tab.classList.add('active');
     const targetSection = document.getElementById(targetTab);
     if (targetSection) {
@@ -1553,26 +1750,132 @@ settingsTabs.forEach(tab => {
   });
 });
 
-// Save button action
+// ============= Save settings =============
 saveBtn.addEventListener('click', () => {
-  console.log('Settings saved!');
+  // Collect all settings from UI
+  const syntaxToggle = document.querySelector('#editor input[type="checkbox"]:nth-of-type(1)');
+  const autoCompleteToggle = document.querySelector('#editor input[type="checkbox"]:nth-of-type(2)');
+  const autoCloseToggle = document.querySelector('#editor input[type="checkbox"]:nth-of-type(3)');
+  
+  if (syntaxToggle) settings.syntaxHighlight = syntaxToggle.checked;
+  if (autoCompleteToggle) settings.autoComplete = autoCompleteToggle.checked;
+  if (autoCloseToggle) settings.autoClose = autoCloseToggle.checked;
+  
+  const confirmToggle = document.querySelector('#execution input[type="checkbox"]:nth-of-type(1)');
+  const queryTimeoutInput = document.querySelector('#execution input[type="number"]:nth-of-type(1)');
+  const maxRowsSelect = document.querySelector('#execution select');
+  const historyToggle = document.querySelector('#execution input[type="checkbox"]:nth-of-type(2)');
+  const execTimeToggle = document.querySelector('#execution input[type="checkbox"]:nth-of-type(3)');
+  const cacheToggle = document.querySelector('#execution input[type="checkbox"]:nth-of-type(4)');
+  
+  if (confirmToggle) settings.confirmBeforeExec = confirmToggle.checked;
+  if (queryTimeoutInput) settings.queryTimeout = parseInt(queryTimeoutInput.value);
+  if (maxRowsSelect) settings.maxRows = parseInt(maxRowsSelect.value);
+  if (historyToggle) settings.saveHistory = historyToggle.checked;
+  if (execTimeToggle) settings.showExecTime = execTimeToggle.checked;
+  if (cacheToggle) settings.queryCaching = cacheToggle.checked;
+  
+  const dateFormatSelect = document.querySelector('#display select:nth-of-type(1)');
+  const numberFormatSelect = document.querySelector('#display select:nth-of-type(2)');
+  const nullDisplaySelect = document.querySelector('#display select:nth-of-type(3)');
+  
+  if (dateFormatSelect) settings.dateFormat = dateFormatSelect.value;
+  if (numberFormatSelect) settings.numberFormat = numberFormatSelect.value;
+  if (nullDisplaySelect) settings.nullDisplay = nullDisplaySelect.value;
+  
+  const darkModeToggle = document.getElementById('darkModeToggle');
+  const themeColorSelect = document.querySelector('#appearance select:nth-of-type(1)');
+  const fontSizeSelect = document.querySelector('#appearance select:nth-of-type(2)');
+  const compactToggle = document.querySelector('#appearance input[type="checkbox"]:nth-of-type(2)');
+  const animationsToggle = document.querySelector('#appearance input[type="checkbox"]:nth-of-type(3)');
+  const customColorInput = document.querySelector('#appearance input[type="color"]');
+  
+  if (darkModeToggle) settings.darkMode = darkModeToggle.checked;
+  if (themeColorSelect) settings.themeColor = themeColorSelect.value;
+  if (fontSizeSelect) settings.fontSize = parseInt(fontSizeSelect.value);
+  if (compactToggle) settings.compactMode = compactToggle.checked;
+  if (animationsToggle) settings.animations = animationsToggle.checked;
+  if (customColorInput) settings.customColor = customColorInput.value;
+  
+  // Save and apply
+  saveSettings();
+  applySettings();
+  
+  // Show notification
+  console.log('Settings saved!', settings);
   alert('설정이 저장되었습니다!');
   closeSettingsModal();
 });
 
-// Dark mode toggle in settings sync with main theme toggle
-const darkModeToggleInSettings = document.getElementById('darkModeToggle');
-if (darkModeToggleInSettings) {
-  darkModeToggleInSettings.checked = document.body.classList.contains('dark');
-
-  darkModeToggleInSettings.addEventListener('change', () => {
-    if (darkModeToggleInSettings.checked) {
+// ============= Real-time preview in modal =============
+// Dark mode toggle
+const darkModeToggle = document.getElementById('darkModeToggle');
+if (darkModeToggle) {
+  darkModeToggle.addEventListener('change', (e) => {
+    if (e.target.checked) {
       document.body.classList.add('dark');
     } else {
       document.body.classList.remove('dark');
     }
   });
 }
+
+// Theme color change
+const themeColorSelect = document.querySelector('#appearance select:nth-of-type(1)');
+if (themeColorSelect) {
+  themeColorSelect.addEventListener('change', (e) => {
+    document.body.classList.remove('theme-green', 'theme-purple', 'theme-orange');
+    if (e.target.value !== 'blue') {
+      document.body.classList.add(`theme-${e.target.value}`);
+    }
+  });
+}
+
+// Custom color change
+const customColorInput = document.querySelector('#appearance input[type="color"]');
+if (customColorInput) {
+  customColorInput.addEventListener('input', (e) => {
+    document.documentElement.style.setProperty('--accent', e.target.value);
+  });
+}
+
+// Font size change
+const fontSizeSelect = document.querySelector('#appearance select:nth-of-type(2)');
+if (fontSizeSelect) {
+  fontSizeSelect.addEventListener('change', (e) => {
+    document.documentElement.style.setProperty('--base-font-size', `${e.target.value}px`);
+  });
+}
+
+// Compact mode toggle
+const compactToggle = document.querySelector('#appearance input[type="checkbox"]:nth-of-type(2)');
+if (compactToggle) {
+  compactToggle.addEventListener('change', (e) => {
+    if (e.target.checked) {
+      document.body.classList.add('compact-mode');
+    } else {
+      document.body.classList.remove('compact-mode');
+    }
+  });
+}
+
+// Animations toggle
+const animationsToggle = document.querySelector('#appearance input[type="checkbox"]:nth-of-type(3)');
+if (animationsToggle) {
+  animationsToggle.addEventListener('change', (e) => {
+    if (!e.target.checked) {
+      document.body.classList.add('no-animations');
+    } else {
+      document.body.classList.remove('no-animations');
+    }
+  });
+}
+
+// ============= Initialize on load =============
+window.addEventListener('DOMContentLoaded', () => {
+  loadSettings();
+  console.log('DataEye SQL - Enhanced Settings System Loaded');
+});
 </script>
 
 </body>
