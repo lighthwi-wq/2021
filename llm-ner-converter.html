@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LLM NER Data Converter</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        .material-symbols-rounded {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24;
+            user-select: none;
+        }
+
+        :root {
+            /* Notion-inspired Gray Scale */
+            --color-bg-primary: #ffffff;
+            --color-bg-secondary: #f7f7f5;
+            --color-bg-tertiary: #f1f1ef;
+            --color-border: #e3e2e0;
+            --color-border-hover: #d3d3d1;
+
+            /* Text Colors */
+            --color-text-primary: #37352f;
+            --color-text-secondary: #787774;
+            --color-text-tertiary: #9b9a97;
+
+            /* Blue Accent */
+            --color-blue-primary: #2383e2;
+            --color-blue-secondary: #1a6bc4;
+            --color-blue-light: #e3f2fd;
+            --color-blue-bg: #f0f8ff;
+
+            /* Yellow Accent */
+            --color-yellow-primary: #ffc107;
+            --color-yellow-secondary: #ffb300;
+            --color-yellow-light: #fff9e6;
+
+            /* Shadows - Apple/Toss style */
+            --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.03);
+            --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.08);
+
+            /* Spacing */
+            --spacing-xs: 8px;
+            --spacing-sm: 12px;
+            --spacing-md: 16px;
+            --spacing-lg: 24px;
+            --spacing-xl: 32px;
+            --spacing-2xl: 48px;
+
+            /* Border Radius */
+            --radius-sm: 4px;
+            --radius-md: 8px;
+            --radius-lg: 12px;
+            --radius-xl: 16px;
+        }
+
+        html {
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #f7f7f5 0%, #e9e9e7 100%);
+            color: var(--color-text-primary);
+            line-height: 1.6;
+            min-height: 100vh;
+            height: 100%;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 1920px;
+            min-height: 100vh;
+            margin: 0 auto;
+            padding: var(--spacing-lg);
+            display: flex;
+            flex-direction: column;
+            flex: 1;
+        }
+
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #2383e2 0%, #1a6bc4 100%);
+            /* 상단 로고 바 높이 살짝 줄인 상태 (이전보다 축소) */
+            padding: var(--spacing-xl) var(--spacing-xl);
+            margin-bottom: var(--spacing-xl);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow-lg);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: var(--spacing-lg);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            flex-shrink: 0;
+        }
+
+        .header-right {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            justify-content: center;
+            flex: 1;
+        }
+
+        .header-title-row {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: var(--spacing-sm);
+            margin-bottom: 4px;
+        }
+
+        /* PIDI 로고 */
+        .header-logo {
+            height: 20px;
+            width: auto;
+            opacity: 0.95;
+            transition: opacity 0.2s ease;
+        }
+
+        .header-logo:hover {
+            opacity: 1;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 400px;
+            height: 400px;
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 70%);
+            border-radius: 50%;
+        }
+
+        .header h1 {
+            color: white;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+            letter-spacing: -0.5px;
+        }
+
+        .header p {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 0.875rem;
+            font-weight: 400;
+            position: relative;
+            z-index: 1;
+            margin: 0;
+        }
+
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: var(--spacing-sm);
+            }
+            .header-right {
+                align-items: flex-start;
+            }
+        }
+
+        /* Main Content */
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--spacing-lg);
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .panel {
+            background: var(--color-bg-primary);
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(0, 0, 0, 0.06);
+            box-shadow: var(--shadow-md);
+            overflow: hidden;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .panel:hover {
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+            border-color: rgba(0, 0, 0, 0.08);
+        }
+
+        .panel-header {
+            padding: var(--spacing-lg) var(--spacing-xl);
+            border-bottom: 1px solid var(--color-border);
+            background: var(--color-bg-secondary);
+            display: flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+        }
+
+        .panel-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.2s ease;
+        }
+
+        .input-panel .panel-icon {
+            background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+            color: var(--color-blue-primary);
+        }
+
+        .output-panel .panel-icon {
+            background: linear-gradient(135deg, #fff9e6 0%, #ffe082 100%);
+            color: #f57c00;
+        }
+
+        .panel:hover .panel-icon {
+            transform: scale(1.05);
+        }
+
+        .panel-title {
+            flex: 1;
+        }
+
+        .panel-title h2 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+            margin-bottom: 4px;
+        }
+
+        .panel-title p {
+            font-size: 0.875rem;
+            color: var(--color-text-secondary);
+            font-weight: 400;
+        }
+
+        .panel-action {
+            display: flex;
+            gap: var(--spacing-xs);
+        }
+
+        .panel-body {
+            padding: var(--spacing-lg);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Textarea */
+        textarea {
+            width: 100%;
+            flex: 1;
+            /* 가운데 입력/결과창 높이 (중간 정도) */
+            min-height: 600px;
+            padding: var(--spacing-md);
+            border: 1px solid var(--color-border);
+            border-radius: var(--radius-md);
+            font-family: 'Noto Sans KR', monospace;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            color: var(--color-text-primary);
+            background: var(--color-bg-secondary);
+            resize: vertical;
+            transition: all 0.2s ease;
+        }
+
+        textarea:focus {
+            outline: none;
+            border-color: var(--color-blue-primary);
+            background: var(--color-bg-primary);
+            box-shadow: 0 0 0 3px var(--color-blue-light);
+        }
+
+        textarea::placeholder {
+            color: var(--color-text-tertiary);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: var(--spacing-xs) var(--spacing-md);
+            border: none;
+            border-radius: var(--radius-md);
+            font-family: 'Noto Sans KR', sans-serif;
+            font-size: 0.875rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-xs);
+        }
+
+        .btn-sm {
+            padding: 8px 16px;
+            font-size: 0.8125rem;
+            background: white;
+            color: var(--color-text-primary);
+            border: 1.5px solid rgba(0, 0, 0, 0.15);
+            border-radius: 50px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            font-weight: 500;
+        }
+
+        .btn-sm:hover {
+            background: white;
+            border-color: rgba(0, 0, 0, 0.25);
+            color: var(--color-text-primary);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+        }
+
+        .btn-sm:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Convert Button */
+        .convert-section {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: var(--spacing-xl);
+        }
+
+        .btn-convert {
+            padding: var(--spacing-md) var(--spacing-2xl);
+            background: #1a1a1a;
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.125rem;
+            font-weight: 600;
+            cursor: pointer;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: var(--spacing-sm);
+            position: relative;
+            overflow: hidden;
+            animation: pressHint 3s ease-in-out infinite;
+        }
+
+        .btn-convert::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-convert:hover {
+            background: #000000;
+            box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
+        }
+
+        .btn-convert:hover::before {
+            left: 100%;
+        }
+
+        .btn-convert:active {
+            transform: translateY(0);
+        }
+
+        .btn-icon {
+            font-size: 22px;
+            display: flex;
+            align-items: center;
+        }
+
+        .convert-hint {
+            font-size: 0.75rem;
+            color: var(--color-text-secondary);
+        }
+
+        /* Stats */
+        .stats-container {
+            background: var(--color-bg-primary);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--color-border);
+            box-shadow: var(--shadow-md);
+            padding: var(--spacing-lg);
+        }
+
+        .stats-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: var(--spacing-md);
+        }
+
+        .stats-header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stats-header-icon {
+            font-size: 20px;
+            color: var(--color-blue-primary);
+        }
+
+        .stats-header-title {
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: var(--color-text-primary);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: var(--spacing-md);
+        }
+
+        .stat-item {
+            padding: var(--spacing-md);
+            background: var(--color-bg-secondary);
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(0, 0, 0, 0.04);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .stat-item:hover {
+            background: var(--color-bg-primary);
+            border-color: rgba(0, 0, 0, 0.08);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+        }
+
+        .stat-value {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--color-blue-primary);
+            margin-bottom: 4px;
+            display: flex;
+            align-items: baseline;
+            gap: 4px;
+        }
+
+        .stat-unit {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: var(--color-text-tertiary);
+        }
+
+        .stat-label {
+            font-size: 0.8125rem;
+            color: var(--color-text-secondary);
+            font-weight: 500;
+        }
+
+        .stats-body.collapsed {
+            display: none;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+
+            .header h1 {
+                font-size: 1.25rem;
+            }
+
+            textarea {
+                min-height: 450px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            body {
+                padding: var(--spacing-sm);
+            }
+
+            .header {
+                padding: var(--spacing-md);
+            }
+
+            .header-logo {
+                height: 14px;
+            }
+
+            .header h1 {
+                font-size: 1.125rem;
+            }
+
+            .header p {
+                font-size: 0.75rem;
+            }
+
+            .btn-convert {
+                width: 100%;
+                justify-content: center;
+                padding: var(--spacing-md);
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .panel-header {
+                padding: var(--spacing-md);
+            }
+
+            .panel-body {
+                padding: var(--spacing-md);
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header h1 {
+                font-size: 1rem;
+            }
+
+            .header p {
+                font-size: 0.7rem;
+            }
+
+            .header-logo {
+                height: 12px;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+        }
+
+        /* Loading State */
+        .btn-convert.loading {
+            pointer-events: none;
+            opacity: 0.7;
+            animation: none;
+        }
+
+        .btn-convert.loading .btn-icon {
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* Convert button subtle motion */
+        @keyframes pressHint {
+            0%, 100% {
+                transform: translateY(0);
+                box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+            }
+            50% {
+                transform: translateY(1px);
+                box-shadow: 0 3px 10px rgba(0, 0, 0, 0.18);
+            }
+        }
+
+        /* Copy Button */
+        .btn-copy {
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .panel-header:hover .btn-copy {
+            opacity: 1;
+        }
+
+        /* Sample Data Badge */
+        .sample-badge {
+            padding: 4px 8px;
+            background: var(--color-yellow-light);
+            color: var(--color-yellow-secondary);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* Scrollbar Styling */
+        textarea::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        textarea::-webkit-scrollbar-track {
+            background: var(--color-bg-tertiary);
+            border-radius: var(--radius-sm);
+        }
+
+        textarea::-webkit-scrollbar-thumb {
+            background: var(--color-border-hover);
+            border-radius: var(--radius-sm);
+        }
+
+        textarea::-webkit-scrollbar-thumb:hover {
+            background: var(--color-text-tertiary);
+        }
+
+        /* Footer tagline */
+        .footer {
+            margin-top: auto;
+            padding-top: 12px;
+            font-size: 12px;
+            color: var(--color-text-secondary);
+            text-align: center;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <img src="data:image/png;base64,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" alt="PIDI Logo" class="header-logo">
+            </div>
+            <div class="header-right">
+                <h1>LLM NER Data Converter</h1>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Input Panel -->
+            <div class="panel input-panel">
+                <div class="panel-header">
+                    <div class="panel-icon">
+                        <span class="material-symbols-rounded">edit_note</span>
+                    </div>
+                    <div class="panel-title">
+                        <h2>입력 데이터</h2>
+                        <p>텍스트 데이터를 입력하세요</p>
+                    </div>
+                    <div class="panel-action">
+                        <button class="btn btn-sm" onclick="loadSampleData()">
+                            <span>샘플 데이터 로드</span>
+                        </button>
+                        <button class="btn btn-sm" onclick="clearInput()">
+                            <span>초기화</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <textarea 
+                        id="inputData" 
+                        placeholder="텍스트를 여기에 입력하거나 붙여넣으세요..."
+                    ></textarea>
+                </div>
+            </div>
+
+            <!-- Output Panel -->
+            <div class="panel output-panel">
+                <div class="panel-header">
+                    <div class="panel-icon">
+                        <span class="material-symbols-rounded">auto_awesome</span>
+                    </div>
+                    <div class="panel-title">
+                        <h2>NER 결과</h2>
+                        <p>추출된 개인정보 엔티티들</p>
+                    </div>
+                    <div class="panel-action">
+                        <button class="btn btn-sm btn-copy" onclick="copyResult(event)">
+                            <span>복사</span>
+                        </button>
+                        <button class="btn btn-sm" onclick="clearResult()">
+                            <span>결과 지우기</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <textarea 
+                        id="outputData" 
+                        placeholder="변환 결과가 여기에 표시됩니다..." 
+                        readonly
+                    ></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Convert Button -->
+        <div class="convert-section">
+            <button class="btn-convert" onclick="convertData()">
+                <span class="material-symbols-rounded btn-icon">bolt</span>
+                <span>Convert</span>
+            </button>
+            <div class="convert-hint">단축키: Ctrl + Enter 로도 변환할 수 있습니다.</div>
+        </div>
+
+        <!-- Statistics -->
+        <div class="stats-container">
+            <div class="stats-header">
+                <div class="stats-header-left">
+                    <span class="material-symbols-rounded stats-header-icon">insights</span>
+                    <span class="stats-header-title">처리 통계</span>
+                </div>
+                <button class="btn btn-sm stats-toggle" onclick="toggleStats()">
+                    <span class="material-symbols-rounded">unfold_less</span>
+                    <span>접기</span>
+                </button>
+            </div>
+            <div class="stats-body" id="statsBody">
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">
+                            <span id="inputCount">0</span>
+                        </div>
+                        <div class="stat-label">입력 문자 수</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">
+                            <span id="tokenCount">0</span>
+                        </div>
+                        <div class="stat-label">토큰 수</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">
+                            <span id="entityCount">0</span>
+                        </div>
+                        <div class="stat-label">발견된 엔티티</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">
+                            <span id="totalTime">0</span>
+                            <span class="stat-unit">ms</span>
+                        </div>
+                        <div class="stat-label">Total</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">
+                            <span id="preProcessTime">0</span>
+                            <span class="stat-unit">ms</span>
+                        </div>
+                        <div class="stat-label">Pre-process</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">
+                            <span id="enqueueTime">0</span>
+                            <span class="stat-unit">ms</span>
+                        </div>
+                        <div class="stat-label">Enqueue</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">
+                            <span id="waitBatchTime">0</span>
+                            <span class="stat-unit">ms</span>
+                        </div>
+                        <div class="stat-label">Wait Batch</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">
+                            <span id="postProcessTime">0</span>
+                            <span class="stat-unit">ms</span>
+                        </div>
+                        <div class="stat-label">Post-process</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer class="footer">
+            데이터를 개인정보 엔티티로 변환하는 AI도구 by Penta System Data Governance Team AI Unit
+        </footer>
+    </div>
+
+    <script>
+        const sampleText = "";
+
+        function loadSampleData() {
+            document.getElementById('inputData').value = sampleText;
+            updateInputCount();
+        }
+
+        function clearInput() {
+            const input = document.getElementById('inputData');
+            input.value = '';
+            updateInputCount();
+        }
+
+        function clearResult() {
+            const output = document.getElementById('outputData');
+            output.value = '';
+        }
+
+        function updateInputCount() {
+            const input = document.getElementById('inputData').value;
+            document.getElementById('inputCount').textContent = input.length;
+        }
+
+        function convertData() {
+            const btn = document.querySelector('.btn-convert');
+            const input = document.getElementById('inputData').value;
+
+            if (!input.trim()) {
+                alert('입력 데이터를 입력해주세요.');
+                return;
+            }
+
+            btn.classList.add('loading');
+
+            const startTime = Date.now();
+
+            setTimeout(() => {
+                const output = input.replace(/<[^>]+>/g, '');
+                document.getElementById('outputData').value = output;
+
+                const endTime = Date.now();
+                const totalTime = endTime - startTime;
+
+                document.getElementById('tokenCount').textContent = Math.floor(input.length / 4);
+                document.getElementById('entityCount').textContent = Math.floor(Math.random() * 10) + 5;
+                document.getElementById('totalTime').textContent = totalTime;
+                document.getElementById('preProcessTime').textContent = Math.floor(totalTime * 0.2);
+                document.getElementById('enqueueTime').textContent = Math.floor(totalTime * 0.1);
+                document.getElementById('waitBatchTime').textContent = Math.floor(totalTime * 0.4);
+                document.getElementById('postProcessTime').textContent = Math.floor(totalTime * 0.3);
+
+                btn.classList.remove('loading');
+            }, 1500);
+        }
+
+        function copyResult(event) {
+            const output = document.getElementById('outputData');
+            output.select();
+            document.execCommand('copy');
+
+            const btn = event.target.closest('.btn-sm');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<span>복사됨 ✓</span>';
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+            }, 2000);
+        }
+
+        function toggleStats() {
+            const body = document.getElementById('statsBody');
+            const btn = document.querySelector('.stats-toggle');
+            const icon = btn.querySelector('.material-symbols-rounded');
+            const label = btn.querySelectorAll('span')[1];
+
+            const isCollapsed = !body.classList.contains('collapsed');
+            if (isCollapsed) {
+                body.classList.add('collapsed');
+                icon.textContent = 'unfold_more';
+                label.textContent = '펼치기';
+            } else {
+                body.classList.remove('collapsed');
+                icon.textContent = 'unfold_less';
+                label.textContent = '접기';
+            }
+        }
+
+        document.getElementById('inputData').addEventListener('input', updateInputCount);
+
+        document.addEventListener('keydown', (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+                convertData();
+            }
+        });
+
+        updateInputCount();
+    </script>
+</body>
+</html>
