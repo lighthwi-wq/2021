@@ -406,11 +406,23 @@
       } else {
         const sq = searchEl.value.trim().toUpperCase();
         const rq = riskEl.value;
-        const filteredCatalog = approvedAssets.filter((a) => {
-          const matchText = !sq || `${a.title} ${a.fp}`.toUpperCase().includes(sq);
-          const matchRisk = !rq || (a.risk || 'LOW') === rq;
-          return matchText && matchRisk;
-        });
+        const semanticScore = (asset) => {
+          if (!sq) return 0;
+          const src = `${asset.title || ''} ${asset.fp || ''}`.toUpperCase();
+          const tokens = sq.split(/\s+/).filter(Boolean);
+          if (!tokens.length) return 0;
+          let hit = 0;
+          tokens.forEach((t) => { if (src.includes(t)) hit += 1; });
+          return Math.round((hit / tokens.length) * 100);
+        };
+        const filteredCatalog = approvedAssets
+          .map((a) => ({ ...a, _semantic: semanticScore(a) }))
+          .filter((a) => {
+            const matchText = !sq || a._semantic > 0 || `${a.title} ${a.fp}`.toUpperCase().includes(sq);
+            const matchRisk = !rq || (a.risk || 'LOW') === rq;
+            return matchText && matchRisk;
+          })
+          .sort((a, b) => (b._semantic || 0) - (a._semantic || 0));
         if (!filteredCatalog.length) {
           catalogHost.innerHTML = '<div class="asset-empty">검색 조건에 맞는 자산이 없습니다.</div>';
           return;
@@ -435,6 +447,7 @@
                 <span class="badge badge-success">CERTIFIED ${a.version || 'v1'}</span>
               </div>
               <div class="asset-item-meta">오너 ${a.owner} · 등록 ${new Date(a.registeredAt).toLocaleDateString('ko-KR')} · 리스크 ${(a.risk || 'LOW')}</div>
+              <div class="asset-item-meta">Vector 유사도(시뮬레이션): <strong>${a._semantic || 0}</strong>점</div>
               <div class="asset-item-comment">승인 코멘트: ${escapeHtmlCell(a.stewardComment || '코멘트 없음')}</div>
               <div class="asset-item-history">버전 이력: ${(Array.isArray(a.versionHistory) && a.versionHistory.length ? a.versionHistory.slice(0,3).map((h) => `${h.version}(${new Date(h.at).toLocaleDateString('ko-KR')})`).join(' · ') : (a.version || 'v1'))}</div>
               <div class="asset-item-fp">${escapeHtmlCell(a.fp)}</div>
@@ -649,7 +662,7 @@
         const sla = formatSla(r);
         return `
           <tr style="${sla.breached ? 'background: #f2f8e8;' : ''}; cursor:pointer;" data-action="gov-open-detail" data-gov-id="${r.id}">
-            <td style="font-family:monospace;">${r.id}</td>
+            <td style="font-family:'Pretendard Variable', Pretendard, sans-serif; font-variant-numeric: tabular-nums;">${r.id}</td>
             <td>${r.requester}</td>
             <td>${r.dataset}</td>
             <td>${r.squad || 'Data Governance Squad'}</td>
@@ -682,7 +695,7 @@
         : '일반 민감정보 정책 대상 · 표준 승인 절차 적용';
       body.innerHTML = `
         <div style="display:grid; grid-template-columns: 120px 1fr; gap:8px; font-size:13px; color:var(--ink-700);">
-          <strong>요청ID</strong><span style="font-family:monospace;">${req.id}</span>
+          <strong>요청ID</strong><span style="font-family:'Pretendard Variable', Pretendard, sans-serif; font-variant-numeric: tabular-nums;">${req.id}</span>
           <strong>신청자</strong><span>${req.requester}</span>
           <strong>대상</strong><span>${req.dataset}</span>
           <strong>담당 Squad</strong><span>${req.squad || 'Data Governance Squad'}</span>
@@ -812,7 +825,7 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><title>권한 승인 결재서</title>
 <style>
-body{font-family:Arial,'Malgun Gothic',sans-serif;padding:24px;color:#222}
+body{font-family:'Pretendard Variable',Pretendard,sans-serif;padding:24px;color:#222}
 h1{font-size:20px;margin:0 0 8px}
 .doc-header{display:flex;justify-content:space-between;align-items:flex-start;gap:16px;margin-bottom:14px}
 .doc-brand{display:flex;align-items:center;gap:10px}
@@ -1014,6 +1027,8 @@ th{background:#f5f7f9}
       bi:         'BI · PowerBI 전환'
     };
     let currentView = 'home';
+    let homeLifecycleTimer = null;
+    let homeSimPaused = false;
     let metaSearchFilter = 'all';
     let copyProtectionEnabled = false;
     let mfaVerified = false;
@@ -1314,35 +1329,7 @@ th{background:#f5f7f9}
     function injectStandardPanels(view) {
       const main = document.getElementById('mainView');
       if (!main) return;
-      if (!main.querySelector('#reqChecklistCard')) {
-        const card = document.createElement('section');
-        card.className = 'card';
-        card.id = 'reqChecklistCard';
-        card.style.marginTop = '16px';
-        card.innerHTML = `
-          <div class="card-head">
-            <div>
-              <h3 class="card-title">요건 충족 체크</h3>
-              <div class="card-sub">완료 / 진행 / 미구현 표준 관리</div>
-            </div>
-            <div class="req-filter-group">
-              <input id="reqSearchInput" class="form-input req-search-input" placeholder="요건번호/제목 검색 (예: SFR-010)" data-action="req-search" />
-              <button type="button" class="btn btn-ghost btn-sm" data-action="req-filter" data-filter="all">전체</button>
-              <button type="button" class="btn btn-ghost btn-sm" data-action="req-filter" data-filter="completed">완료</button>
-              <button type="button" class="btn btn-ghost btn-sm" data-action="req-filter" data-filter="in_progress">진행</button>
-              <button type="button" class="btn btn-ghost btn-sm" data-action="req-filter" data-filter="not_implemented">미구현</button>
-              <button type="button" class="btn btn-ghost btn-sm" data-action="toggle-req-edit-mode">편집모드 OFF</button>
-              <button type="button" class="btn btn-ghost btn-sm" data-action="export-req-state">내보내기</button>
-              <button type="button" class="btn btn-ghost btn-sm" data-action="import-req-state">가져오기</button>
-              <button type="button" class="btn btn-ghost btn-sm" data-action="reset-req-state">초기화</button>
-              <input id="reqStateFileInput" type="file" accept=".json,application/json" style="display:none;" />
-            </div>
-          </div>
-          <div class="card-body" id="reqChecklistHost"></div>
-        `;
-        main.appendChild(card);
-      }
-      renderRequirementChecklist(view);
+      // Hide requirement-id tracking panels in user-facing demo.
 
       if (view === 'permission' && !main.querySelector('#securityControlCard')) {
         const sec = document.createElement('section');
@@ -1350,7 +1337,7 @@ th{background:#f5f7f9}
         sec.id = 'securityControlCard';
         sec.style.marginTop = '16px';
         sec.innerHTML = `
-          <div class="card-head"><h3 class="card-title">보안 정책 시뮬레이션</h3><div class="card-sub">SVR-007 / SVR-008</div></div>
+          <div class="card-head"><h3 class="card-title">보안 정책 시뮬레이션</h3><div class="card-sub">캡처/복사 차단 및 MFA 인증 흐름</div></div>
           <div class="card-body">
             <div class="page-actions" style="margin-bottom:12px;">
               <button type="button" class="btn btn-ghost btn-sm" data-action="toggle-copy-policy">캡처/복사 차단 토글</button>
@@ -1372,39 +1359,23 @@ th{background:#f5f7f9}
         `;
         main.appendChild(sec);
       }
-      if (view === 'home' && !main.querySelector('#rfpTrackerCard')) {
-        const tr = document.createElement('section');
-        tr.className = 'card';
-        tr.id = 'rfpTrackerCard';
-        tr.style.marginTop = '16px';
-        tr.innerHTML = `
-          <div class="card-head">
-            <h3 class="card-title">RFP 요구사항 트래커 (38건)</h3>
-            <div class="card-sub">SFR-15 · IFR-7 · TTR-1 · SVR-10 · PFR-4 · PMR-6 · COR-2</div>
-          </div>
-          <div class="card-body">
-            <div class="sfr-tracker-grid" id="rfpTrackerGrid"></div>
-          </div>
-        `;
-        main.appendChild(tr);
-        try { renderRfpTrackerGrid(); } catch(_) {}
-      }
-      if (view === 'home' && !main.querySelector('#rfpControlCenterCard')) {
+
+      if (view === 'home' && !main.querySelector('#opsControlCenterCard')) {
         const ops = document.createElement('section');
         ops.className = 'card';
-        ops.id = 'rfpControlCenterCard';
+        ops.id = 'opsControlCenterCard';
         ops.style.marginTop = '16px';
         ops.innerHTML = `
-          <div class="card-head"><h3 class="card-title">RFP 통합 실행 센터</h3><div class="card-sub">보안/테스트/운영/PM 요구사항 실행 시뮬레이션</div></div>
+          <div class="card-head"><h3 class="card-title">통합 운영 실행 센터</h3><div class="card-sub">보안 · 복구 · 운영 자동화 시뮬레이션</div></div>
           <div class="card-body">
             <div class="page-actions" style="margin-bottom:12px; flex-wrap:wrap;">
-              <button class="btn btn-ghost btn-sm" data-action="run-secure-coding">SVR-003 시큐어코딩 점검</button>
-              <button class="btn btn-ghost btn-sm" data-action="run-pentest">SVR-004 모의해킹 진단</button>
-              <button class="btn btn-ghost btn-sm" data-action="run-infra-vuln">SVR-005 인프라 취약점 진단</button>
-              <button class="btn btn-ghost btn-sm" data-action="run-dr-test">TTR-001 DR 복구 테스트</button>
-              <button class="btn btn-ghost btn-sm" data-action="run-lifecycle-job">SFR-004 Retention 작업</button>
-              <button class="btn btn-ghost btn-sm" data-action="simulate-sso-fallback">IFR-007 SSO 장애대응</button>
-              <button class="btn btn-ghost btn-sm" data-action="export-audit-log">SFR-010 Audit Export</button>
+              <button class="btn btn-ghost btn-sm" data-action="run-secure-coding">시큐어코딩 점검</button>
+              <button class="btn btn-ghost btn-sm" data-action="run-pentest">모의해킹 진단</button>
+              <button class="btn btn-ghost btn-sm" data-action="run-infra-vuln">인프라 취약점 점검</button>
+              <button class="btn btn-ghost btn-sm" data-action="run-dr-test">DR 복구 테스트</button>
+              <button class="btn btn-ghost btn-sm" data-action="run-lifecycle-job">Lifecycle 작업</button>
+              <button class="btn btn-ghost btn-sm" data-action="simulate-sso-fallback">SSO 장애대응</button>
+              <button class="btn btn-ghost btn-sm" data-action="export-audit-log">감사 로그 내보내기</button>
               <button class="btn btn-ghost btn-sm" data-action="toggle-role">권한 전환 (관리자/사용자)</button>
             </div>
             <div id="rfpOpsState" class="form-help">실행 대기 중</div>
@@ -1412,14 +1383,15 @@ th{background:#f5f7f9}
         `;
         main.appendChild(ops);
       }
-      if (view === 'home' && !main.querySelector('#rfpEvidenceCard')) {
+
+      if (view === 'home' && !main.querySelector('#opsEvidenceCard')) {
         const ev = document.createElement('section');
         ev.className = 'card';
-        ev.id = 'rfpEvidenceCard';
+        ev.id = 'opsEvidenceCard';
         ev.style.marginTop = '16px';
         ev.innerHTML = `
           <div class="card-head">
-            <div><h3 class="card-title">RFP 증적 탭</h3><div class="card-sub">보고서/결과서/산출물 실행 로그</div></div>
+            <div><h3 class="card-title">운영 실행 로그</h3><div class="card-sub">결과서 · 점검로그 · 감사기록</div></div>
             <div class="req-filter-group">
               <button class="btn btn-ghost btn-sm" data-action="evidence-filter" data-filter="all">전체</button>
               <button class="btn btn-ghost btn-sm" data-action="evidence-filter" data-filter="보안">보안</button>
@@ -1434,19 +1406,19 @@ th{background:#f5f7f9}
               <button class="btn btn-ghost btn-sm" data-action="evidence-review-filter" data-filter="reviewed">검토완료만</button>
               <button class="btn btn-ghost btn-sm" data-action="evidence-review-filter" data-filter="pending">검토대기만</button>
               <button class="btn btn-ghost btn-sm" data-action="evidence-toggle-group">그룹보기 OFF</button>
-              <input class="form-input req-search-input" placeholder="증적 검색 (요건번호/제목)" data-action="evidence-search" />
+              <input class="form-input req-search-input" placeholder="로그 검색 (기능/제목)" data-action="evidence-search" />
               <button class="btn btn-ghost btn-sm" data-action="evidence-export">CSV 내보내기</button>
             </div>
           </div>
           <div class="card-body evidence-kpi-bar" id="evidenceKpiBar">
-            <div class="evidence-kpi-item"><span>전체 증적</span><strong id="evidenceTotalCount">0</strong></div>
+            <div class="evidence-kpi-item"><span>전체 로그</span><strong id="evidenceTotalCount">0</strong></div>
             <div class="evidence-kpi-item"><span>검토완료</span><strong id="evidenceReviewedCount">0</strong></div>
             <div class="evidence-kpi-item"><span>검토대기</span><strong id="evidencePendingCount">0</strong></div>
             <div class="evidence-kpi-item"><span>완료율</span><strong id="evidenceReviewedPct">0%</strong></div>
             <div class="evidence-kpi-item evidence-kpi-wide"><span>최근 7일 추세</span><strong id="evidenceTrendText">-</strong></div>
             <div class="evidence-kpi-item evidence-kpi-wide">
               <span>최근 7일 완료율 스파크라인</span>
-              <svg id="evidenceSparkline" viewBox="0 0 240 48" preserveAspectRatio="none" aria-label="최근 7일 완료율 추이"></svg>
+              <svg id="evidenceSparkline" viewBox="0 0 240 48" preserveAspectRatio="xMidYMid meet" aria-label="최근 7일 완료율 추이"></svg>
               <div id="evidenceSparkTooltip" class="evidence-spark-tooltip" style="display:none;">-</div>
             </div>
           </div>
@@ -1454,7 +1426,7 @@ th{background:#f5f7f9}
         `;
         main.appendChild(ev);
       }
-      applyRequirementAdminVisibility();
+
       syncSecurityPolicyState();
       renderEvidencePanel();
     }
@@ -1669,7 +1641,7 @@ th{background:#f5f7f9}
           <polyline points="${points}" fill="none" stroke="var(--ml-blue)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"></polyline>
           ${circles}
           <line x1="0" y1="46" x2="240" y2="46" stroke="var(--ink-200)" stroke-width="1"></line>
-          <text x="238" y="12" text-anchor="end" fill="var(--ink-500)" font-size="9">${last}%</text>
+          <text x="238" y="12" text-anchor="end" fill="var(--ink-500)" font-size="10" font-family="Pretendard Variable, Pretendard, sans-serif">${last}%</text>
         `;
       }
       const rows = evidenceLogs.filter((e) => {
@@ -1761,11 +1733,11 @@ th{background:#f5f7f9}
         body.innerHTML = `
           <div style="display:grid; grid-template-columns:120px 1fr; gap:8px; font-size:13px;">
             <strong>제목</strong><span>${escapeHtmlCell(ev.title)}</span>
-            <strong>요건번호</strong><span>${escapeHtmlCell((ev.requirementIds || []).join(', ') || '-')}</span>
+            <strong>연계기능</strong><span>${escapeHtmlCell((ev.requirementIds || []).join(', ') || '-')}</span>
             <strong>상세</strong><span>${escapeHtmlCell(ev.detail)}</span>
             <strong>검토상태</strong><span>${ev.reviewed ? `완료 (${escapeHtmlCell(ev.reviewedBy || 'reviewer')}, ${new Date(ev.reviewedAt).toLocaleString('ko-KR')})` : '검토대기'}</span>
             <strong>검토코멘트</strong><span>${escapeHtmlCell(ev.reviewComment || '-')}</span>
-            <strong>증적 ID</strong><span style="font-family:monospace;">${escapeHtmlCell(ev.id)}</span>
+            <strong>증적 ID</strong><span style="font-family:'Pretendard Variable', Pretendard, sans-serif; font-variant-numeric: tabular-nums;">${escapeHtmlCell(ev.id)}</span>
           </div>
         `;
       }
@@ -1778,7 +1750,7 @@ th{background:#f5f7f9}
 
     function exportEvidenceCsv() {
       const esc = (v) => `"${String(v ?? '').replace(/"/g, '""')}"`;
-      const lines = ['timestamp,category,title,requirements,detail,reviewed,reviewed_by,reviewed_at,review_comment'];
+      const lines = ['timestamp,category,title,linked_features,detail,reviewed,reviewed_by,reviewed_at,review_comment'];
       evidenceLogs.forEach((e) => {
         lines.push([
           e.ts,
@@ -1795,12 +1767,12 @@ th{background:#f5f7f9}
       const blob = new Blob(['\ufeff' + lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = `metlife-rfp-evidence-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = `metlife-ops-evidence-${new Date().toISOString().slice(0, 10)}.csv`;
       document.body.appendChild(a);
       a.click();
       a.remove();
       URL.revokeObjectURL(a.href);
-      toast('증적 내보내기', 'RFP 증적 로그를 CSV로 저장했습니다.', 'success');
+      toast('로그 내보내기', '운영 실행 로그를 CSV로 저장했습니다.', 'success');
     }
 
     function syncSecurityPolicyState() {
@@ -1817,23 +1789,452 @@ th{background:#f5f7f9}
           <section class="view">
             <div class="page-head">
               <div class="page-title-wrap">
-                <div class="page-eyebrow">rfp aligned</div>
-                <h1 class="page-title">MetLife Data Platform Modernization</h1>
-                <p class="page-desc">SFR/IFR/SVR/TTR 요구사항을 메뉴별 기능으로 구현한 통합 포털입니다.</p>
+                <div class="page-eyebrow">data portal</div>
+                <h1 class="page-title">MetLife 데이터 포털</h1>
+                <p class="page-desc">데이터 탐색·조회·권한·품질·비용을 한 화면에서 다루며, 수집·통합 모니터링·감사 가시화를 실제 운영 흐름처럼 제공하는 대시보드입니다.</p>
+              </div>
+              <div class="page-actions">
+                <button type="button" class="btn btn-primary btn-sm" data-action="run-full-demo">종합 데모 시작</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-action="jump-view" data-view="query">데이터 조회</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-action="jump-view" data-view="permission">권한 신청</button>
+                <button type="button" class="btn btn-ghost btn-sm" data-action="jump-view" data-view="ingestion">수집 현황</button>
               </div>
             </div>
+
+            <div class="kpi-grid home-kpi-strip" aria-label="메인 KPI 요약">
+              <div class="kpi">
+                <div class="kpi-label">실시간 TPS</div>
+                <div class="kpi-value"><span id="homeLiveTps">1,840</span><span class="kpi-unit">tps</span></div>
+                <div class="kpi-delta up">+8.2% MoM</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">CDC : Batch</div>
+                <div class="kpi-value">1,512 : 1,612</div>
+                <div class="kpi-delta">실시간 49%</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">P95 지연</div>
+                <div class="kpi-value">428<span class="kpi-unit">ms</span></div>
+                <div class="kpi-delta">SLA 500ms 이내</div>
+              </div>
+              <div class="kpi">
+                <div class="kpi-label">가동 파이프라인</div>
+                <div class="kpi-value"><span id="homeKpiPipelines">2,987</span></div>
+                <div class="kpi-delta up">/ 3,000 목표</div>
+              </div>
+            </div>
+
+            <div class="dash-grid home-monitor-dash">
+              <div class="card ds-monitor-card">
+                <div class="card-head ds-monitor-head">
+                  <h3 class="card-title">실시간 TPS 추이</h3>
+                  <div class="card-sub">ADF + Databricks 통합 로그</div>
+                </div>
+                <div class="card-body chart-wrap ds-monitor-chart">
+                  <canvas id="homeMainTpsChart"></canvas>
+                </div>
+              </div>
+              <div class="card ds-monitor-card">
+                <div class="card-head ds-monitor-head">
+                  <h3 class="card-title">상태 분포</h3>
+                </div>
+                <div class="card-body chart-wrap ds-monitor-chart">
+                  <canvas id="homeMainStatusChart"></canvas>
+                </div>
+              </div>
+            </div>
+            <div id="homeChartTooltip" class="home-chart-tooltip" style="display:none;">-</div>
+
+            <div class="card" style="margin-bottom:14px;">
+              <div class="card-head">
+                <h3 class="card-title">포털 통합 검색</h3>
+                <div class="card-sub">테이블 · 파이프라인 · 용어 · 보안 항목</div>
+              </div>
+              <div class="card-body">
+                <div class="portal-search-row">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                  <input type="text" placeholder="예) 고객 계약 테이블, 권한 신청 상태, 청구 파이프라인" />
+                  <button type="button" class="btn btn-primary btn-sm" data-action="ux-focus-search">검색창 열기</button>
+                </div>
+              </div>
+            </div>
+
             <div class="kpi-grid">
-              <div class="kpi"><div class="kpi-label">Ingestion 파이프라인</div><div class="kpi-value">3,000</div></div>
-              <div class="kpi"><div class="kpi-label">CDC / Batch</div><div class="kpi-value">1,500 / 1,500</div></div>
-              <div class="kpi"><div class="kpi-label">보안 통제 항목</div><div class="kpi-value">10</div></div>
-              <div class="kpi"><div class="kpi-label">BI 리포트</div><div class="kpi-value">400</div></div>
+              <div class="kpi kpi--datasets">
+                <div class="kpi-label">등록 데이터셋</div><div class="kpi-value"><span id="homeKpiDatasets">12,480</span></div><div class="kpi-delta">전일 <span id="homeKpiDatasetsDelta">+128</span></div>
+                <div class="kpi-spark-frame kpi-spark-frame--bar-panel kpi-spark-frame--datasets" aria-hidden="true" title="레이어별 등록 건수 분포">
+                  <div class="kpi-bar-panel-head">
+                    <div class="kpi-bar-meta"><span class="kpi-bar-dot"></span><span class="kpi-bar-cat">레이어별 분포</span></div>
+                    <div class="kpi-bar-stats">
+                      <span class="kpi-bar-stat"><span class="kpi-bar-stat-l">평균</span><strong id="homeKpiBarDsAvg">156</strong><span class="kpi-bar-stat-u">건</span></span>
+                      <span class="kpi-bar-stat"><span class="kpi-bar-stat-l">Peak</span><strong id="homeKpiBarDsPeak">248</strong></span>
+                      <span class="kpi-bar-stat kpi-bar-stat--good"><span class="kpi-bar-stat-l">YoY</span><strong id="homeKpiBarDsYoy">+9.4%</strong></span>
+                    </div>
+                  </div>
+                  <svg class="kpi-spark-svg kpi-spark-svg--bars" viewBox="0 0 240 96" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                      <linearGradient id="kpiBarBaseDs" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#BFDBFE"/>
+                        <stop offset="100%" stop-color="#3B82F6"/>
+                      </linearGradient>
+                    </defs>
+                    <circle class="kpi-card-accent" cx="218" cy="14" r="22" fill="rgba(0,144,218,0.07)"/>
+                    <g class="kpi-bar-grid">
+                      <line class="kpi-bar-gridline" x1="2" y1="22" x2="220" y2="22"/>
+                      <line class="kpi-bar-gridline" x1="2" y1="46" x2="220" y2="46"/>
+                      <line class="kpi-bar-gridline" x1="2" y1="70" x2="220" y2="70"/>
+                    </g>
+                    <line class="kpi-avg-line" x1="2" y1="36.22" x2="216" y2="36.22"/>
+                    <text class="kpi-avg-text" x="220" y="38.6">avg</text>
+                    <g class="kpi-bars">
+                      <rect class="mix-bar" x="15" y="51.84" width="14" height="28.16" rx="2.5" fill="url(#kpiBarBaseDs)" data-chart-hover="true" data-chart-label="L1 · Bronze" data-chart-value="110건"/>
+                      <rect class="mix-bar" x="41" y="47.23" width="14" height="32.77" rx="2.5" fill="url(#kpiBarBaseDs)" data-chart-hover="true" data-chart-label="L2 · Silver" data-chart-value="128건"/>
+                      <rect class="mix-bar" x="67" y="42.62" width="14" height="37.38" rx="2.5" fill="url(#kpiBarBaseDs)" data-chart-hover="true" data-chart-label="L3 · Gold" data-chart-value="146건"/>
+                      <rect class="mix-bar" x="93" y="39.55" width="14" height="40.45" rx="2.5" fill="url(#kpiBarBaseDs)" data-chart-hover="true" data-chart-label="L4 · ML" data-chart-value="158건"/>
+                      <rect class="mix-bar" x="119" y="34.94" width="14" height="45.06" rx="2.5" fill="url(#kpiBarBaseDs)" data-chart-hover="true" data-chart-label="L5 · DM" data-chart-value="176건"/>
+                      <rect class="mix-bar" x="145" y="30.85" width="14" height="49.15" rx="2.5" fill="url(#kpiBarBaseDs)" data-chart-hover="true" data-chart-label="L6 · BI" data-chart-value="192건"/>
+                      <rect class="mix-bar" x="171" y="26.24" width="14" height="53.76" rx="2.5" fill="url(#kpiBarBaseDs)" data-chart-hover="true" data-chart-label="L7 · App" data-chart-value="210건"/>
+                      <rect class="mix-bar mix-bar--peak" x="197" y="16.51" width="14" height="63.49" rx="2.5" fill="#0090DA" data-chart-hover="true" data-chart-label="L8 · External (Peak)" data-chart-value="248건"/>
+                    </g>
+                    <g class="kpi-peak-label">
+                      <rect x="190" y="3.5" width="28" height="11" rx="2" fill="#0090DA"/>
+                      <text x="204" y="11.2" font-size="7" font-weight="700" fill="#fff" text-anchor="middle" font-variant-numeric="tabular-nums" letter-spacing="-0.01em">248</text>
+                    </g>
+                    <line class="kpi-bar-baseline spark-baseline" x1="2" y1="80" x2="222" y2="80"/>
+                    <g class="kpi-axis-labels">
+                      <text x="22" y="91">L1</text>
+                      <text x="48" y="91">L2</text>
+                      <text x="74" y="91">L3</text>
+                      <text x="100" y="91">L4</text>
+                      <text x="126" y="91">L5</text>
+                      <text x="152" y="91">L6</text>
+                      <text x="178" y="91">L7</text>
+                      <text x="204" y="91" class="kpi-axis-active">L8</text>
+                    </g>
+                  </svg>
+                </div>
+              </div>
+              <div class="kpi kpi--sparkline">
+                <div class="kpi-label">오늘 조회 쿼리</div><div class="kpi-value"><span id="homeKpiQueries">2,046</span></div><div class="kpi-delta">성공률 <span id="homeKpiQuerySuccess">99.2</span>%</div>
+                <div class="kpi-spark-frame kpi-spark-frame--bar-panel kpi-spark-frame--queries" aria-hidden="true" title="시간대별 쿼리 실행량">
+                  <div class="kpi-bar-panel-head">
+                    <div class="kpi-bar-meta"><span class="kpi-bar-dot"></span><span class="kpi-bar-cat">시간대 실행</span></div>
+                    <div class="kpi-bar-stats">
+                      <span class="kpi-bar-stat"><span class="kpi-bar-stat-l">평균</span><strong id="homeKpiBarQAvg">237</strong><span class="kpi-bar-stat-u">/h</span></span>
+                      <span class="kpi-bar-stat"><span class="kpi-bar-stat-l">Peak</span><strong id="homeKpiBarQPeak">412</strong></span>
+                      <span class="kpi-bar-stat"><span class="kpi-bar-stat-l">p95</span><strong id="homeKpiBarQp95">842</strong><span class="kpi-bar-stat-u">ms</span></span>
+                    </div>
+                  </div>
+                  <svg class="kpi-spark-svg kpi-spark-svg--bars" viewBox="0 0 240 96" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                      <linearGradient id="kpiBarBaseQ" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#BFDBFE"/>
+                        <stop offset="100%" stop-color="#3B82F6"/>
+                      </linearGradient>
+                    </defs>
+                    <circle class="kpi-card-accent" cx="218" cy="14" r="22" fill="rgba(0,144,218,0.07)"/>
+                    <g class="kpi-bar-grid">
+                      <line class="kpi-bar-gridline" x1="2" y1="22" x2="220" y2="22"/>
+                      <line class="kpi-bar-gridline" x1="2" y1="46" x2="220" y2="46"/>
+                      <line class="kpi-bar-gridline" x1="2" y1="70" x2="220" y2="70"/>
+                    </g>
+                    <line class="kpi-avg-line" x1="2" y1="45.68" x2="216" y2="45.68"/>
+                    <text class="kpi-avg-text" x="220" y="48.05">avg</text>
+                    <g class="kpi-bars">
+                      <rect class="mix-bar" x="14" y="66.92" width="12" height="13.08" rx="2.5" fill="url(#kpiBarBaseQ)" data-chart-hover="true" data-chart-label="09:00" data-chart-value="92건"/>
+                      <rect class="mix-bar" x="36" y="59.38" width="12" height="20.62" rx="2.5" fill="url(#kpiBarBaseQ)" data-chart-hover="true" data-chart-label="10:00" data-chart-value="145건"/>
+                      <rect class="mix-bar" x="57" y="51.84" width="12" height="28.16" rx="2.5" fill="url(#kpiBarBaseQ)" data-chart-hover="true" data-chart-label="11:00" data-chart-value="198건"/>
+                      <rect class="mix-bar" x="79" y="43.59" width="12" height="36.41" rx="2.5" fill="url(#kpiBarBaseQ)" data-chart-hover="true" data-chart-label="12:00" data-chart-value="256건"/>
+                      <rect class="mix-bar" x="100" y="35.64" width="12" height="44.36" rx="2.5" fill="url(#kpiBarBaseQ)" data-chart-hover="true" data-chart-label="13:00" data-chart-value="312건"/>
+                      <rect class="mix-bar mix-bar--peak" x="122" y="21.41" width="12" height="58.59" rx="2.5" fill="#0090DA" data-chart-hover="true" data-chart-label="14:00 (Peak)" data-chart-value="412건"/>
+                      <rect class="mix-bar" x="143" y="30.51" width="12" height="49.49" rx="2.5" fill="url(#kpiBarBaseQ)" data-chart-hover="true" data-chart-label="15:00" data-chart-value="348건"/>
+                      <rect class="mix-bar" x="165" y="39.47" width="12" height="40.53" rx="2.5" fill="url(#kpiBarBaseQ)" data-chart-hover="true" data-chart-label="16:00" data-chart-value="285건"/>
+                      <rect class="mix-bar" x="186" y="50.13" width="12" height="29.87" rx="2.5" fill="url(#kpiBarBaseQ)" data-chart-hover="true" data-chart-label="17:00" data-chart-value="210건"/>
+                      <rect class="mix-bar" x="208" y="57.82" width="12" height="22.18" rx="2.5" fill="url(#kpiBarBaseQ)" data-chart-hover="true" data-chart-label="18:00" data-chart-value="156건"/>
+                    </g>
+                    <g class="kpi-peak-label">
+                      <rect x="114" y="8.4" width="28" height="11" rx="2" fill="#0090DA"/>
+                      <text x="128" y="16.1" font-size="7" font-weight="700" fill="#fff" text-anchor="middle" font-variant-numeric="tabular-nums" letter-spacing="-0.01em">412</text>
+                    </g>
+                    <line class="kpi-bar-baseline spark-baseline" x1="2" y1="80" x2="222" y2="80"/>
+                    <g class="kpi-axis-labels">
+                      <text x="20" y="91">09</text>
+                      <text x="63" y="91">11</text>
+                      <text x="106" y="91">13</text>
+                      <text x="128" y="91" class="kpi-axis-active">14</text>
+                      <text x="171" y="91">16</text>
+                      <text x="214" y="91">18</text>
+                    </g>
+                  </svg>
+                </div>
+              </div>
+              <div class="kpi kpi--sparkline">
+                <div class="kpi-label">결재 대기</div><div class="kpi-value"><span id="homeKpiApprovals">6</span></div><div class="kpi-delta up">SLA <span id="homeKpiSlaNote">주의 1건</span></div>
+                <div class="kpi-spark-frame kpi-spark-frame--bar-panel kpi-spark-frame--approvals" aria-hidden="true" title="결재 유형별 대기 분포">
+                  <div class="kpi-bar-panel-head">
+                    <div class="kpi-bar-meta"><span class="kpi-bar-dot"></span><span class="kpi-bar-cat">유형별 분포</span></div>
+                    <div class="kpi-bar-stats">
+                      <span class="kpi-bar-stat"><span class="kpi-bar-stat-l">합계</span><strong id="homeKpiAprTotalBar">21</strong><span class="kpi-bar-stat-u">건</span></span>
+                      <span class="kpi-bar-stat kpi-bar-stat--warn"><span class="kpi-bar-stat-l">임계</span><strong id="homeKpiAprCritBar">1</strong></span>
+                      <span class="kpi-bar-stat"><span class="kpi-bar-stat-l">SLA</span><strong>≤2</strong><span class="kpi-bar-stat-u">영업일</span></span>
+                    </div>
+                  </div>
+                  <svg class="kpi-spark-svg kpi-spark-svg--bars" viewBox="0 0 240 96" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                      <linearGradient id="kpiBarBaseApr" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#BFDBFE"/>
+                        <stop offset="100%" stop-color="#3B82F6"/>
+                      </linearGradient>
+                    </defs>
+                    <circle class="kpi-card-accent" cx="218" cy="14" r="22" fill="rgba(0,144,218,0.07)"/>
+                    <g class="kpi-bar-grid">
+                      <line class="kpi-bar-gridline" x1="2" y1="22" x2="220" y2="22"/>
+                      <line class="kpi-bar-gridline" x1="2" y1="46" x2="220" y2="46"/>
+                      <line class="kpi-bar-gridline" x1="2" y1="70" x2="220" y2="70"/>
+                    </g>
+                    <line class="kpi-avg-line" x1="2" y1="52" x2="216" y2="52"/>
+                    <text class="kpi-avg-text" x="220" y="54.4">avg</text>
+                    <g class="kpi-bars">
+                      <rect class="mix-bar mix-bar--peak" x="16" y="24" width="22" height="56" rx="2.5" fill="#0090DA" data-chart-hover="true" data-chart-label="RBAC (Peak)" data-chart-value="7건"/>
+                      <rect class="mix-bar" x="52" y="48" width="22" height="32" rx="2.5" fill="url(#kpiBarBaseApr)" data-chart-hover="true" data-chart-label="마스킹" data-chart-value="4건"/>
+                      <rect class="mix-bar" x="88" y="40" width="22" height="40" rx="2.5" fill="url(#kpiBarBaseApr)" data-chart-hover="true" data-chart-label="원본 조회" data-chart-value="5건"/>
+                      <rect class="mix-bar" x="124" y="64" width="22" height="16" rx="2.5" fill="url(#kpiBarBaseApr)" data-chart-hover="true" data-chart-label="외부 공유" data-chart-value="2건"/>
+                      <rect class="mix-bar" x="160" y="64" width="22" height="16" rx="2.5" fill="url(#kpiBarBaseApr)" data-chart-hover="true" data-chart-label="IF 등록" data-chart-value="2건"/>
+                      <rect class="mix-bar" x="196" y="72" width="22" height="8" rx="2.5" fill="url(#kpiBarBaseApr)" data-chart-hover="true" data-chart-label="기타" data-chart-value="1건"/>
+                    </g>
+                    <g class="kpi-peak-label">
+                      <rect x="13" y="11" width="28" height="11" rx="2" fill="#0090DA"/>
+                      <text x="27" y="18.7" font-size="7" font-weight="700" fill="#fff" text-anchor="middle" font-variant-numeric="tabular-nums" letter-spacing="-0.01em">7</text>
+                    </g>
+                    <line class="kpi-bar-baseline spark-baseline" x1="2" y1="80" x2="222" y2="80"/>
+                    <g class="kpi-axis-labels">
+                      <text x="27" y="91" class="kpi-axis-active">RBAC</text>
+                      <text x="63" y="91">MASK</text>
+                      <text x="99" y="91">RAW</text>
+                      <text x="135" y="91">EXT</text>
+                      <text x="171" y="91">IF</text>
+                      <text x="207" y="91">ETC</text>
+                    </g>
+                  </svg>
+                </div>
+              </div>
+              <div class="kpi kpi--sparkline">
+                <div class="kpi-label">월 누적 비용</div><div class="kpi-value">₩<span id="homeKpiCostM">172</span>M</div><div class="kpi-delta">예산 대비 <span id="homeKpiBudgetPct">68.8</span>%</div>
+                <div class="kpi-spark-frame kpi-spark-frame--bar-panel kpi-spark-frame--cost" aria-hidden="true" title="주간 누적 비용(₩M)">
+                  <div class="kpi-bar-panel-head">
+                    <div class="kpi-bar-meta"><span class="kpi-bar-dot"></span><span class="kpi-bar-cat">주간 분포</span></div>
+                    <div class="kpi-bar-stats">
+                      <span class="kpi-bar-stat"><span class="kpi-bar-stat-l">평균</span><strong id="homeKpiBarCostAvg">41</strong><span class="kpi-bar-stat-u">M</span></span>
+                      <span class="kpi-bar-stat"><span class="kpi-bar-stat-l">Peak</span><strong id="homeKpiBarCostPeak">46</strong><span class="kpi-bar-stat-u">M</span></span>
+                      <span class="kpi-bar-stat kpi-bar-stat--good"><span class="kpi-bar-stat-l">여유</span><strong id="homeKpiBarCostHeadroom">31</strong><span class="kpi-bar-stat-u">%</span></span>
+                    </div>
+                  </div>
+                  <svg class="kpi-spark-svg kpi-spark-svg--bars" viewBox="0 0 240 96" preserveAspectRatio="xMidYMid meet">
+                    <defs>
+                      <linearGradient id="kpiBarBaseCost" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="#BFDBFE"/>
+                        <stop offset="100%" stop-color="#3B82F6"/>
+                      </linearGradient>
+                    </defs>
+                    <circle class="kpi-card-accent" cx="218" cy="14" r="22" fill="rgba(0,144,218,0.07)"/>
+                    <g class="kpi-bar-grid">
+                      <line class="kpi-bar-gridline" x1="2" y1="22" x2="220" y2="22"/>
+                      <line class="kpi-bar-gridline" x1="2" y1="46" x2="220" y2="46"/>
+                      <line class="kpi-bar-gridline" x1="2" y1="70" x2="220" y2="70"/>
+                    </g>
+                    <line class="kpi-avg-line" x1="2" y1="41.15" x2="216" y2="41.15"/>
+                    <text class="kpi-avg-text" x="220" y="43.55">avg</text>
+                    <g class="kpi-bars">
+                      <rect class="mix-bar" x="16" y="54.4" width="18" height="25.6" rx="2.5" fill="url(#kpiBarBaseCost)" data-chart-hover="true" data-chart-label="W-6" data-chart-value="₩38M"/>
+                      <rect class="mix-bar" x="47" y="44.8" width="18" height="35.2" rx="2.5" fill="url(#kpiBarBaseCost)" data-chart-hover="true" data-chart-label="W-5" data-chart-value="₩41M"/>
+                      <rect class="mix-bar" x="77" y="35.2" width="18" height="44.8" rx="2.5" fill="url(#kpiBarBaseCost)" data-chart-hover="true" data-chart-label="W-4" data-chart-value="₩44M"/>
+                      <rect class="mix-bar" x="108" y="41.6" width="18" height="38.4" rx="2.5" fill="url(#kpiBarBaseCost)" data-chart-hover="true" data-chart-label="W-3" data-chart-value="₩42M"/>
+                      <rect class="mix-bar" x="139" y="38.4" width="18" height="41.6" rx="2.5" fill="url(#kpiBarBaseCost)" data-chart-hover="true" data-chart-label="W-2" data-chart-value="₩43M"/>
+                      <rect class="mix-bar mix-bar--peak" x="170" y="28.8" width="18" height="51.2" rx="2.5" fill="#0090DA" data-chart-hover="true" data-chart-label="W-1 (Peak)" data-chart-value="₩46M"/>
+                      <rect class="mix-bar" x="200" y="44.8" width="18" height="35.2" rx="2.5" fill="url(#kpiBarBaseCost)" data-chart-hover="true" data-chart-label="현재 주" data-chart-value="₩41M"/>
+                    </g>
+                    <g class="kpi-peak-label">
+                      <rect x="165" y="15.8" width="28" height="11" rx="2" fill="#0090DA"/>
+                      <text x="179" y="23.5" font-size="7" font-weight="700" fill="#fff" text-anchor="middle" font-variant-numeric="tabular-nums" letter-spacing="-0.01em">46M</text>
+                    </g>
+                    <line class="kpi-bar-baseline spark-baseline" x1="2" y1="80" x2="222" y2="80"/>
+                    <g class="kpi-axis-labels">
+                      <text x="25" y="91">W-6</text>
+                      <text x="56" y="91">W-5</text>
+                      <text x="86" y="91">W-4</text>
+                      <text x="117" y="91">W-3</text>
+                      <text x="148" y="91">W-2</text>
+                      <text x="179" y="91" class="kpi-axis-active">W-1</text>
+                      <text x="209" y="91">NOW</text>
+                    </g>
+                  </svg>
+                </div>
+              </div>
             </div>
-            <div class="pillars">
-              <article class="pillar" data-action="jump-view" data-view="ingestion"><div class="pillar-title">Ingestion · 운영 고도화</div><div class="pillar-meta">SFR-001~005 · CDC/MQ/DR/모니터링</div></article>
-              <article class="pillar" data-action="jump-view" data-view="query"><div class="pillar-title">데이터 탐색 · 조회</div><div class="pillar-meta">SFR-006 · SQL/GUI 조회 및 실행</div></article>
-              <article class="pillar" data-action="jump-view" data-view="permission"><div class="pillar-title">권한 · 보안 · 결재</div><div class="pillar-meta">SFR-008/010 · 마스킹/승인/Audit</div></article>
-              <article class="pillar" data-action="jump-view" data-view="bi"><div class="pillar-title">BI/TDM/변화관리</div><div class="pillar-meta">SFR-011~014 · 전환/교육/정착</div></article>
+
+            <div class="card home-ops-tower ds-monitor-card" id="homeOpsTower" style="margin-top:14px;">
+              <div class="card-head ds-monitor-head">
+                <div>
+                  <h3 class="card-title">통합 운영 타워</h3>
+                  <div class="card-sub">수집·저장·처리 단계 모니터링 · TPS·지연·성공률 · 장기 실행·임계 경보</div>
+                </div>
+                <div class="page-actions" style="margin:0;">
+                  <span class="live-pill" id="homeSimPill" title="데모 시뮬레이션"><span class="live-dot"></span><span id="homeSimPillText">시뮬레이션 가동</span></span>
+                  <button type="button" class="btn btn-ghost btn-sm" data-action="home-sim-pause" id="homeSimPauseBtn">일시정지</button>
+                  <button type="button" class="btn btn-secondary btn-sm" data-action="home-sim-snapshot">스냅샷</button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="ops-tower-metrics">
+                  <div class="ops-metric">
+                    <span class="ops-metric-label">가동 파이프라인</span>
+                    <strong id="homePipeRunning">2,987</strong>
+                    <span class="ops-metric-hint">/ 3,000</span>
+                  </div>
+                  <div class="ops-metric">
+                    <span class="ops-metric-label">배치 성공률(24h)</span>
+                    <strong id="homeBatchSuccess">99.41</strong>
+                    <span class="ops-metric-hint">%</span>
+                  </div>
+                  <div class="ops-metric">
+                    <span class="ops-metric-label">P95 지연</span>
+                    <strong id="homeP95Ms">428</strong>
+                    <span class="ops-metric-hint">ms · SLA 500ms</span>
+                  </div>
+                  <div class="ops-metric">
+                    <span class="ops-metric-label">장기 실행 경보</span>
+                    <strong id="homeLongRunWarn">2</strong>
+                    <span class="ops-metric-hint">건 · 임계 초과</span>
+                  </div>
+                  <div class="ops-metric">
+                    <span class="ops-metric-label">클러스터 CPU</span>
+                    <strong id="homeCpuPct">64</strong>
+                    <span class="ops-metric-hint">% · AKS 노드 풀</span>
+                  </div>
+                  <div class="ops-metric">
+                    <span class="ops-metric-label">스토리지 증분</span>
+                    <strong id="homeStorDelta">+1.8</strong>
+                    <span class="ops-metric-hint">TB/주</span>
+                  </div>
+                </div>
+                <div class="ops-tower-grid">
+                  <div class="ops-tower-col">
+                    <div class="ops-feed-headline">
+                      <div class="ops-subhead ops-subhead--flush">최근 작업 · ADF + Databricks 로그 통합</div>
+                      <div id="homeOpsStatusStrip" class="home-ops-status-strip" aria-live="polite" aria-label="최근 실행 상태(신규 순)"></div>
+                    </div>
+                    <div class="home-ops-feed" id="homeOpsFeed" aria-live="polite"></div>
+                  </div>
+                  <div class="ops-tower-col">
+                    <div class="ops-subhead">수집 TPS · 성공률 (최근 60분)</div>
+                    <div class="chart-wrap chart-wrap-homeops ds-monitor-chart">
+                      <canvas id="homeOpsMixChart" height="200" aria-label="TPS 및 성공률 추이"></canvas>
+                    </div>
+                    <div class="ops-infra-strip">
+                      <div><span>메모리 사용</span><strong id="homeMemPct">71</strong>%</div>
+                      <div><span>정합성 검증 대기</span><strong id="homeReconQueue">4</strong>건</div>
+                      <div><span>감사 이벤트(1h)</span><strong id="homeAuditRate">1,240</strong></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
+
+            <div class="card portal-cost-monitor ds-monitor-card" style="margin-top:14px;">
+              <div class="card-head ds-monitor-head">
+                <h3 class="card-title">비용 통합 모니터링</h3>
+                <div class="card-sub">일별/월별 비용 추이 + 업무 도메인별 비용 분포</div>
+              </div>
+              <div class="card-body">
+                <div class="portal-cost-grid">
+                  <div class="cost-trend-wrap">
+                    <div class="cost-trend-head">
+                      <strong>일별 비용 추이</strong>
+                      <span>이번 달 누적 ₩172M</span>
+                    </div>
+                    <svg class="cost-trend-chart" viewBox="0 0 520 170" preserveAspectRatio="xMidYMid meet" aria-label="일별 비용 추이">
+                      <defs>
+                        <linearGradient id="costAreaGrad" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stop-color="rgba(0,144,218,0.30)"></stop>
+                          <stop offset="100%" stop-color="rgba(0,144,218,0.02)"></stop>
+                        </linearGradient>
+                      </defs>
+                      <path class="cost-area" d="M0 150 L0 42 C30 62, 58 88, 84 64 C112 38, 142 104, 170 78 C200 50, 228 98, 256 70 C282 46, 308 110, 336 89 C364 67, 394 102, 422 74 C450 52, 480 88, 520 58 L520 150 Z"></path>
+                      <path class="cost-line" d="M0 42 C30 62, 58 88, 84 64 C112 38, 142 104, 170 78 C200 50, 228 98, 256 70 C282 46, 308 110, 336 89 C364 67, 394 102, 422 74 C450 52, 480 88, 520 58"></path>
+                      <circle class="cost-dot" cx="422" cy="74" r="3.5"></circle>
+                      <circle class="cost-dot" cx="520" cy="58" r="4"></circle>
+                    </svg>
+                  </div>
+                  <div class="cost-trend-wrap">
+                    <div class="cost-trend-head">
+                      <strong>월별 비용 추이</strong>
+                      <span>최근 12개월</span>
+                    </div>
+                    <svg class="cost-trend-chart" viewBox="0 0 520 170" preserveAspectRatio="xMidYMid meet" aria-label="월별 비용 추이">
+                      <defs>
+                        <linearGradient id="costAreaGradMonthly" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stop-color="rgba(0,144,218,0.30)"></stop>
+                          <stop offset="100%" stop-color="rgba(0,144,218,0.02)"></stop>
+                        </linearGradient>
+                      </defs>
+                      <path class="cost-area" fill="url(#costAreaGradMonthly)" d="M0 150 L0 120 C36 112, 72 106, 108 98 C144 94, 180 88, 216 74 C252 62, 288 84, 324 58 C360 42, 396 70, 432 34 C460 20, 490 24, 520 16 L520 150 Z"></path>
+                      <path class="cost-line" d="M0 120 C36 112, 72 106, 108 98 C144 94, 180 88, 216 74 C252 62, 288 84, 324 58 C360 42, 396 70, 432 34 C460 20, 490 24, 520 16"></path>
+                      <circle class="cost-dot" cx="432" cy="34" r="3.5"></circle>
+                      <circle class="cost-dot" cx="520" cy="16" r="4"></circle>
+                    </svg>
+                  </div>
+                  <div class="cost-domain-wrap">
+                    <div class="cost-trend-head">
+                      <strong>업무 도메인별 비용</strong>
+                      <span>ML / 개발 / BI / 거버넌스</span>
+                    </div>
+                    <div class="domain-cost-list">
+                      <div class="domain-row"><span>데이터 수집</span><div class="domain-bar"><div style="width:72%"></div></div><strong>₩72M</strong></div>
+                      <div class="domain-row"><span>ML / 개발</span><div class="domain-bar"><div style="width:34%"></div></div><strong>₩34M</strong></div>
+                      <div class="domain-row"><span>분석 · 쿼리</span><div class="domain-bar"><div style="width:18%"></div></div><strong>₩18M</strong></div>
+                      <div class="domain-row"><span>BI · 리포트</span><div class="domain-bar"><div style="width:33%"></div></div><strong>₩33M</strong></div>
+                      <div class="domain-row"><span>거버넌스</span><div class="domain-bar"><div style="width:16%"></div></div><strong>₩16M</strong></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="card" style="margin-top:14px;">
+              <div class="card-head"><h3 class="card-title">플랫폼 기능 허브</h3><div class="card-sub">제안요청 범위 전 기능 · 클릭하면 해당 화면으로 이동합니다</div></div>
+              <div class="card-body">
+                <div class="pillars pillar-grid pillar-grid--6">
+                  <article class="pillar" data-action="jump-view" data-view="ingestion"><div class="pillar-icon">⚡</div><div class="pillar-title">데이터 수집</div><div class="pillar-meta">CDC/MQ 전환 · 3,000 파이프라인 자동화 · 정합성 검증</div></article>
+                  <article class="pillar" data-action="jump-view" data-view="query"><div class="pillar-icon">📝</div><div class="pillar-title">쿼리 에디터</div><div class="pillar-meta">웹 SQL · GUI 빌더 · NLQ → SQL · 동적 마스킹</div></article>
+                  <article class="pillar" data-action="jump-view" data-view="permission"><div class="pillar-icon">🔐</div><div class="pillar-title">권한 · 보안</div><div class="pillar-meta">RBAC · MFA · 캡처차단 · 결재 워크플로우</div></article>
+                  <article class="pillar" data-action="jump-view" data-view="lineage"><div class="pillar-icon">🗂️</div><div class="pillar-title">자산 · 계보</div><div class="pillar-meta">용어사전 · 데이터 카탈로그 · Lineage 시각화</div></article>
+                  <article class="pillar" data-action="jump-view" data-view="quality"><div class="pillar-icon">✅</div><div class="pillar-title">품질 · 거버넌스</div><div class="pillar-meta">DQ 규칙 · 정합성/신선도 · Retention 정책</div></article>
+                  <article class="pillar" data-action="jump-view" data-view="finops"><div class="pillar-icon">💰</div><div class="pillar-title">FinOps · 비용</div><div class="pillar-meta">클러스터 비용 · 자동 중지 · 예산 알림</div></article>
+                  <article class="pillar" data-action="jump-view" data-view="bi"><div class="pillar-icon">📊</div><div class="pillar-title">BI · 리포트</div><div class="pillar-meta">QlikSense → PowerBI 전환 분석 · 활용도 추적</div></article>
+                  <article class="pillar" data-action="run-full-demo"><div class="pillar-icon">🚀</div><div class="pillar-title">종합 데모</div><div class="pillar-meta">전체 기능 시나리오 자동 실행 (수집→쿼리→보안→운영)</div></article>
+                </div>
+              </div>
+            </div>
+
+            <div class="dash-grid" style="margin-top:14px;">
+              <div class="card">
+                <div class="card-head"><h3 class="card-title">공지 · 알림</h3><div class="card-sub">운영팀 공유사항</div></div>
+                <div class="card-body">
+                  <div class="q-issue"><div class="q-issue-table">공지</div><div class="q-issue-rule">주요 테이블 스키마 변경 예정 (금요일 22:00)</div><div class="q-issue-impact">D-1</div><div><span class="badge badge-warning">확인 필요</span></div></div>
+                  <div class="q-issue"><div class="q-issue-table">알림</div><div class="q-issue-rule">원본 조회 권한 신청 2건 승인 대기</div><div class="q-issue-impact">진행중</div><div><span class="badge badge-info">대기</span></div></div>
+                  <div class="q-issue"><div class="q-issue-table">알림</div><div class="q-issue-rule">월간 비용 리포트 생성 완료</div><div class="q-issue-impact">완료</div><div><span class="badge badge-success">완료</span></div></div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-head"><h3 class="card-title">최근 활동</h3><div class="card-sub">사용자/운영팀 활동 로그</div></div>
+                <div class="card-body">
+                  <div class="q-issue"><div class="q-issue-table">11:28</div><div class="q-issue-rule">오석휘 수석 · dm_policy.fact_contract 조회 실행</div><div class="q-issue-impact">48 rows</div><div><span class="badge badge-neutral">Query</span></div></div>
+                  <div class="q-issue"><div class="q-issue-table">11:16</div><div class="q-issue-rule">권한 신청 승인 처리 · customer contact masking 해제</div><div class="q-issue-impact">승인</div><div><span class="badge badge-success">Governance</span></div></div>
+                  <div class="q-issue"><div class="q-issue-table">10:54</div><div class="q-issue-rule">Ingestion 파이프라인 재시작 · legacy claim IF</div><div class="q-issue-impact">복구</div><div><span class="badge badge-info">Ops</span></div></div>
+                </div>
+              </div>
+            </div>
+
           </section>`;
       }
       if (view === 'ingestion') {
@@ -1841,7 +2242,7 @@ th{background:#f5f7f9}
           <section class="view">
             <div class="page-head">
               <div class="page-title-wrap">
-                <div class="page-eyebrow">SFR-001 · 002 · 005 · TTR-001</div>
+                <div class="page-eyebrow">Pipeline · CDC · Monitoring</div>
                 <h1 class="page-title">Ingestion · CDC</h1>
                 <p class="page-desc">IBM IIDR 11.5 / MQ 9.3 → CDC 모듈 전환 · 3,000 파이프라인 모니터링 · 큐 재분류 · 정합성 검증</p>
               </div>
@@ -1858,7 +2259,7 @@ th{background:#f5f7f9}
               <div class="kpi"><div class="kpi-label">P95 지연</div><div class="kpi-value">428ms</div><div class="kpi-delta">SLA 500ms</div></div>
             </div>
 
-            <!-- Queue mapping board (SFR-001-4: 큐 재분류) -->
+            <!-- Queue mapping board -->
             <div class="queue-mapping-board">
               <div class="queue-card q-high">
                 <div class="queue-card-head">
@@ -1902,15 +2303,14 @@ th{background:#f5f7f9}
             </div>
 
             <div class="dash-grid">
-              <div class="card"><div class="card-head"><h3 class="card-title">실시간 TPS 추이</h3><div class="card-sub">ADF + Databricks 통합 로그</div></div><div class="card-body chart-wrap"><canvas id="tpsChart"></canvas></div></div>
-              <div class="card"><div class="card-head"><h3 class="card-title">상태 분포</h3></div><div class="card-body chart-wrap"><canvas id="statusChart"></canvas></div></div>
+              <div class="card ds-monitor-card"><div class="card-head ds-monitor-head"><h3 class="card-title">실시간 TPS 추이</h3><div class="card-sub">ADF + Databricks 통합 로그</div></div><div class="card-body chart-wrap ds-monitor-chart"><canvas id="tpsChart"></canvas></div></div>
+              <div class="card ds-monitor-card"><div class="card-head ds-monitor-head"><h3 class="card-title">상태 분포</h3></div><div class="card-body chart-wrap ds-monitor-chart"><canvas id="statusChart"></canvas></div></div>
             </div>
 
-            <!-- CDC 정합성 검증 (SFR-002-5: 소스-타겟 건수 검증) -->
             <div class="card" style="margin-top:14px;">
               <div class="card-head">
                 <h3 class="card-title">소스-타겟 정합성 검증 · SRC_CONTRACT_HDR</h3>
-                <div class="card-sub">SFR-002-5 · 자동화 정합성 체크 (마지막 실행: 12분 전)</div>
+                <div class="card-sub">자동화 정합성 체크 (마지막 실행: 12분 전)</div>
               </div>
               <div class="card-body">
                 <div class="cdc-recon-card">
@@ -1932,7 +2332,7 @@ th{background:#f5f7f9}
                   <div class="cdc-recon-tile delete">
                     <div class="cdc-recon-tile-label">Delete log</div>
                     <div class="cdc-recon-tile-value">142</div>
-                    <div class="cdc-recon-tile-sub">별도 관리 (SFR-001-6)</div>
+                    <div class="cdc-recon-tile-sub">별도 관리</div>
                   </div>
                 </div>
               </div>
@@ -1942,15 +2342,15 @@ th{background:#f5f7f9}
             <div class="card" style="margin-top:14px;"><div class="card-head"><h3 class="card-title">부하 히트맵</h3><div class="card-sub">시간대별 24h × 7d</div></div><div class="card-body"><div id="heatmap" class="heatmap-grid"></div></div></div>
 
             <div class="card" style="margin-top:14px;">
-              <div class="card-head"><h3 class="card-title">RFP 요구사항 검증 상태</h3></div>
+              <div class="card-head"><h3 class="card-title">기능 구현 현황</h3></div>
               <div class="card-body">
-                <div class="q-issue"><div class="q-issue-table">SFR-001-1</div><div class="q-issue-rule">IBM IIDR 11.5 / MQ → CDC 전환</div><div class="q-issue-impact">진행중</div><div><span class="badge badge-warning">62%</span></div></div>
-                <div class="q-issue"><div class="q-issue-table">SFR-001-4</div><div class="q-issue-rule">큐 재분류 (상/중/하 그룹화)</div><div class="q-issue-impact">완료</div><div><span class="badge badge-success">OK</span></div></div>
-                <div class="q-issue"><div class="q-issue-table">SFR-001-6</div><div class="q-issue-rule">Delete log 별도 관리</div><div class="q-issue-impact">구현</div><div><span class="badge badge-success">OK</span></div></div>
-                <div class="q-issue"><div class="q-issue-table">SFR-002-4</div><div class="q-issue-rule">Checkpoint 재시작/재처리</div><div class="q-issue-impact">구현</div><div><span class="badge badge-success">OK</span></div></div>
-                <div class="q-issue"><div class="q-issue-table">SFR-002-5</div><div class="q-issue-rule">소스-타겟 정합성 자동 검증</div><div class="q-issue-impact">구현</div><div><span class="badge badge-success">OK</span></div></div>
-                <div class="q-issue"><div class="q-issue-table">SFR-005-3</div><div class="q-issue-rule">TPS · 지연 · 성공률 시각화</div><div class="q-issue-impact">구현</div><div><span class="badge badge-success">OK</span></div></div>
-                <div class="q-issue"><div class="q-issue-table">TTR-001</div><div class="q-issue-rule">DR 복구 시나리오 테스트</div><div class="q-issue-impact">진행중</div><div><span class="badge badge-warning">RUN</span></div></div>
+                <div class="q-issue"><div class="q-issue-table">CDC</div><div class="q-issue-rule">IBM IIDR 11.5 / MQ → CDC 전환</div><div class="q-issue-impact">진행중</div><div><span class="badge badge-warning">62%</span></div></div>
+                <div class="q-issue"><div class="q-issue-table">큐 관리</div><div class="q-issue-rule">큐 재분류 (상/중/하 그룹화)</div><div class="q-issue-impact">완료</div><div><span class="badge badge-success">OK</span></div></div>
+                <div class="q-issue"><div class="q-issue-table">로그관리</div><div class="q-issue-rule">Delete log 별도 관리</div><div class="q-issue-impact">구현</div><div><span class="badge badge-success">OK</span></div></div>
+                <div class="q-issue"><div class="q-issue-table">복구</div><div class="q-issue-rule">Checkpoint 재시작/재처리</div><div class="q-issue-impact">구현</div><div><span class="badge badge-success">OK</span></div></div>
+                <div class="q-issue"><div class="q-issue-table">정합성</div><div class="q-issue-rule">소스-타겟 정합성 자동 검증</div><div class="q-issue-impact">구현</div><div><span class="badge badge-success">OK</span></div></div>
+                <div class="q-issue"><div class="q-issue-table">모니터링</div><div class="q-issue-rule">TPS · 지연 · 성공률 시각화</div><div class="q-issue-impact">구현</div><div><span class="badge badge-success">OK</span></div></div>
+                <div class="q-issue"><div class="q-issue-table">DR</div><div class="q-issue-rule">DR 복구 시나리오 테스트</div><div class="q-issue-impact">진행중</div><div><span class="badge badge-warning">RUN</span></div></div>
               </div>
             </div>
           </section>`;
@@ -1965,13 +2365,14 @@ th{background:#f5f7f9}
           <section class="view">
             <div class="page-head">
               <div class="page-title-wrap">
-                <div class="page-eyebrow">SFR-006 · 007 · 012</div>
+                <div class="page-eyebrow">Query · Assetization · Optimization</div>
                 <h1 class="page-title">쿼리 에디터</h1>
                 <p class="page-desc">웹 SQL · GUI 빌더 · NLQ → SQL · 자산화 · Unity Catalog 연동 · 실행이력 분석</p>
               </div>
               <div class="page-actions">
                 <button class="btn btn-ghost btn-sm" data-action="switch-query-mode" data-mode="sql">SQL 모드</button>
                 <button class="btn btn-ghost btn-sm" data-action="switch-query-mode" data-mode="visual">Visual 모드</button>
+                <button class="btn btn-primary btn-sm" data-action="run-query-demo">데모 시나리오 실행</button>
               </div>
             </div>
 
@@ -1998,12 +2399,35 @@ th{background:#f5f7f9}
               </div>
             </div>
 
+            <div class="card" style="margin:14px 0;">
+              <div class="card-head">
+                <h3 class="card-title">구현 가이드 · Cursor Prompt Pack</h3>
+                <div class="card-sub">AKS · Databricks · Spring Boot · React/Next · Ping Federate SSO 기준</div>
+              </div>
+              <div class="card-body">
+                <div class="q-issue"><div class="q-issue-table">Stack</div><div class="q-issue-rule">Azure AKS / Databricks Unity Catalog / Spring Boot(Tomcat) / React·Next / Ping Federate SSO</div><div class="q-issue-impact">기준</div><div><span class="badge badge-success">READY</span></div></div>
+                <div class="q-issue"><div class="q-issue-table">Prompt</div><div class="q-issue-rule">SQL Editor + Monaco + Warehouse 연동 시뮬레이션 템플릿</div><div class="q-issue-impact">Query 기능</div><div><button type="button" class="btn btn-ghost btn-sm" data-action="copy-cursor-prompt" data-preset="sqlEditor">복사</button></div></div>
+                <div class="q-issue"><div class="q-issue-table">Prompt</div><div class="q-issue-rule">USER Role 동적 마스킹 인터셉터 템플릿</div><div class="q-issue-impact">보안 기능</div><div><button type="button" class="btn btn-ghost btn-sm" data-action="copy-cursor-prompt" data-preset="masking">복사</button></div></div>
+                <div class="q-issue"><div class="q-issue-table">Prompt</div><div class="q-issue-rule">실시간 파이프라인 + FinOps 대시보드 템플릿</div><div class="q-issue-impact">모니터링 기능</div><div><button type="button" class="btn btn-ghost btn-sm" data-action="copy-cursor-prompt" data-preset="dashboard">복사</button></div></div>
+                <div class="q-issue"><div class="q-issue-table">Prompt</div><div class="q-issue-rule">권한 신청→승인→반영 상태관리 워크플로우 템플릿</div><div class="q-issue-impact">결재 기능</div><div><button type="button" class="btn btn-ghost btn-sm" data-action="copy-cursor-prompt" data-preset="workflow">복사</button></div></div>
+              </div>
+            </div>
+
+            <div class="card" style="margin-bottom:14px;">
+              <div class="card-body" style="display:grid; grid-template-columns:1fr auto auto auto; gap:8px; align-items:center;">
+                <div class="form-help" id="querySubstituteBanner">SQL Client 대체 모드 · Web Editor + Visual Builder + Feed + Audit Trace 활성</div>
+                <button type="button" class="btn btn-ghost btn-sm" data-action="toggle-cluster-mode">Cluster 상태 전환</button>
+                <button type="button" class="btn btn-secondary btn-sm" data-action="run-pattern-analysis">패턴 최적화 분석</button>
+                <button type="button" class="btn btn-ghost btn-sm" data-action="devops-run-check">DevOps 체크</button>
+              </div>
+            </div>
+
             <div class="card" style="margin-bottom:14px;">
               <div class="card-body" style="display:grid; grid-template-columns:1fr auto auto; gap:8px; align-items:center;">
                 <input id="nlqInput" class="form-input" placeholder="자연어 질의 예) 최근 3개월 ACTIVE 계약 상위 50명 프리미엄 합계" />
                 <button type="button" class="btn btn-secondary btn-sm" data-action="generate-sql-nlq">NLQ → SQL</button>
                 <button type="button" class="btn btn-ghost btn-sm" data-action="clear-nlq">초기화</button>
-                <div id="nlqPolicyHint" class="form-help" style="grid-column:1 / -1;">정책 검사 대기 중 · Vector Search 후보 LLM 연동 예정 (SFR-007)</div>
+                <div id="nlqPolicyHint" class="form-help" style="grid-column:1 / -1;">정책 검사 대기 중 · Vector Search 후보 LLM 연동 예정</div>
               </div>
             </div>
 
@@ -2040,7 +2464,10 @@ th{background:#f5f7f9}
                   </div>
                   <pre class="sql-gutter" id="sqlGutter">1</pre>
                   <pre class="sql-hl" id="sqlHl"></pre>
-                  <textarea id="sqlEditor" class="sql-textarea" spellcheck="false" wrap="off">SELECT customer_id, policy_no, contract_dt, premium FROM dm_policy.fact_contract WHERE status = 'ACTIVE' LIMIT 50;</textarea>
+                  <textarea id="sqlEditor" class="sql-textarea" spellcheck="false" wrap="off">SELECT customer_id, policy_no, contract_dt, premium
+FROM dm_policy.fact_contract
+WHERE status = 'ACTIVE'
+LIMIT 50;</textarea>
                 </div>
 
                 <!-- Autocomplete dropdown -->
@@ -2087,8 +2514,8 @@ th{background:#f5f7f9}
 
                   <!-- Chart section -->
                   <div class="results-section" id="resultSection-chart">
-                    <div class="results-chart-wrap">
-                      <div class="results-chart-controls">
+                    <div class="results-chart-wrap ds-monitor-card">
+                      <div class="results-chart-controls ds-monitor-head">
                         <label>Type</label>
                         <select id="resultChartType" class="form-select">
                           <option value="bar">Bar</option>
@@ -2102,7 +2529,7 @@ th{background:#f5f7f9}
                         <select id="resultChartY" class="form-select"></select>
                         <button class="btn btn-secondary btn-sm" data-action="render-result-chart">차트 그리기</button>
                       </div>
-                      <div class="chart-wrap" style="height: 280px;"><canvas id="resultChartCanvas"></canvas></div>
+                      <div class="chart-wrap ds-monitor-chart" style="height: 280px;"><canvas id="resultChartCanvas"></canvas></div>
                     </div>
                   </div>
 
@@ -2125,9 +2552,121 @@ th{background:#f5f7f9}
 
             </div>
 
+            <div class="dash-grid" style="margin-top:14px; grid-template-columns:1.3fr 1fr;">
+              <div class="card">
+                <div class="card-head">
+                  <h3 class="card-title">GUI 조회 · Drag &amp; Drop 빌더</h3>
+                  <div class="card-sub">SQL 비숙련 사용자용 필터 기반 조회 · 좌측 스키마 트리에서 컬럼을 끌어다 놓으세요</div>
+                </div>
+                <div class="card-body">
+                  <div class="dnd-builder" id="dndBuilder">
+                    <div class="dnd-zone" data-dnd-zone="SELECT" data-clause="SELECT">
+                      <div class="dnd-zone-head"><span class="dnd-zone-label">SELECT</span><span class="dnd-zone-hint">조회 컬럼</span></div>
+                      <div class="dnd-zone-body" data-dnd-target="SELECT">
+                        <span class="dnd-chip" data-dnd-col="customer_id">customer_id<button type="button" data-action="dnd-remove">×</button></span>
+                        <span class="dnd-chip" data-dnd-col="policy_no">policy_no<button type="button" data-action="dnd-remove">×</button></span>
+                        <span class="dnd-placeholder">컬럼을 여기로 드래그</span>
+                      </div>
+                    </div>
+                    <div class="dnd-zone" data-dnd-zone="WHERE" data-clause="WHERE">
+                      <div class="dnd-zone-head"><span class="dnd-zone-label">WHERE</span><span class="dnd-zone-hint">필터 조건</span></div>
+                      <div class="dnd-zone-body" data-dnd-target="WHERE">
+                        <span class="dnd-chip dnd-chip--cond" data-dnd-col="status">
+                          status
+                          <select class="dnd-op" data-action="dnd-set-op">
+                            <option>=</option><option>≠</option><option>IN</option><option>LIKE</option>
+                          </select>
+                          <input class="dnd-val" data-action="dnd-set-val" value="ACTIVE"/>
+                          <button type="button" data-action="dnd-remove">×</button>
+                        </span>
+                        <span class="dnd-placeholder">컬럼을 여기로 드래그</span>
+                      </div>
+                    </div>
+                    <div class="dnd-zone" data-dnd-zone="GROUP" data-clause="GROUP BY">
+                      <div class="dnd-zone-head"><span class="dnd-zone-label">GROUP BY</span><span class="dnd-zone-hint">집계 키</span></div>
+                      <div class="dnd-zone-body" data-dnd-target="GROUP">
+                        <span class="dnd-placeholder">컬럼을 여기로 드래그</span>
+                      </div>
+                    </div>
+                    <div class="dnd-zone" data-dnd-zone="ORDER" data-clause="ORDER BY">
+                      <div class="dnd-zone-head"><span class="dnd-zone-label">ORDER BY</span><span class="dnd-zone-hint">정렬</span></div>
+                      <div class="dnd-zone-body" data-dnd-target="ORDER">
+                        <span class="dnd-placeholder">컬럼을 여기로 드래그</span>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="dnd-controls">
+                    <div class="dnd-quick">
+                      <span class="form-help">템플릿</span>
+                      <button type="button" class="btn btn-ghost btn-sm" data-action="dnd-template" data-tpl="active_contract">ACTIVE 계약</button>
+                      <button type="button" class="btn btn-ghost btn-sm" data-action="dnd-template" data-tpl="vip_customer">VIP 고객</button>
+                      <button type="button" class="btn btn-ghost btn-sm" data-action="dnd-template" data-tpl="claim_high">고위험 청구</button>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr 1fr auto; gap:8px; align-items:end; margin-top:10px;">
+                      <div>
+                        <div class="form-help">도메인</div>
+                        <select id="guiDomainSelect" class="form-select">
+                          <option value="dm_policy.fact_contract">계약 (dm_policy.fact_contract)</option>
+                          <option value="dm_customer.dim_customer">고객 (dm_customer.dim_customer)</option>
+                          <option value="dm_claim.fact_claim_event">청구 (dm_claim.fact_claim_event)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <div class="form-help">상태/등급</div>
+                        <select id="guiStatusSelect" class="form-select">
+                          <option value="">전체</option>
+                          <option value="ACTIVE">ACTIVE</option>
+                          <option value="LAPSED">LAPSED</option>
+                          <option value="VIP">VIP</option>
+                          <option value="Gold">Gold</option>
+                        </select>
+                      </div>
+                      <div>
+                        <div class="form-help">최대 건수</div>
+                        <input id="guiLimitInput" class="form-input" type="number" min="10" step="10" value="100" />
+                      </div>
+                      <button type="button" class="btn btn-primary btn-sm" data-action="apply-gui-query">GUI 조회 실행</button>
+                    </div>
+                  </div>
+                  <div class="dnd-preview">
+                    <div class="dnd-preview-head"><span class="dnd-preview-label">생성 SQL 미리보기</span><button type="button" class="btn btn-ghost btn-sm" data-action="dnd-copy-preview">복사</button></div>
+                    <code id="dndSqlPreview">SELECT customer_id, policy_no FROM dm_policy.fact_contract WHERE status = 'ACTIVE' LIMIT 100;</code>
+                  </div>
+                </div>
+              </div>
+              <div class="card">
+                <div class="card-head">
+                  <h3 class="card-title">데이터 피드</h3>
+                  <div class="card-sub">반복 조회 템플릿 즉시 실행</div>
+                </div>
+                <div class="card-body" id="queryFeedList">
+                  <div class="q-issue"><div class="q-issue-table">Feed</div><div class="q-issue-rule">오늘 ACTIVE 계약 Top 100</div><div class="q-issue-impact">정기</div><div><button type="button" class="btn btn-ghost btn-sm" data-action="run-feed-template" data-feed="active_contract">실행</button></div></div>
+                  <div class="q-issue"><div class="q-issue-table">Feed</div><div class="q-issue-rule">고위험 청구 이벤트 모니터링</div><div class="q-issue-impact">1h</div><div><button type="button" class="btn btn-ghost btn-sm" data-action="run-feed-template" data-feed="claim_watch">실행</button></div></div>
+                  <div class="q-issue"><div class="q-issue-table">Feed</div><div class="q-issue-rule">VIP 고객 지역별 분포</div><div class="q-issue-impact">데일리</div><div><button type="button" class="btn btn-ghost btn-sm" data-action="run-feed-template" data-feed="vip_region">실행</button></div></div>
+                </div>
+              </div>
+            </div>
+
             <div class="card" style="margin-top:14px;">
               <div class="card-head"><h3 class="card-title">최근 실행 이력</h3><div class="page-actions"><button class="btn btn-ghost btn-sm" data-action="clear-query-history">이력 비우기</button></div></div>
               <div class="card-body" id="queryHistoryList"></div>
+            </div>
+
+            <div class="dash-grid" style="margin-top:14px; grid-template-columns:1.2fr 1fr;">
+              <div class="card">
+                <div class="card-head">
+                  <h3 class="card-title">쿼리 패턴 최적화 · 메타데이터 선순환</h3>
+                  <div class="card-sub">실행 로그 기반 Top Pattern 추천</div>
+                </div>
+                <div class="card-body" id="queryPatternList"></div>
+              </div>
+              <div class="card">
+                <div class="card-head">
+                  <h3 class="card-title">DevOps Standard</h3>
+                  <div class="card-sub">개발/배포 표준 준수 상태</div>
+                </div>
+                <div class="card-body" id="devopsStandardPanel"></div>
+              </div>
             </div>
 
             <div class="card asset-card-wrap" style="margin-top:14px;">
@@ -2156,11 +2695,12 @@ th{background:#f5f7f9}
           <section class="view">
             <div class="page-head">
               <div class="page-title-wrap">
-                <div class="page-eyebrow">SFR-008 · 010 · SVR-010</div>
+                <div class="page-eyebrow">Security · RBAC · Approval</div>
                 <h1 class="page-title">권한 · Unity Catalog</h1>
                 <p class="page-desc">테이블/행/열 RBAC · 동적 마스킹 · 결재 워크플로우 · 감사 로그 · Privacy by Design</p>
               </div>
               <div class="page-actions">
+                <button type="button" class="btn btn-secondary btn-sm" data-action="run-permission-demo">데모 시나리오 실행</button>
                 <button type="button" class="btn btn-primary btn-sm" data-action="open-perm-modal">권한 신청</button>
                 <button type="button" class="btn btn-ghost btn-sm" data-action="export-permission-audit-csv">감사 CSV</button>
                 <button type="button" class="btn btn-ghost btn-sm" data-action="export-permission-report">결재서 TXT</button>
@@ -2170,11 +2710,11 @@ th{background:#f5f7f9}
 
             <div class="card"><div class="card-body" id="approvalState">권한 승인 워크플로우 상태</div></div>
 
-            <!-- RBAC 매트릭스 (SFR-008-1) -->
+            <!-- RBAC 매트릭스 -->
             <div class="card" style="margin-top:14px;">
               <div class="card-head">
                 <h3 class="card-title">테이블 × 역할 RBAC 매트릭스</h3>
-                <div class="card-sub">SFR-008-1 · Unity Catalog 행/열 단위 권한 · 동적 마스킹</div>
+                <div class="card-sub">Unity Catalog 행/열 단위 권한 · 동적 마스킹</div>
               </div>
               <div class="card-body" style="padding:0;">
                 <div class="rbac-matrix-wrap">
@@ -2238,12 +2778,130 @@ th{background:#f5f7f9}
             </div>
 
             <div class="card" style="margin-top:14px;">
-              <div class="card-head"><h3 class="card-title">결재 큐 (위험등급별)</h3><div class="card-sub">SFR-010-2 · 직무/직급별 승인 + High-value Data 사전 검토</div></div>
+              <div class="card-head"><h3 class="card-title">결재 큐 (위험등급별)</h3><div class="card-sub">직무/직급별 승인 + High-value Data 사전 검토</div></div>
               <div class="card-body" style="padding:0;">
                 <table class="data-table">
                   <thead><tr><th>ID</th><th>요청자</th><th>대상</th><th>Squad</th><th>Risk</th><th>SLA</th><th>만료</th><th>상태</th></tr></thead>
                   <tbody id="govAdminQueue"></tbody>
                 </table>
+              </div>
+            </div>
+
+            <!-- 다채널 알림 설정 (이메일·SMS·메신저) -->
+            <div class="card" style="margin-top:14px;">
+              <div class="card-head">
+                <h3 class="card-title">다채널 알림 (Email · SMS · Messenger)</h3>
+                <div class="card-sub">결재·승인·만료·이상행위 단계별 알림 · 부재시 자동 대리수신자 라우팅</div>
+                <div class="page-actions">
+                  <button type="button" class="btn btn-ghost btn-sm" data-action="notify-test-send">테스트 발송</button>
+                  <button type="button" class="btn btn-secondary btn-sm" data-action="notify-policy-edit">정책 편집</button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="notify-channels">
+                  <div class="notify-channel">
+                    <div class="notify-channel-head">
+                      <span class="notify-channel-icon mail"></span>
+                      <div class="notify-channel-meta"><strong>Email</strong><span>SMTP relay · S/MIME 서명</span></div>
+                      <span class="notify-channel-state ok">ON · 99.8%</span>
+                    </div>
+                    <div class="notify-channel-body">
+                      <div class="notify-line"><span class="notify-line-key">SLA 임박(잔여 4h)</span><span class="notify-line-val">즉시 발송 · CC 부서장</span></div>
+                      <div class="notify-line"><span class="notify-line-key">High-value 결재</span><span class="notify-line-val">발송 + 승인 만료 24h 전 재알림</span></div>
+                      <div class="notify-line"><span class="notify-line-key">최근 24h</span><span class="notify-line-val">발송 1,284 · 실패 2 · 재시도 100%</span></div>
+                    </div>
+                  </div>
+                  <div class="notify-channel">
+                    <div class="notify-channel-head">
+                      <span class="notify-channel-icon sms"></span>
+                      <div class="notify-channel-meta"><strong>SMS</strong><span>대량발송 게이트웨이 · 카카오 알림톡 우선</span></div>
+                      <span class="notify-channel-state ok">ON · 99.4%</span>
+                    </div>
+                    <div class="notify-channel-body">
+                      <div class="notify-line"><span class="notify-line-key">긴급(만료 1h)</span><span class="notify-line-val">알림톡 → 실패 시 SMS Fallback</span></div>
+                      <div class="notify-line"><span class="notify-line-key">평일 외 시간</span><span class="notify-line-val">긴급/위험 1·2등급 한정 발송</span></div>
+                      <div class="notify-line"><span class="notify-line-key">최근 24h</span><span class="notify-line-val">발송 184 · 알림톡 92% · SMS 8%</span></div>
+                    </div>
+                  </div>
+                  <div class="notify-channel">
+                    <div class="notify-channel-head">
+                      <span class="notify-channel-icon msg"></span>
+                      <div class="notify-channel-meta"><strong>Messenger</strong><span>Teams · Slack · 사내 톡 멀티 라우팅</span></div>
+                      <span class="notify-channel-state warn">PARTIAL · 96.2%</span>
+                    </div>
+                    <div class="notify-channel-body">
+                      <div class="notify-line"><span class="notify-line-key">결재 대기</span><span class="notify-line-val">Squad 채널 + 본인 DM</span></div>
+                      <div class="notify-line"><span class="notify-line-key">이상 조회 알림</span><span class="notify-line-val">보안팀 채널 즉시 알림</span></div>
+                      <div class="notify-line"><span class="notify-line-key">최근 24h</span><span class="notify-line-val">발송 642 · Teams 401 · Slack 241</span></div>
+                    </div>
+                  </div>
+                </div>
+                <div class="notify-route">
+                  <span class="form-help">자동 라우팅 규칙</span>
+                  <span class="route-chip">평일 09–18 · Email + Messenger</span>
+                  <span class="route-chip">평일 18–24 · Messenger + SMS(긴급)</span>
+                  <span class="route-chip">주말/공휴일 · 위험2급↑ SMS+Messenger</span>
+                  <span class="route-chip danger">부재 24h+ · 대리결재자 자동 승계</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 마스킹 해제 사후 소명 큐 -->
+            <div class="card" style="margin-top:14px;">
+              <div class="card-head">
+                <h3 class="card-title">마스킹 해제 · 사후 소명 큐 (Post-Audit)</h3>
+                <div class="card-sub">SFR-006 · 해제 사용 후 24h 내 소명 제출 · 미제출 시 권한 자동 회수</div>
+                <div class="page-actions">
+                  <button type="button" class="btn btn-ghost btn-sm" data-action="postaudit-export">소명 이력 CSV</button>
+                  <button type="button" class="btn btn-secondary btn-sm" data-action="postaudit-remind-all">미제출 일괄 리마인드</button>
+                </div>
+              </div>
+              <div class="card-body" style="padding:0;">
+                <div class="post-audit-row post-audit-row--head">
+                  <span>해제 ID</span><span>대상</span><span>요청자 / 사유</span><span>해제 기간</span><span>사용 행수</span><span>소명 상태</span><span>액션</span>
+                </div>
+                <div class="post-audit-row">
+                  <span class="post-audit-id">UM-2046</span>
+                  <span class="post-audit-target"><code>dim_customer.cust_nm</code><em>PII · 성명</em></span>
+                  <span class="post-audit-req"><strong>오석휘 수석</strong><em>VIP 캠페인 발송 대상 검수</em></span>
+                  <span class="post-audit-period">2026-05-04 14:00 → 2026-05-04 16:00</span>
+                  <span class="post-audit-rows">2,184 행</span>
+                  <span><span class="badge badge-success">소명 제출</span></span>
+                  <span><button type="button" class="btn btn-ghost btn-sm" data-action="postaudit-view" data-id="UM-2046">증적 확인</button></span>
+                </div>
+                <div class="post-audit-row">
+                  <span class="post-audit-id">UM-2048</span>
+                  <span class="post-audit-target"><code>dim_customer.phone</code><em>PII · 전화번호</em></span>
+                  <span class="post-audit-req"><strong>박지호 책임</strong><em>고객 컴플레인 통화 회수</em></span>
+                  <span class="post-audit-period">2026-05-05 10:00 → 2026-05-05 11:30</span>
+                  <span class="post-audit-rows">412 행</span>
+                  <span><span class="badge badge-warning">소명 대기 (잔여 11h)</span></span>
+                  <span><button type="button" class="btn btn-secondary btn-sm" data-action="postaudit-submit" data-id="UM-2048">소명 작성</button></span>
+                </div>
+                <div class="post-audit-row">
+                  <span class="post-audit-id">UM-2051</span>
+                  <span class="post-audit-target"><code>fact_claim_event.claim_amt</code><em>금액 · High-value</em></span>
+                  <span class="post-audit-req"><strong>정수민 매니저</strong><em>고액 청구 패턴 분석</em></span>
+                  <span class="post-audit-period">2026-05-05 13:00 → 2026-05-05 14:00</span>
+                  <span class="post-audit-rows">86 행</span>
+                  <span><span class="badge badge-info">자동 점검 진행</span></span>
+                  <span><button type="button" class="btn btn-ghost btn-sm" data-action="postaudit-view" data-id="UM-2051">실행 로그</button></span>
+                </div>
+                <div class="post-audit-row">
+                  <span class="post-audit-id">UM-2042</span>
+                  <span class="post-audit-target"><code>dim_customer.address</code><em>PII · 주소</em></span>
+                  <span class="post-audit-req"><strong>김도윤 책임</strong><em>지역별 배송 분석</em></span>
+                  <span class="post-audit-period">2026-05-03 09:00 → 2026-05-03 11:00</span>
+                  <span class="post-audit-rows">1,204 행</span>
+                  <span><span class="badge badge-danger">미제출 · 권한 회수</span></span>
+                  <span><button type="button" class="btn btn-ghost btn-sm" data-action="postaudit-reissue" data-id="UM-2042">재발급 요청</button></span>
+                </div>
+                <div class="post-audit-foot">
+                  <span class="form-help">사후 소명 자동화 규칙</span>
+                  <span class="route-chip">사용 즉시 사용 컬럼/행수/쿼리해시 자동 캡쳐</span>
+                  <span class="route-chip">24h 미제출 → 권한 자동 회수 + 보안팀 알림</span>
+                  <span class="route-chip danger">2회 누적 미제출 → 일괄 사용 정지</span>
+                </div>
               </div>
             </div>
           </section>`;
@@ -2288,7 +2946,7 @@ th{background:#f5f7f9}
                     <rect class="ln-node-badge-bg" x="682" y="86" width="30" height="14" rx="7"></rect><text class="ln-node-badge" x="689" y="96">OK</text>
                   </g>
                   <g class="ln-node" data-node="masking"><rect x="90" y="200" width="130" height="58" rx="14" fill="#F6F8FA"></rect><text class="ln-node-label ln-node-dark" x="112" y="228">Masking</text><text class="ln-node-sub ln-node-dark" x="112" y="243">SVR-010</text></g>
-                  <g class="ln-node" data-node="approval"><rect x="340" y="200" width="130" height="58" rx="14" fill="#F2F5F8"></rect><text class="ln-node-label ln-node-dark" x="362" y="228">Approval</text><text class="ln-node-sub ln-node-dark" x="362" y="243">SFR-010</text></g>
+                  <g class="ln-node" data-node="approval"><rect x="340" y="200" width="130" height="58" rx="14" fill="#F2F5F8"></rect><text class="ln-node-label ln-node-dark" x="362" y="228">Approval</text><text class="ln-node-sub ln-node-dark" x="362" y="243">Governance</text></g>
                   <g class="ln-node" data-node="audit"><rect x="590" y="200" width="130" height="58" rx="14" fill="#EFF3F7"></rect><text class="ln-node-label ln-node-dark" x="612" y="228">Audit</text><text class="ln-node-sub ln-node-dark" x="612" y="243">Logs / Export</text></g>
                 </svg>
                 <div class="lineage-flow-strip">
@@ -2401,6 +3059,107 @@ th{background:#f5f7f9}
                 <div class="glossary-list" id="glossaryList"></div>
               </aside>
             </div>
+
+            <!-- 검색 엔진 · Vector Search 확장 (요건 자산화-1) -->
+            <div class="card" style="margin-top:14px;">
+              <div class="card-head">
+                <h3 class="card-title">검색 엔진 · Vector Search 확장</h3>
+                <div class="card-sub">키워드(BM25) → 시맨틱(Vector Hybrid) 단계적 확장 · OpenSearch + ColBERT 후보</div>
+              </div>
+              <div class="card-body">
+                <div class="search-stack-grid">
+                  <div class="search-stack-tile active">
+                    <div class="search-stack-head"><span class="search-stack-tag">PHASE 1</span><span class="search-stack-state ok">ACTIVE</span></div>
+                    <div class="search-stack-title">키워드 인덱스</div>
+                    <div class="search-stack-desc">OpenSearch 2.x · BM25 · 형태소 분석(NORI) · 자산명/태그/설명 풀텍스트</div>
+                    <div class="search-stack-meta"><span>인덱스</span><strong>asset_meta_v3</strong><span>·</span><span>문서</span><strong>284,012</strong></div>
+                  </div>
+                  <div class="search-stack-tile staged">
+                    <div class="search-stack-head"><span class="search-stack-tag">PHASE 2</span><span class="search-stack-state warn">STAGING</span></div>
+                    <div class="search-stack-title">하이브리드 검색</div>
+                    <div class="search-stack-desc">BM25 + 임베딩 KNN 가중합 · 동의어/약어/오타 보정 · 한·영 동시 매칭</div>
+                    <div class="search-stack-meta"><span>모델</span><strong>e5-large-multilingual</strong><span>·</span><span>차원</span><strong>1024</strong></div>
+                  </div>
+                  <div class="search-stack-tile planned">
+                    <div class="search-stack-head"><span class="search-stack-tag">PHASE 3</span><span class="search-stack-state">ROADMAP</span></div>
+                    <div class="search-stack-title">시맨틱·자연어 RAG</div>
+                    <div class="search-stack-desc">컬럼 프로파일 + 비즈니스 글로서리 + 라인리지 그래프 통합 컨텍스트</div>
+                    <div class="search-stack-meta"><span>API</span><strong>/v1/search/semantic</strong><span>·</span><span>P50</span><strong>180ms</strong></div>
+                  </div>
+                </div>
+                <div class="search-api-row">
+                  <div class="search-api-cell"><span class="search-api-key">REST</span><code>POST /api/catalog/search?mode=hybrid&amp;k=20</code></div>
+                  <div class="search-api-cell"><span class="search-api-key">SDK</span><code>portal.catalog.search({ q, embeddings: true })</code></div>
+                  <div class="search-api-cell"><span class="search-api-key">SSO</span><code>Ping Federate · Bearer 토큰 RBAC 포함</code></div>
+                </div>
+                <div class="search-api-actions">
+                  <button type="button" class="btn btn-ghost btn-sm" data-action="search-mode-bm25">BM25 모드</button>
+                  <button type="button" class="btn btn-secondary btn-sm" data-action="search-mode-hybrid">Hybrid 모드 시뮬레이션</button>
+                  <button type="button" class="btn btn-ghost btn-sm" data-action="search-show-roadmap">로드맵 열기</button>
+                </div>
+              </div>
+            </div>
+
+            <!-- 신규 마트 요청 · 유사 자산 매칭 (중복 방지) -->
+            <div class="card" style="margin-top:14px;">
+              <div class="card-head">
+                <h3 class="card-title">신규 마트 요청 · 유사 자산 매칭</h3>
+                <div class="card-sub">중복 생성 방지 · 키워드 + 컬럼 시그니처 유사도 비교</div>
+                <div class="page-actions">
+                  <button type="button" class="btn btn-secondary btn-sm" data-action="mart-similarity-recheck">유사도 재계산</button>
+                  <button type="button" class="btn btn-primary btn-sm" data-action="mart-request-new">신규 마트 신청</button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="mart-request-bar">
+                  <div class="mart-request-field">
+                    <span class="form-help">요청 마트명</span>
+                    <input class="form-input" id="martNewName" value="dm_customer.dim_premium_customer_v2"/>
+                  </div>
+                  <div class="mart-request-field">
+                    <span class="form-help">키 컬럼</span>
+                    <input class="form-input" id="martNewKeys" value="customer_id, vip_grade, region_cd, policy_active_cnt"/>
+                  </div>
+                  <div class="mart-request-field">
+                    <span class="form-help">목적</span>
+                    <input class="form-input" id="martNewPurpose" value="VIP 고객 캠페인 타겟 추출"/>
+                  </div>
+                </div>
+                <div class="mart-similarity-grid">
+                  <div class="mart-sim-row mart-sim-row--head">
+                    <span>유사도</span><span>대상 자산</span><span>일치 컬럼</span><span>오너 / 용도</span><span>최근 사용</span><span>판단</span>
+                  </div>
+                  <div class="mart-sim-row">
+                    <span class="mart-sim-score high">92%</span>
+                    <span class="mart-sim-name"><strong>dm_customer.dim_premium_customer</strong><em>tagged: VIP, 캠페인</em></span>
+                    <span class="mart-sim-cols">customer_id · vip_grade · region_cd · policy_active_cnt</span>
+                    <span class="mart-sim-owner">CRM Squad · 김도윤<br/><em>VIP 캠페인 추출</em></span>
+                    <span class="mart-sim-recent">전일 4,212건</span>
+                    <span><button type="button" class="btn btn-ghost btn-sm" data-action="mart-reuse" data-mart="dim_premium_customer">기존 자산 재사용</button></span>
+                  </div>
+                  <div class="mart-sim-row">
+                    <span class="mart-sim-score med">76%</span>
+                    <span class="mart-sim-name"><strong>dm_marketing.cust_target_segment</strong><em>tagged: 세그먼트</em></span>
+                    <span class="mart-sim-cols">customer_id · vip_grade · region_cd</span>
+                    <span class="mart-sim-owner">Marketing Squad · 박지호<br/><em>세그먼트 통합</em></span>
+                    <span class="mart-sim-recent">전일 1,840건</span>
+                    <span><button type="button" class="btn btn-ghost btn-sm" data-action="mart-extend" data-mart="cust_target_segment">컬럼 확장 제안</button></span>
+                  </div>
+                  <div class="mart-sim-row">
+                    <span class="mart-sim-score low">48%</span>
+                    <span class="mart-sim-name"><strong>dm_policy.fact_contract</strong><em>tagged: 계약</em></span>
+                    <span class="mart-sim-cols">customer_id · policy_active_cnt</span>
+                    <span class="mart-sim-owner">Policy Squad · 정수민<br/><em>계약 팩트</em></span>
+                    <span class="mart-sim-recent">전일 18,420건</span>
+                    <span><button type="button" class="btn btn-ghost btn-sm" data-action="mart-reference" data-mart="fact_contract">참조 보고</button></span>
+                  </div>
+                </div>
+                <div class="mart-similarity-foot">
+                  <span class="form-help">권장 액션</span>
+                  <span class="mart-sim-rec"><strong>92% 자산 재사용 권장</strong> — 신규 생성 시 운영 비용 ₩4.2M/월, 중복 데이터 12.4M rows 발생 추정</span>
+                </div>
+              </div>
+            </div>
           </section>`;
       }
       if (view === 'quality') {
@@ -2408,7 +3167,7 @@ th{background:#f5f7f9}
           <section class="view">
             <div class="page-head">
               <div class="page-title-wrap">
-                <div class="page-eyebrow">SFR-004 · 005</div>
+                <div class="page-eyebrow">Quality · Governance</div>
                 <h1 class="page-title">품질 · 거버넌스</h1>
                 <p class="page-desc">Unity Catalog 프로파일링 · Delta MERGE/Time Travel · VACUUM 승인 워크플로우 · 품질 이상징후 모니터링</p>
               </div>
@@ -2441,28 +3200,28 @@ th{background:#f5f7f9}
                 </div>
                 <div class="lifecycle-row">
                   <div><span class="lifecycle-stage bronze">BRONZE</span></div>
-                  <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px;">raw.src_contract_hdr</div>
+                  <div style="font-family:'Pretendard Variable', Pretendard, sans-serif; font-size:11.5px;">raw.src_contract_hdr</div>
                   <div>12.4M</div>
                   <div>2026-05-15 02:00</div>
                   <div><span class="badge badge-success">자동 승인</span></div>
                 </div>
                 <div class="lifecycle-row">
                   <div><span class="lifecycle-stage silver">SILVER</span></div>
-                  <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px;">std.fact_contract</div>
+                  <div style="font-family:'Pretendard Variable', Pretendard, sans-serif; font-size:11.5px;">std.fact_contract</div>
                   <div>12.4M</div>
                   <div>2026-06-01 02:00</div>
                   <div><span class="badge badge-warning">대기 (정광용)</span></div>
                 </div>
                 <div class="lifecycle-row">
                   <div><span class="lifecycle-stage gold">GOLD</span></div>
-                  <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px;">dm_policy.fact_contract</div>
+                  <div style="font-family:'Pretendard Variable', Pretendard, sans-serif; font-size:11.5px;">dm_policy.fact_contract</div>
                   <div>12.4M</div>
                   <div>—</div>
                   <div><span class="badge badge-success">활성 운영</span></div>
                 </div>
                 <div class="lifecycle-row">
                   <div><span class="lifecycle-stage archive">ARCHIVE</span></div>
-                  <div style="font-family:'JetBrains Mono',monospace; font-size:11.5px;">arc.legacy_contract_2023</div>
+                  <div style="font-family:'Pretendard Variable', Pretendard, sans-serif; font-size:11.5px;">arc.legacy_contract_2023</div>
                   <div>8.2M</div>
                   <div>2026-12-31 02:00</div>
                   <div><span class="badge badge-warning">대기 (CDO)</span></div>
@@ -2493,6 +3252,188 @@ th{background:#f5f7f9}
                 <div class="q-issue"><div class="q-issue-table">dm_claim.fact_claim_event</div><div class="q-issue-rule">claim_amt 음수값 감지</div><div class="q-issue-impact">7건</div><div><button class="btn btn-ghost btn-sm">검토</button></div></div>
               </div>
             </div>
+
+            <!-- 장기 미사용 데이터 (Dormant Data Detector) -->
+            <div class="card" style="margin-top:14px;">
+              <div class="card-head">
+                <h3 class="card-title">장기 미사용 데이터 (Dormant Data Detector)</h3>
+                <div class="card-sub">90/180/365일 무조회 · 무업데이트 자산 자동 선별 · 오너 알림 + 아카이빙 후보 추천</div>
+                <div class="page-actions">
+                  <button type="button" class="btn btn-ghost btn-sm" data-action="dormant-export">선별 결과 CSV</button>
+                  <button type="button" class="btn btn-secondary btn-sm" data-action="dormant-notify-owners">오너 일괄 알림</button>
+                  <button type="button" class="btn btn-primary btn-sm" data-action="dormant-archive-batch">아카이빙 일괄 신청</button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="dormant-meta-row">
+                  <div class="dormant-meta-card">
+                    <span class="dormant-meta-label">90일 무조회</span>
+                    <span class="dormant-meta-val">412</span>
+                    <span class="dormant-meta-sub">테이블 · 4.2 TB</span>
+                  </div>
+                  <div class="dormant-meta-card warn">
+                    <span class="dormant-meta-label">180일 무조회</span>
+                    <span class="dormant-meta-val">128</span>
+                    <span class="dormant-meta-sub">테이블 · 2.8 TB</span>
+                  </div>
+                  <div class="dormant-meta-card danger">
+                    <span class="dormant-meta-label">365일 무조회 + 미갱신</span>
+                    <span class="dormant-meta-val">38</span>
+                    <span class="dormant-meta-sub">테이블 · 1.4 TB · 아카이빙 권고</span>
+                  </div>
+                  <div class="dormant-meta-card good">
+                    <span class="dormant-meta-label">자동 회수 대상</span>
+                    <span class="dormant-meta-val">12</span>
+                    <span class="dormant-meta-sub">권한 미사용 90일+</span>
+                  </div>
+                </div>
+                <div class="dormant-row dormant-row--head">
+                  <span>대상 자산</span><span>오너</span><span>마지막 조회</span><span>마지막 업데이트</span><span>크기</span><span>권고</span><span>액션</span>
+                </div>
+                <div class="dormant-row">
+                  <span class="dormant-asset"><code>arc.legacy_contract_2023</code><em>Bronze · 5년 보관</em></span>
+                  <span>정수민 매니저</span>
+                  <span class="dormant-cell danger">412일 전</span>
+                  <span class="dormant-cell">386일 전</span>
+                  <span>820 GB</span>
+                  <span><span class="badge badge-danger">아카이빙 권고</span></span>
+                  <span><button type="button" class="btn btn-ghost btn-sm" data-action="dormant-archive" data-asset="arc.legacy_contract_2023">아카이브</button></span>
+                </div>
+                <div class="dormant-row">
+                  <span class="dormant-asset"><code>dm_marketing.cust_event_2024_h1</code><em>Gold · 캠페인</em></span>
+                  <span>박지호 책임</span>
+                  <span class="dormant-cell warn">214일 전</span>
+                  <span class="dormant-cell">198일 전</span>
+                  <span>340 GB</span>
+                  <span><span class="badge badge-warning">오너 검토 요청</span></span>
+                  <span><button type="button" class="btn btn-ghost btn-sm" data-action="dormant-notify" data-asset="dm_marketing.cust_event_2024_h1">알림</button></span>
+                </div>
+                <div class="dormant-row">
+                  <span class="dormant-asset"><code>dm_finance.tmp_claim_recon_v1</code><em>임시 · TMP</em></span>
+                  <span>김도윤 책임</span>
+                  <span class="dormant-cell warn">182일 전</span>
+                  <span class="dormant-cell">178일 전</span>
+                  <span>92 GB</span>
+                  <span><span class="badge badge-danger">삭제 후보</span></span>
+                  <span><button type="button" class="btn btn-ghost btn-sm" data-action="dormant-archive" data-asset="dm_finance.tmp_claim_recon_v1">삭제 신청</button></span>
+                </div>
+                <div class="dormant-row">
+                  <span class="dormant-asset"><code>dm_policy.fact_contract_v_old</code><em>Gold · v1.0</em></span>
+                  <span>오세찬 매니저</span>
+                  <span class="dormant-cell warn">96일 전</span>
+                  <span class="dormant-cell">14일 전</span>
+                  <span>1.2 TB</span>
+                  <span><span class="badge badge-info">관찰 중</span></span>
+                  <span><button type="button" class="btn btn-ghost btn-sm" data-action="dormant-notify" data-asset="dm_policy.fact_contract_v_old">알림</button></span>
+                </div>
+              </div>
+            </div>
+
+            <!-- 운영 이용 통계 · 감사 로그 통합 (Admin / Compliance) -->
+            <div class="card" style="margin-top:14px;">
+              <div class="card-head">
+                <h3 class="card-title">포털 이용 통계 · 감사 로그 통합 (Admin Console)</h3>
+                <div class="card-sub">관리자/컴플라이언스 전용 · 사용자 활동 · 권한 변경 · 다운로드 이력 한눈에 확인</div>
+                <div class="page-actions">
+                  <button type="button" class="btn btn-ghost btn-sm" data-action="admin-audit-export">감사 로그 CSV</button>
+                  <button type="button" class="btn btn-secondary btn-sm" data-action="admin-audit-period">기간 선택</button>
+                </div>
+              </div>
+              <div class="card-body">
+                <div class="admin-stats-row">
+                  <div class="admin-stat">
+                    <span class="admin-stat-label">DAU</span>
+                    <span class="admin-stat-value">1,284</span>
+                    <span class="admin-stat-delta up">+6.8%</span>
+                  </div>
+                  <div class="admin-stat">
+                    <span class="admin-stat-label">쿼리 실행</span>
+                    <span class="admin-stat-value">8,412</span>
+                    <span class="admin-stat-delta">/h 평균 354</span>
+                  </div>
+                  <div class="admin-stat">
+                    <span class="admin-stat-label">권한 변경</span>
+                    <span class="admin-stat-value">42</span>
+                    <span class="admin-stat-delta">신규 28 · 회수 14</span>
+                  </div>
+                  <div class="admin-stat">
+                    <span class="admin-stat-label">다운로드</span>
+                    <span class="admin-stat-value">186</span>
+                    <span class="admin-stat-delta">CSV 142 · XLSX 44</span>
+                  </div>
+                  <div class="admin-stat">
+                    <span class="admin-stat-label">이상행위 탐지</span>
+                    <span class="admin-stat-value warn">3</span>
+                    <span class="admin-stat-delta">자동 차단 1 · 검토 2</span>
+                  </div>
+                  <div class="admin-stat">
+                    <span class="admin-stat-label">감사 증적</span>
+                    <span class="admin-stat-value good">100%</span>
+                    <span class="admin-stat-delta">7년 보관 정책</span>
+                  </div>
+                </div>
+                <div class="admin-audit-grid">
+                  <div class="admin-audit-row admin-audit-row--head">
+                    <span>시각</span><span>유형</span><span>사용자</span><span>대상</span><span>상세</span><span>판정</span>
+                  </div>
+                  <div class="admin-audit-row">
+                    <span class="admin-audit-time">11:48:12</span>
+                    <span><span class="audit-tag download">DOWNLOAD</span></span>
+                    <span>오석휘 수석</span>
+                    <span><code>dm_customer.dim_premium_customer</code></span>
+                    <span>CSV · 12,480행 · 사유 코드 C-204 · 마스킹 적용</span>
+                    <span><span class="badge badge-success">정상</span></span>
+                  </div>
+                  <div class="admin-audit-row">
+                    <span class="admin-audit-time">11:42:38</span>
+                    <span><span class="audit-tag grant">GRANT</span></span>
+                    <span>관리자 시스템</span>
+                    <span><code>fact_contract.premium</code> · 분석가 그룹</span>
+                    <span>2026-05-19까지 한시 마스킹 해제 · 결재 PR-1248</span>
+                    <span><span class="badge badge-success">승인</span></span>
+                  </div>
+                  <div class="admin-audit-row">
+                    <span class="admin-audit-time">11:31:04</span>
+                    <span><span class="audit-tag query">QUERY</span></span>
+                    <span>박지호 책임</span>
+                    <span><code>dm_claim.fact_claim_event</code></span>
+                    <span>SELECT 12,840행 · 응답 1.4s · PII 마스킹 14컬럼</span>
+                    <span><span class="badge badge-success">정상</span></span>
+                  </div>
+                  <div class="admin-audit-row admin-audit-row--alert">
+                    <span class="admin-audit-time">10:58:47</span>
+                    <span><span class="audit-tag anomaly">ANOMALY</span></span>
+                    <span>김도윤 책임</span>
+                    <span><code>dim_customer.cust_nm</code></span>
+                    <span>비업무 시간 PII 8,420행 추출 시도 · 정책 G-301 위반</span>
+                    <span><span class="badge badge-danger">자동 차단</span></span>
+                  </div>
+                  <div class="admin-audit-row">
+                    <span class="admin-audit-time">10:42:15</span>
+                    <span><span class="audit-tag revoke">REVOKE</span></span>
+                    <span>관리자 시스템</span>
+                    <span>외부감사 그룹</span>
+                    <span>SLA 만료 자동 회수 · 미사용 권한 12건</span>
+                    <span><span class="badge badge-info">자동 회수</span></span>
+                  </div>
+                  <div class="admin-audit-row">
+                    <span class="admin-audit-time">10:24:01</span>
+                    <span><span class="audit-tag login">LOGIN</span></span>
+                    <span>외부 감사인 (3명)</span>
+                    <span>Ping Federate SSO</span>
+                    <span>임시 토큰 · 2026-05-08 만료 · IP 화이트리스트</span>
+                    <span><span class="badge badge-success">정상</span></span>
+                  </div>
+                </div>
+                <div class="admin-audit-legend">
+                  <span class="form-help">로그 보존</span>
+                  <span class="route-chip">감사 로그 · 7년 (Cold Tier)</span>
+                  <span class="route-chip">실시간 · 30일 (Hot Tier)</span>
+                  <span class="route-chip">행수 임계 · 10K+ 다운로드 자동 결재</span>
+                  <span class="route-chip danger">이상행위 2회 누적 · 즉시 사용 정지</span>
+                </div>
+              </div>
+            </div>
           </section>`;
       }
       if (view === 'finops') {
@@ -2500,7 +3441,7 @@ th{background:#f5f7f9}
           <section class="view">
             <div class="page-head">
               <div class="page-title-wrap">
-                <div class="page-eyebrow">SFR-003 · 005</div>
+                <div class="page-eyebrow">FinOps · Cost Control</div>
                 <h1 class="page-title">FinOps · 비용</h1>
                 <p class="page-desc">업무 경계별 비용 추적 · 7AM 기동 / 8PM 중단 자동스케줄 · Backfill 큐 · 예산 거버넌스</p>
               </div>
@@ -2539,9 +3480,9 @@ th{background:#f5f7f9}
             </div>
 
             <div class="finops-grid" style="margin-top:14px;">
-              <div class="card">
-                <div class="card-head"><h3 class="card-title">일별 비용 추이</h3></div>
-                <div class="card-body chart-wrap"><canvas id="finopsChart"></canvas></div>
+              <div class="card ds-monitor-card">
+                <div class="card-head ds-monitor-head"><h3 class="card-title">일별 비용 추이</h3></div>
+                <div class="card-body chart-wrap ds-monitor-chart"><canvas id="finopsChart"></canvas></div>
               </div>
               <div class="card">
                 <div class="card-head">
@@ -2601,7 +3542,7 @@ th{background:#f5f7f9}
           <section class="view">
             <div class="page-head">
               <div class="page-title-wrap">
-                <div class="page-eyebrow">SFR-011 · 012</div>
+                <div class="page-eyebrow">BI · Insight Adoption</div>
                 <h1 class="page-title">BI · PowerBI 전환</h1>
                 <p class="page-desc">QlikSense → PowerBI 전환 · 400 리포트 활용도 분석 · 사용자 SQL 패턴 자산화</p>
               </div>
@@ -2720,7 +3661,7 @@ th{background:#f5f7f9}
     }
 
     const VIEW_UX_META = {
-      home:       { stage: 'Overview 운영', cue: '주요 지표를 빠르게 확인하고 리스크를 선별하세요.', target: '.pillar-grid' },
+      home:       { stage: 'Overview 운영', cue: '주요 지표를 빠르게 확인하고 리스크를 선별하세요.', target: '.home-ops-tower, .pillars' },
       ingestion:  { stage: '수집 파이프라인', cue: '장애/지연/정합성 흐름을 우선 점검하세요.', target: '.pipeline-list' },
       query:      { stage: '탐색/분석', cue: 'NLQ 생성 → SQL 검증 → 결과 차트화 순서로 진행하세요.', target: '.query-v2' },
       permission: { stage: '권한/결재', cue: '결재 큐 SLA와 마스킹 만료 시간을 동시에 점검하세요.', target: '#govAdminQueue' },
@@ -2754,9 +3695,60 @@ th{background:#f5f7f9}
       switchView(v);
     }
 
+    function stripRequirementNumberLabels(root) {
+      if (!root) return;
+      const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+      const re = /\b(?:SFR|IFR|SVR|TTR|PMR|COR|PFR)-\d{3}(?:-\d+)?\b/g;
+      let node;
+      while ((node = walker.nextNode())) {
+        const original = node.nodeValue || '';
+        if (!re.test(original)) continue;
+        re.lastIndex = 0;
+        let next = original.replace(re, '');
+        next = next
+          .replace(/\s*[·|/,-]\s*(?=[·|/,-])/g, ' ')
+          .replace(/(\(|\[)\s*[·|/,-]\s*/g, '$1')
+          .replace(/\s{2,}/g, ' ')
+          .replace(/\s+([)\]])/g, '$1')
+          .trim();
+        node.nodeValue = next;
+      }
+      root.querySelectorAll('[placeholder],[title],[aria-label]').forEach((el) => {
+        ['placeholder', 'title', 'aria-label'].forEach((attr) => {
+          const v = el.getAttribute(attr);
+          if (!v) return;
+          const nv = v.replace(re, '').replace(/\s{2,}/g, ' ').trim();
+          if (nv !== v) el.setAttribute(attr, nv);
+        });
+      });
+
+      // Remove requirement-listing style cards, but keep functional feature cards.
+      root.querySelectorAll('.card').forEach((card) => {
+        const title = (card.querySelector('.card-title')?.textContent || '').trim();
+        const sub = (card.querySelector('.card-sub')?.textContent || '').trim();
+        const key = `${title} ${sub}`;
+        if (/요건 충족 체크|요구사항 트래커|요구사항 검증 상태|RFP 증적 탭|RFP 통합 실행 센터/i.test(key)) {
+          card.remove();
+        }
+      });
+    }
+
+    function stopHomeDashboard() {
+      if (homeLifecycleTimer) {
+        clearInterval(homeLifecycleTimer);
+        homeLifecycleTimer = null;
+      }
+      const mix = document.getElementById('homeOpsMixChart');
+      if (mix && typeof Chart !== 'undefined') {
+        const inst = Chart.getChart(mix);
+        if (inst) inst.destroy();
+      }
+    }
+
     function switchView(view) {
       if (!isLoggedIn()) return;
       if (view === currentView) return;
+      stopHomeDashboard();
       currentView = view;
       document.querySelectorAll('.nav-item').forEach(el => {
         el.classList.toggle('active', el.dataset.view === view);
@@ -2785,6 +3777,7 @@ th{background:#f5f7f9}
       if (viewRoot && !viewRoot.querySelector('#uxBoosterBar')) {
         viewRoot.insertAdjacentHTML('afterbegin', renderViewUxBooster(view));
       }
+      stripRequirementNumberLabels(viewRoot);
 
       // initialise per-view
       if (view === 'home')       initHome();
@@ -2920,6 +3913,20 @@ th{background:#f5f7f9}
           el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
         if (action === 'ux-refresh-view') refreshCurrentView();
+        if (action === 'home-sim-pause') {
+          homeSimPaused = !homeSimPaused;
+          syncHomeSimControls();
+          toast(homeSimPaused ? '시뮬 일시정지' : '시뮬 재개', homeSimPaused ? '지표 갱신과 피드가 멈췄습니다.' : '통합 운영 타워가 다시 갱신됩니다.', homeSimPaused ? 'info' : 'success');
+        }
+        if (action === 'home-sim-snapshot') {
+          const snap = [
+            `TPS ${document.getElementById('homeLiveTps')?.textContent || '-'}`,
+            `P95 ${document.getElementById('homeP95Ms')?.textContent || '-'}ms`,
+            `파이프라인 ${document.getElementById('homePipeRunning')?.textContent || '-'}/3000`,
+            `배치성공률 ${document.getElementById('homeBatchSuccess')?.textContent || '-'}%`
+          ].join(' · ');
+          toast('스냅샷', snap, 'success');
+        }
         if (action === 'close-help-modal') closeHelpModal();
         if (action === 'open-notification-panel') openNotificationPanel();
         if (action === 'close-notification-modal') closeNotificationModal();
@@ -2930,6 +3937,7 @@ th{background:#f5f7f9}
         if (action === 'export-permission-audit-csv') exportPermissionAuditCsv();
         if (action === 'export-permission-report') exportPermissionApprovalReport();
         if (action === 'print-permission-report') printPermissionApprovalPdfLayout();
+        if (action === 'run-permission-demo') runPermissionDemoScenario();
         if (action === 'close-perm-modal') closePermModal();
         if (action === 'submit-permission-request') submitPermissionRequest();
         if (action === 'close-gov-detail-modal') closeGovDetailModal();
@@ -2937,6 +3945,8 @@ th{background:#f5f7f9}
         if (action === 'close-budget-modal') closeBudgetModal();
         if (action === 'save-budget-settings') saveBudgetSettings();
         if (action === 'run-query') runQuery();
+        if (action === 'run-query-demo') runQueryDemoScenario();
+        if (action === 'run-full-demo') runFullDemoScenario();
         if (action === 'format-sql') formatSQL();
         if (action === 'explain-sql') explainSQL();
         if (action === 'save-query-draft') saveQueryDraft();
@@ -2945,6 +3955,13 @@ th{background:#f5f7f9}
         if (action === 'generate-sql-nlq') generateSQLFromNLQ();
         if (action === 'clear-nlq') clearNlqPrompt();
         if (action === 'switch-query-mode') switchQueryMode(target.dataset.mode || 'sql');
+        if (action === 'toggle-cluster-mode') toggleClusterMode();
+        if (action === 'apply-gui-query') applyGuiQuery();
+        if (action === 'run-feed-template') runFeedTemplate(target.dataset.feed || '');
+        if (action === 'run-pattern-analysis') renderPatternOptimizationPanel(true);
+        if (action === 'apply-pattern-sql') applyPatternSql(target.dataset.patternSql || '');
+        if (action === 'devops-run-check') runDevOpsQuickCheck();
+        if (action === 'copy-cursor-prompt') copyCursorPrompt(target.dataset.preset || '');
         if (action === 'run-history-query') rerunQueryFromHistory(target.dataset.historyId);
         if (action === 'clear-query-history') clearQueryHistory();
         /* v2 actions */
@@ -3001,6 +4018,31 @@ th{background:#f5f7f9}
         if (action === 'gov-approve') approveGovRequest(target.dataset.govId || '');
         if (action === 'gov-reject') rejectGovRequest(target.dataset.govId || '');
         if (action === 'builder-remove-chip') removeChip(target);
+        if (action === 'dnd-remove') dndRemoveChip(target);
+        if (action === 'dnd-template') dndApplyTemplate(target.dataset.tpl || '');
+        if (action === 'dnd-copy-preview') dndCopyPreview();
+        if (action === 'search-mode-bm25')   toast('검색 모드', 'OpenSearch BM25 모드로 검색합니다.');
+        if (action === 'search-mode-hybrid') toast('Hybrid 검색', 'BM25 + Vector KNN 가중합 시뮬레이션을 실행합니다. (e5-large-multilingual)');
+        if (action === 'search-show-roadmap') toast('로드맵', 'Phase 2 (하이브리드) → Phase 3 (시맨틱·자연어 RAG) 로드맵 패널을 엽니다.');
+        if (action === 'mart-similarity-recheck') toast('유사도 재계산', '키 컬럼/태그 임베딩으로 카탈로그 전체 유사도를 재계산합니다.');
+        if (action === 'mart-request-new')        toast('신규 마트 신청', '유사도 92% 자산 검토 후 결재 PR-1248 로 라우팅됩니다.');
+        if (action === 'mart-reuse')              toast('자산 재사용', `기존 자산 ${target.dataset.mart || ''} 재사용을 권장합니다.`);
+        if (action === 'mart-extend')             toast('컬럼 확장 제안', `${target.dataset.mart || ''} 에 컬럼 확장을 제안합니다.`);
+        if (action === 'mart-reference')          toast('참조 보고', `${target.dataset.mart || ''} 를 참조 보고에 첨부합니다.`);
+        if (action === 'notify-test-send')        toast('테스트 발송', '본인 계정으로 Email · SMS · Messenger 테스트 알림을 전송했습니다.');
+        if (action === 'notify-policy-edit')      toast('정책 편집', '다채널 알림 정책 편집 모드로 전환합니다.');
+        if (action === 'postaudit-export')        toast('소명 이력 CSV', '최근 30일 사후 소명 이력을 CSV 로 내보냅니다.');
+        if (action === 'postaudit-remind-all')    toast('일괄 리마인드', '미제출 소명자 전원에게 Messenger + Email 리마인드를 발송했습니다.');
+        if (action === 'postaudit-view')          toast('증적 확인', `${target.dataset.id || ''} 사후 소명 증적 패키지를 엽니다.`);
+        if (action === 'postaudit-submit')        toast('소명 작성', `${target.dataset.id || ''} 사용 사유 · 처리 결과 입력 화면으로 이동합니다.`);
+        if (action === 'postaudit-reissue')       toast('재발급 요청', `${target.dataset.id || ''} 권한 재발급 결재를 시작합니다.`);
+        if (action === 'dormant-export')          toast('Dormant CSV', '90/180/365일 미사용 자산 목록을 CSV 로 내보냅니다.');
+        if (action === 'dormant-notify-owners')   toast('오너 알림', '대상 오너 전원에게 Messenger + Email 알림을 일괄 발송했습니다.');
+        if (action === 'dormant-archive-batch')   toast('아카이빙 일괄', '365일 미사용 38건 아카이빙 결재가 일괄 생성됩니다.');
+        if (action === 'dormant-archive')         toast('아카이브', `${target.dataset.asset || ''} 아카이빙 결재를 시작합니다.`);
+        if (action === 'dormant-notify')          toast('오너 알림', `${target.dataset.asset || ''} 오너에게 검토 요청을 발송했습니다.`);
+        if (action === 'admin-audit-export')      toast('감사 로그 CSV', '선택 기간 감사 로그를 서명된 CSV 로 내보냅니다.');
+        if (action === 'admin-audit-period')      toast('기간 선택', '24h · 7d · 30d · 90d 기간 옵션 패널을 엽니다.');
         if (action === 'sort-bi-active') sortBIReports('active');
         if (action === 'sort-bi-idle') sortBIReports('idle');
         if (action === 'req-filter') {
@@ -3034,35 +4076,35 @@ th{background:#f5f7f9}
         if (action === 'run-secure-coding') {
           setOpsState('Veracode Greenlight/Static Scan 실행 완료 · 중대취약점 0건');
           markRequirementStatus(['SVR-003'], 'completed');
-          addEvidence('보안', 'SVR-003 시큐어코딩 점검 결과서', 'Static Scan 완료, High/Critical 0건', ['SVR-003']);
-          addSystemNotification('info', '시큐어코딩 점검 완료', 'SVR-003 기준 점검을 완료했습니다.');
-          toast('보안 점검', 'SVR-003 시큐어코딩 점검 완료', 'success');
+          addEvidence('보안', '시큐어코딩 점검 결과서', 'Static Scan 완료, High/Critical 0건', ['시큐어코딩']);
+          addSystemNotification('info', '시큐어코딩 점검 완료', '코드 취약점 점검을 완료했습니다.');
+          toast('보안 점검', '시큐어코딩 점검 완료', 'success');
         }
         if (action === 'run-pentest') {
           setOpsState('모의해킹 진단 리포트 생성 · 조치권고 2건');
           markRequirementStatus(['SVR-004'], 'completed');
-          addEvidence('보안', 'SVR-004 모의해킹 결과보고서', 'OWASP Top10 기준 점검, Medium 2건 조치권고', ['SVR-004']);
+          addEvidence('보안', '모의해킹 결과보고서', 'OWASP Top10 기준 점검, Medium 2건 조치권고', ['모의해킹']);
           addSystemNotification('warning', '모의해킹 결과', 'SVR-004 결과: Medium 2건 조치권고');
-          toast('모의해킹', 'SVR-004 진단 실행 및 결과 반영', 'success');
+          toast('모의해킹', '진단 실행 및 결과 반영', 'success');
         }
         if (action === 'run-infra-vuln') {
           setOpsState('Qualys/Prisma 취약점 수집 및 이행점검 완료');
           markRequirementStatus(['SVR-005', 'SVR-001'], 'completed');
-          addEvidence('보안', 'SVR-005 인프라 취약점 보고서', '클라우드/OS/Web-WAS 취약점 점검 및 이행완료', ['SVR-001', 'SVR-005']);
-          toast('취약점 진단', 'SVR-005 인프라 진단 완료', 'success');
+          addEvidence('보안', '인프라 취약점 보고서', '클라우드/OS/Web-WAS 취약점 점검 및 이행완료', ['취약점 점검']);
+          toast('취약점 진단', '인프라 진단 완료', 'success');
         }
         if (action === 'run-dr-test') {
           setOpsState('Terraform 기반 DR 복구 리허설 성공 · RTO 18분');
           markRequirementStatus(['TTR-001', 'SFR-003', 'SFR-009'], 'completed');
-          addEvidence('테스트', 'TTR-001 장애복구 테스트 결과서', 'RTO 18분, RPO 5분, 복구 시나리오 PASS', ['TTR-001', 'SFR-003', 'SFR-009']);
+          addEvidence('테스트', '장애복구 테스트 결과서', 'RTO 18분, RPO 5분, 복구 시나리오 PASS', ['DR 테스트']);
           addSystemNotification('info', 'DR 테스트', '복구 테스트 성공(RTO 18분, RPO 5분)');
-          toast('DR 테스트', 'TTR-001 복구 시나리오 완료', 'success');
+          toast('DR 테스트', '복구 시나리오 완료', 'success');
         }
         if (action === 'run-lifecycle-job') {
           setOpsState('Retention 정책 작업 완료 · VACUUM/DELETE 리포트 업데이트');
-          markRequirementStatus(['SFR-004', 'SFR-010'], 'completed');
-          addEvidence('운영', 'SFR-004 데이터 생애주기 작업보고서', 'Retention 정책에 따른 삭제/정리 및 승인로그 반영', ['SFR-004', 'SFR-010']);
-          toast('Lifecycle', 'SFR-004 보존주기 작업 완료', 'success');
+          markRequirementStatus(['SFR-004'], 'completed');
+          addEvidence('운영', '데이터 생애주기 작업보고서', 'Retention 정책에 따른 삭제/정리 및 승인로그 반영', ['Lifecycle']);
+          toast('Lifecycle', '보존주기 작업 완료', 'success');
         }
         if (action === 'run-cdc-recon') {
           markRequirementStatus(['SFR-002'], 'completed');
@@ -3075,8 +4117,8 @@ th{background:#f5f7f9}
         if (action === 'simulate-sso-fallback') {
           setOpsState('Ping SSO 장애 감지 · 비상 인증 경로 전환 시뮬레이션 완료');
           markRequirementStatus(['IFR-007', 'SVR-008'], 'completed');
-          addEvidence('운영', 'IFR-007 SSO 장애대응 점검서', 'Ping Federate 장애 fallback 인증 흐름 정상', ['IFR-007', 'SVR-008']);
-          toast('SSO 장애대응', 'IFR-007 fallback 시나리오 통과', 'success');
+          addEvidence('운영', 'SSO 장애대응 점검서', 'Ping Federate 장애 fallback 인증 흐름 정상', ['SSO 장애대응']);
+          toast('SSO 장애대응', 'fallback 시나리오 통과', 'success');
         }
         if (action === 'export-audit-log') {
           const lines = ['ts,type,title,msg', ...notifications.slice(0, 200).map((n) => {
@@ -3091,8 +4133,8 @@ th{background:#f5f7f9}
           a.click();
           a.remove();
           URL.revokeObjectURL(a.href);
-          addEvidence('PM', 'SFR-010 Audit 로그 산출물', '권한/알림/승인 이력 CSV 산출 완료', ['SFR-010']);
-          toast('Audit Export', 'SFR-010 감사로그를 CSV로 내보냈습니다.', 'success');
+          addEvidence('PM', 'Audit 로그 산출물', '권한/알림/승인 이력 CSV 산출 완료', ['Audit 로그']);
+          toast('Audit Export', '감사로그를 CSV로 내보냈습니다.', 'success');
         }
         if (action === 'toggle-role') {
           currentUserRole = currentUserRole === 'admin' ? 'user' : 'admin';
@@ -3240,6 +4282,15 @@ th{background:#f5f7f9}
             : '예: =ACTIVE, !=LAPSED, 고객';
         help.innerHTML = `<div><strong>${escapeHtmlCell(colName)}</strong> (${t})</div><div>${escapeHtmlCell(example)}</div>`;
       });
+      const setHomeChartLegendActive = (chartKey, active) => {
+        if (!chartKey) return;
+        document.querySelectorAll(`[data-chart-legend="${chartKey}"]`).forEach((el) => {
+          el.classList.toggle('is-active', !!active);
+        });
+        document.querySelectorAll(`[data-chart-key="${chartKey}"]`).forEach((el) => {
+          el.classList.toggle('is-active', !!active);
+        });
+      };
       document.addEventListener('mouseover', (e) => {
         const target = e.target;
         if (!(target instanceof Element)) return;
@@ -3247,12 +4298,93 @@ th{background:#f5f7f9}
         const tip = document.getElementById('evidenceSparkTooltip');
         if (tip) tip.style.display = 'block';
       });
+      document.addEventListener('mousemove', (e) => {
+        const target = e.target instanceof Element
+          ? e.target.closest('[data-chart-hover="true"], [data-chart-legend]')
+          : null;
+        const tip = document.getElementById('homeChartTooltip');
+        if (!target || !tip) return;
+        const label = target.getAttribute('data-chart-label') || '모니터링';
+        const value = target.getAttribute('data-chart-value') || '-';
+        tip.textContent = `${label}: ${value}`;
+        tip.style.display = 'block';
+        tip.classList.remove('tooltip--below');
+        const gap = 12;
+        const tipRect = tip.getBoundingClientRect();
+        const viewportMaxX = window.innerWidth - tipRect.width - 8;
+        let elRect;
+        if (target instanceof SVGElement && target.getBBox) {
+          const svg = target.closest('svg');
+          if (svg) {
+            const svgRect = svg.getBoundingClientRect();
+            const bbox = target.getBBox();
+            const ctm = target.getCTM();
+            if (ctm) {
+              const pt = svg.createSVGPoint();
+              pt.x = bbox.x + bbox.width / 2;
+              pt.y = bbox.y;
+              const screenPt = pt.matrixTransform(ctm);
+              const ptBottom = svg.createSVGPoint();
+              ptBottom.x = bbox.x + bbox.width / 2;
+              ptBottom.y = bbox.y + bbox.height;
+              const screenPtBottom = ptBottom.matrixTransform(ctm);
+              elRect = {
+                left: svgRect.left + screenPt.x - bbox.width * (svgRect.width / (svg.viewBox.baseVal.width || svgRect.width)) / 2,
+                right: svgRect.left + screenPt.x + bbox.width * (svgRect.width / (svg.viewBox.baseVal.width || svgRect.width)) / 2,
+                top: svgRect.top + screenPt.y * (svgRect.height / (svg.viewBox.baseVal.height || svgRect.height)),
+                bottom: svgRect.top + screenPtBottom.y * (svgRect.height / (svg.viewBox.baseVal.height || svgRect.height)),
+                width: bbox.width * (svgRect.width / (svg.viewBox.baseVal.width || svgRect.width)),
+                height: (screenPtBottom.y - screenPt.y) * (svgRect.height / (svg.viewBox.baseVal.height || svgRect.height))
+              };
+            } else {
+              elRect = target.getBoundingClientRect();
+            }
+          } else {
+            elRect = target.getBoundingClientRect();
+          }
+        } else {
+          elRect = target.getBoundingClientRect();
+        }
+        const centerX = elRect.left + elRect.width / 2 - tipRect.width / 2;
+        const aboveY = elRect.top - tipRect.height - gap;
+        const belowY = elRect.bottom + gap;
+        const nextX = Math.min(Math.max(8, centerX), viewportMaxX);
+        let nextY;
+        if (aboveY >= 8) {
+          nextY = aboveY;
+        } else {
+          nextY = Math.min(belowY, window.innerHeight - tipRect.height - 8);
+          tip.classList.add('tooltip--below');
+        }
+        tip.style.left = `${nextX}px`;
+        tip.style.top = `${nextY}px`;
+      });
+      document.addEventListener('mouseover', (e) => {
+        const target = e.target instanceof Element
+          ? e.target.closest('[data-chart-hover="true"], [data-chart-legend]')
+          : null;
+        if (!target) return;
+        const tip = document.getElementById('homeChartTooltip');
+        if (tip) tip.style.display = 'block';
+        const chartKey = target.getAttribute('data-chart-key') || target.getAttribute('data-chart-legend');
+        setHomeChartLegendActive(chartKey, true);
+      });
       document.addEventListener('mouseout', (e) => {
         const target = e.target;
         if (!(target instanceof Element)) return;
         if (!target.matches('[data-action="spark-hover"]')) return;
         const tip = document.getElementById('evidenceSparkTooltip');
         if (tip) tip.style.display = 'none';
+      });
+      document.addEventListener('mouseout', (e) => {
+        const target = e.target instanceof Element
+          ? e.target.closest('[data-chart-hover="true"], [data-chart-legend]')
+          : null;
+        if (!target) return;
+        const tip = document.getElementById('homeChartTooltip');
+        if (tip) tip.style.display = 'none';
+        const chartKey = target.getAttribute('data-chart-key') || target.getAttribute('data-chart-legend');
+        setHomeChartLegendActive(chartKey, false);
       });
       document.addEventListener('change', (e) => {
         const target = e.target;
@@ -3367,14 +4499,97 @@ th{background:#f5f7f9}
       try {
         const p = parseSqlQuery(stripSqlComments(ta.value));
         const tbl = normalizeTableName(p.fromTable);
-        const filtered = QUERY_TABLES[tbl].rows.filter((r) => evalWhereClause(r, p.whereClause));
-        const gb = p.groupBy && p.groupBy.length ? p.groupBy.join(', ') : '(단일 그룹 또는 미집계)';
+        const tblInfo = QUERY_TABLES[tbl];
+        const totalRows = tblInfo.rows.length;
+        const filtered = tblInfo.rows.filter((r) => evalWhereClause(r, p.whereClause));
+        const filteredRows = filtered.length;
+        const filterRatio = totalRows ? Math.round((filteredRows / totalRows) * 100) : 0;
+        const items = splitSelectItems(p.selectPart).map(parseSelectExpr);
+        const aggTypes = ['sum', 'count_star', 'avg', 'min', 'max'];
+        const hasAgg = items.some((i) => aggTypes.includes(i.type));
+        const groupCount = (p.groupBy && p.groupBy.length) ? p.groupBy.length : 0;
+        const orderCount = p.orderBy ? p.orderBy.split(',').length : 0;
+        const piiCols = ['cust_nm', 'phone', 'address', 'birth_dt', 'resident_no', 'rrn'];
+        const sqlLower = ta.value.toLowerCase();
+        const piiInSelect = piiCols.filter((c) => sqlLower.includes(c));
+        const baseScanMb = Math.max(0.4, +(totalRows * 0.002).toFixed(2));
+        const filterScanMb = +(baseScanMb * (filteredRows / Math.max(1, totalRows))).toFixed(2);
+        const finalRows = (p.limit != null && p.limit >= 0) ? Math.min(p.limit, filteredRows) : filteredRows;
+
+        // 1) Build plan steps (real, parsed from current SQL)
+        lastExplainPlan = [];
+        lastExplainPlan.push({
+          k: 'TABLE SCAN',
+          d: `${TABLE_DISPLAY_NAMES[tbl] || tbl} · Delta Lake · ${totalRows.toLocaleString()} rows · ~${baseScanMb} MB`,
+          cost: 1.0,
+          severity: 'info'
+        });
+        if (p.whereClause) {
+          lastExplainPlan.push({
+            k: 'FILTER',
+            d: `Predicate pushdown · ${filteredRows.toLocaleString()} / ${totalRows.toLocaleString()} rows (${filterRatio}%) · ~${filterScanMb} MB`,
+            cost: 0.5 + (filterRatio / 100) * 0.5,
+            severity: filterRatio > 80 ? 'warn' : 'good'
+          });
+        } else {
+          lastExplainPlan.push({
+            k: 'FILTER',
+            d: '⚠ WHERE 절 없음 · 전체 스캔 (Full Table Scan)',
+            cost: 1.0,
+            severity: 'warn'
+          });
+        }
+        if (groupCount) {
+          lastExplainPlan.push({
+            k: 'AGGREGATE',
+            d: `HashAggregate · GROUP BY ${p.groupBy.join(', ')} · partial pre-shuffle`,
+            cost: 0.6,
+            severity: 'info'
+          });
+        } else if (hasAgg) {
+          lastExplainPlan.push({
+            k: 'AGGREGATE',
+            d: 'Single-group aggregation (no GROUP BY)',
+            cost: 0.3,
+            severity: 'info'
+          });
+        }
+        if (orderCount) {
+          lastExplainPlan.push({
+            k: 'SORT',
+            d: `Range partition · ORDER BY ${p.orderBy} · Top-K optimization${p.limit != null ? ' (LIMIT pushdown)' : ''}`,
+            cost: 0.7,
+            severity: 'info'
+          });
+        }
+        if (piiInSelect.length) {
+          lastExplainPlan.push({
+            k: 'POLICY · PII MASK',
+            d: `동적 마스킹 적용 대상 컬럼: ${piiInSelect.join(', ')} · 권한 미보유 시 *** 처리`,
+            cost: 0.1,
+            severity: 'warn'
+          });
+        }
+        lastExplainPlan.push({
+          k: 'OUTPUT',
+          d: `${finalRows.toLocaleString()} rows · Photon vectorized · ${queryClusterSuspended ? '캐시 즉시조회' : 'Photon 실시간'}`,
+          cost: 0.05,
+          severity: 'good'
+        });
+
+        // 2) Switch to Plan tab and render
+        setQctxTab('plan');
+        // 3) Pulse the right panel for visual feedback
+        const panel = document.querySelector('.qctx-panel');
+        if (panel) pulseUiState(panel, 'qctx-emphasis', 600);
         toast(
-          'EXPLAIN (브라우저 엔진)',
-          `${tbl} 시퀀스 스캔 · 필터 후 ${filtered.length.toLocaleString()}행 · GROUP BY ${gb} · LIMIT ${p.limit != null ? p.limit : '없음'}`
+          'EXPLAIN 완료',
+          `${tbl} · ${filteredRows.toLocaleString()} / ${totalRows.toLocaleString()} rows (${filterRatio}%) · ${lastExplainPlan.length}단계 plan`,
+          'success'
         );
       } catch (err) {
-        toast('EXPLAIN 실패', err.message || String(err));
+        lastExplainPlan = null;
+        toast('EXPLAIN 실패', err.message || String(err), 'error');
       }
     }
 
@@ -3638,6 +4853,10 @@ th{background:#f5f7f9}
         custRows.push({
           customer_id: `CUS-${104821 + i}`,
           cust_nm: `김데이터${i + 1}`,
+          phone: `010-23${String(10 + i).padStart(2, '0')}-${String(1200 + i).slice(-4)}`,
+          address: `${['서울', '경기', '부산', '대전'][i % 4]}시 샘플로 ${10 + i}`,
+          birth_dt: `19${80 + (i % 15)}-${String(1 + (i % 12)).padStart(2, '0')}-${String(1 + (i % 27)).padStart(2, '0')}`,
+          resident_no: `${String(800101 + i).slice(0, 6)}-${String(1000000 + (i * 791)).slice(0, 7)}`,
           tier_cd: ['VIP', 'Gold', 'Silver', 'Bronze'][i % 4],
           engagement_score: 22 + ((i * 11) % 72),
           region: ['서울', '경기', '부산', '대전'][i % 4]
@@ -3679,7 +4898,7 @@ th{background:#f5f7f9}
           rows: fcRows
         },
         dim_customer: {
-          columns: ['customer_id', 'cust_nm', 'tier_cd', 'engagement_score', 'region'],
+          columns: ['customer_id', 'cust_nm', 'phone', 'address', 'birth_dt', 'resident_no', 'tier_cd', 'engagement_score', 'region'],
           rows: custRows
         },
         fact_claim_event: {
@@ -3718,6 +4937,7 @@ th{background:#f5f7f9}
     };
 
     let lastQueryResult = { cols: [], rows: [] };
+    let lastExplainPlan = null;
     let queryHistory = [];
     let resultSortState = { colIdx: -1, dir: 'asc' };
     let resultFilterText = '';
@@ -3727,6 +4947,13 @@ th{background:#f5f7f9}
     let resultSampleN = 0;
     let currentResultColumnTypes = [];
     let sqlOverlayResizeBound = false;
+    let queryClusterSuspended = false;
+    const CURSOR_PROMPT_PRESETS = {
+      sqlEditor: `"메트라이프 데이터 포털 프로젝트의 시연용 프로토타입을 개발하고 싶어. React(Frontend)와 Spring Boot(Backend) 기준으로 생성해줘. SQL 에디터 UI는 좌측 테이블 트리, 우측 에디터/결과창 구성으로 만들고 Monaco Editor 구문강조/자동완성을 포함해줘. Databricks SQL Warehouse 연동은 시뮬레이션으로 구현해줘."`,
+      masking: `"보안 필터를 구현해줘. API 응답 인터셉터에서 사용자 Role이 USER이면 주민번호/연락처/주소 컬럼을 마스킹(*** 또는 부분마스킹)하고, ADMIN은 원문 조회가 가능하도록 분기 코드를 작성해줘."`,
+      dashboard: `"Recharts 기반 관리자 대시보드를 생성해줘. 데이터 파이프라인 TPS/Latency/성공률 실시간 차트와 FinOps 비용 추적(도메인별 비용, 일별 추이)을 한 화면에 배치해줘."`,
+      workflow: `"권한 신청 -> 팀장 승인 -> 권한 반영(만료시간 포함) 워크플로우를 상태 머신으로 구현해줘. 승인 이력과 감사 로그를 함께 저장하고 UI에서 단계별 상태를 보여줘."`
+    };
 
     function stripSqlComments(sql) {
       return sql.replace(/\/\*[\s\S]*?\*\//g, ' ').replace(/--[^\n]*/g, ' ');
@@ -3753,22 +4980,25 @@ th{background:#f5f7f9}
         limit = parseInt(m[1], 10);
         q = q.slice(0, m.index).trim();
       }
+      // 다중 라인 SQL 지원: `.` 대신 `[\s\S]` 를 사용해 절이 여러 줄에 걸쳐도 파싱.
+      // 기존 `.+` 는 newline 을 매칭하지 못해 멀티라인 WHERE/ORDER BY/GROUP BY 가 누락되어
+      // 후속 FROM 매칭 실패 ("FROM 절을 찾을 수 없습니다") 의 원인이었음.
       let orderBy = null;
-      m = /\border\s+by\s+(.+)$/i.exec(q);
+      m = /\border\s+by\s+([\s\S]+)$/i.exec(q);
       if (m) {
         orderBy = m[1].trim();
         q = q.slice(0, m.index).trim();
       }
       let groupBy = null;
-      m = /\bgroup\s+by\s+(.+)$/i.exec(q);
+      m = /\bgroup\s+by\s+([\s\S]+)$/i.exec(q);
       if (m) {
         groupBy = m[1].split(',').map((s) => stripOuterDots(s.trim()));
         q = q.slice(0, m.index).trim();
       }
       let whereClause = null;
-      m = /\bwhere\s+(.+)$/i.exec(q);
+      m = /\bwhere\s+([\s\S]+)$/i.exec(q);
       if (m) {
-        whereClause = m[1].trim();
+        whereClause = m[1].trim().replace(/\s+/g, ' ');
         q = q.slice(0, m.index).trim();
       }
       m = /\bfrom\s+([\w.]+)\s*$/i.exec(q);
@@ -4009,7 +5239,62 @@ th{background:#f5f7f9}
       sortResultRows(rows, cols, p.orderBy);
       if (p.limit != null && p.limit >= 0) rows = rows.slice(0, p.limit);
 
-      return { cols, rows };
+      return applyRoleMaskingInterceptor({ cols, rows }, tblKey);
+    }
+
+    function getCurrentLoginUserId() {
+      return sessionStorage.getItem('metlife_login_user') || 'demo-user';
+    }
+
+    function hasActiveUnmaskGrant(tblKey) {
+      if (!Array.isArray(permissionRequests) || !permissionRequests.length) return false;
+      const now = Date.now();
+      const loginUser = getCurrentLoginUserId();
+      const tableToken = String(TABLE_DISPLAY_NAMES[tblKey] || tblKey).toLowerCase();
+      return permissionRequests.some((r) => {
+        if (!r || String(r.status || '').toUpperCase() !== 'APPROVED') return false;
+        if (!r.unmaskUntil) return false;
+        const until = new Date(r.unmaskUntil).getTime();
+        if (!Number.isFinite(until) || until <= now) return false;
+        const sameUser = !r.requester || String(r.requester).toLowerCase() === String(loginUser).toLowerCase();
+        if (!sameUser) return false;
+        const dataset = String(r.dataset || '').toLowerCase();
+        return dataset.includes(tableToken) || tableToken.includes(dataset) || dataset.includes('dim_customer');
+      });
+    }
+
+    function maskPiiCellByColumn(col, val, withGrant) {
+      const c = String(col || '').toLowerCase();
+      if (val == null) return val;
+      const raw = String(val);
+      if (withGrant) {
+        if (c.includes('cust_nm')) return raw.length <= 1 ? '*' : `${raw.slice(0, 1)}*${raw.slice(-1)}`;
+        if (c.includes('phone') || c.includes('tel') || c.includes('contact')) return raw.replace(/\d(?=\d{4})/g, '*');
+        if (c.includes('address')) return `${raw.slice(0, Math.min(6, raw.length))} ***`;
+        if (c.includes('resident') || c.includes('rrn') || c.includes('birth')) return raw.replace(/\d/g, '*');
+        return '***';
+      }
+      return '***';
+    }
+
+    function applyRoleMaskingInterceptor(result, tblKey) {
+      if (!result || !Array.isArray(result.cols) || !Array.isArray(result.rows)) return result;
+      if (currentUserRole === 'admin') return result;
+      const piiCols = ['cust_nm', 'phone', 'address', 'birth_dt', 'resident_no', 'rrn'];
+      const piiIdx = result.cols
+        .map((c, idx) => ({ c: String(c || '').toLowerCase(), idx }))
+        .filter((x) => piiCols.some((p) => x.c.includes(p)))
+        .map((x) => x.idx);
+      if (!piiIdx.length) return result;
+      const withGrant = hasActiveUnmaskGrant(tblKey);
+      const maskedRows = result.rows.map((r) => {
+        const row = Array.isArray(r) ? [...r] : r;
+        piiIdx.forEach((idx) => {
+          row[idx] = maskPiiCellByColumn(result.cols[idx], row[idx], withGrant);
+        });
+        return row;
+      });
+      return { cols: result.cols, rows: maskedRows };
     }
 
     function scanEstimate(rowCount) {
@@ -4046,6 +5331,7 @@ th{background:#f5f7f9}
           { name: 'phone',        type: 'STRING', pii: true },
           { name: 'address',      type: 'STRING', pii: true },
           { name: 'birth_dt',     type: 'DATE',   pii: true },
+          { name: 'resident_no',  type: 'STRING', pii: true },
           { name: 'gender',       type: 'STRING', pii: false },
           { name: 'tier_cd',      type: 'STRING', pii: false }
         ]},
@@ -4088,6 +5374,16 @@ th{background:#f5f7f9}
         clause.addEventListener('dragleave', (e) => builderDragLeave(e, clause));
         clause.addEventListener('drop', (e) => builderDrop(e, clause));
       });
+      document.querySelectorAll('#dndBuilder .dnd-zone').forEach((zone) => {
+        zone.addEventListener('dragover', (e) => dndZoneDragOver(e, zone));
+        zone.addEventListener('dragleave', (e) => dndZoneDragLeave(e, zone));
+        zone.addEventListener('drop', (e) => dndZoneDrop(e, zone));
+      });
+      document.querySelectorAll('#dndBuilder .dnd-chip .dnd-op, #dndBuilder .dnd-chip .dnd-val').forEach((el) => {
+        el.addEventListener('input', () => updateDndPreview());
+        el.addEventListener('change', () => updateDndPreview());
+      });
+      updateDndPreview();
       loadQueryHistory();
       renderQueryHistory();
       const filterInput = document.getElementById('resultFilterInput');
@@ -4152,6 +5448,273 @@ th{background:#f5f7f9}
       try { bindSchemaTabs(); } catch(_) {}
       try { bindAutocomplete(); } catch(_) {}
       try { bindChartSelectors(); } catch(_) {}
+      try { syncClusterUiBanner(); } catch(_) {}
+      try { renderPatternOptimizationPanel(false); } catch(_) {}
+      try { renderDevOpsStandardPanel(); } catch(_) {}
+    }
+
+    function syncClusterUiBanner() {
+      const cluster = document.getElementById('qsbCluster');
+      const cache = document.getElementById('qsbCache');
+      const banner = document.getElementById('querySubstituteBanner');
+      if (cluster) {
+        cluster.innerHTML = queryClusterSuspended
+          ? '<span class="query-stat-dot cold"></span>SUSPENDED · Serverless Cache Query'
+          : '<span class="query-stat-dot active"></span>RUNNING (Photon)';
+      }
+      if (cache) {
+        cache.innerHTML = queryClusterSuspended
+          ? '<span class="query-stat-dot active"></span>즉시조회 모드 · Materialized Cache'
+          : '<span class="query-stat-dot active"></span>24h TTL';
+      }
+      if (banner) {
+        banner.textContent = queryClusterSuspended
+          ? 'SQL Client 완전 대체 모드 · Cluster 중지 상태에서도 즉시 조회 (캐시/가속 레이어)'
+          : 'SQL Client 완전 대체 모드 · Web Editor + Visual Builder + Feed + Audit Trace 활성';
+      }
+    }
+
+    function toggleClusterMode() {
+      queryClusterSuspended = !queryClusterSuspended;
+      syncClusterUiBanner();
+      toast(
+        '조회 엔진 상태',
+        queryClusterSuspended
+          ? 'Cluster Suspended 시나리오로 전환했습니다. 캐시 기반 즉시조회 모드입니다.'
+          : 'Photon 실시간 처리 모드로 복귀했습니다.',
+        'info'
+      );
+    }
+
+    function applyGuiQuery() {
+      const domain = document.getElementById('guiDomainSelect')?.value || 'dm_policy.fact_contract';
+      const status = document.getElementById('guiStatusSelect')?.value || '';
+      const limitRaw = parseInt(document.getElementById('guiLimitInput')?.value || '100', 10);
+      const limit = Math.max(10, Math.min(1000, Number.isNaN(limitRaw) ? 100 : limitRaw));
+      const ta = document.getElementById('sqlEditor');
+      if (!ta) return;
+
+      let sql = `SELECT *\nFROM ${domain}\nLIMIT ${limit};`;
+      if (domain === 'dm_policy.fact_contract' && status) {
+        sql = `SELECT customer_id, policy_no, product_nm, premium, contract_dt, status\nFROM ${domain}\nWHERE status = '${status}'\nORDER BY premium DESC\nLIMIT ${limit};`;
+      } else if (domain === 'dm_customer.dim_customer' && status) {
+        sql = `SELECT customer_id, cust_nm, tier_cd, engagement_score, region\nFROM ${domain}\nWHERE tier_cd = '${status}'\nORDER BY engagement_score DESC\nLIMIT ${limit};`;
+      } else if (domain === 'dm_claim.fact_claim_event') {
+        sql = `SELECT claim_id, customer_id, claim_dt, claim_amt\nFROM ${domain}\nORDER BY claim_amt DESC\nLIMIT ${limit};`;
+      }
+
+      ta.value = sql;
+      highlightSQL();
+      switchQueryMode('visual');
+      runQuery();
+      toast('GUI 조회 실행', '필터 기반 SQL 자동 생성 후 실행했습니다.', 'success');
+    }
+
+    function runFeedTemplate(feed) {
+      const ta = document.getElementById('sqlEditor');
+      if (!ta) return;
+      const feedSql = {
+        active_contract: "SELECT customer_id, policy_no, premium, contract_dt FROM dm_policy.fact_contract WHERE status = 'ACTIVE' ORDER BY premium DESC LIMIT 100;",
+        claim_watch: "SELECT claim_id, customer_id, claim_dt, claim_amt FROM dm_claim.fact_claim_event ORDER BY claim_amt DESC LIMIT 50;",
+        vip_region: "SELECT customer_id, cust_nm, tier_cd, region, engagement_score FROM dm_customer.dim_customer WHERE tier_cd = 'VIP' ORDER BY engagement_score DESC LIMIT 80;"
+      };
+      const selected = feedSql[feed] || feedSql.active_contract;
+      ta.value = selected;
+      highlightSQL();
+      runQuery();
+      toast('피드 실행', '피드 템플릿을 실행해 최신 결과를 반영했습니다.', 'success');
+    }
+
+    function extractPatternKey(sql) {
+      const compact = String(sql || '').replace(/\s+/g, ' ').trim();
+      const from = (compact.match(/\bfrom\s+([\w.]+)/i) || [])[1] || '-';
+      const hasWhere = /\bwhere\b/i.test(compact);
+      const hasGroup = /\bgroup\s+by\b/i.test(compact);
+      const hasOrder = /\border\s+by\b/i.test(compact);
+      return `${from}|W:${hasWhere ? 1 : 0}|G:${hasGroup ? 1 : 0}|O:${hasOrder ? 1 : 0}`;
+    }
+
+    function buildOptimizedSqlFromPattern(sql) {
+      const cleaned = String(sql || '').trim().replace(/;+\s*$/, '');
+      if (!cleaned) return '';
+      if (!/\blimit\b/i.test(cleaned)) return `${cleaned}\nLIMIT 500;`;
+      return `${cleaned};`;
+    }
+
+    function renderPatternOptimizationPanel(showToast) {
+      const host = document.getElementById('queryPatternList');
+      if (!host) return;
+      if (!queryHistory.length) {
+        host.innerHTML = '<div class="form-help">실행 로그가 누적되면 자주 쓰는 패턴을 자동 추천합니다.</div>';
+        return;
+      }
+      const map = new Map();
+      queryHistory.forEach((h) => {
+        const key = extractPatternKey(h.sql);
+        const prev = map.get(key) || { count: 0, sql: h.sql, lastTs: h.ts, avgRows: 0 };
+        prev.count += 1;
+        prev.lastTs = prev.lastTs > h.ts ? prev.lastTs : h.ts;
+        prev.avgRows = Math.round((prev.avgRows * (prev.count - 1) + (h.rowCount || 0)) / prev.count);
+        map.set(key, prev);
+      });
+      const top = [...map.entries()].sort((a, b) => b[1].count - a[1].count).slice(0, 5);
+      host.innerHTML = top.map(([key, v], idx) => {
+        const optimizedSql = buildOptimizedSqlFromPattern(v.sql);
+        return `
+          <div class="q-issue">
+            <div class="q-issue-table">Pattern ${idx + 1}</div>
+            <div class="q-issue-rule">${escapeHtmlCell(key)}</div>
+            <div class="q-issue-impact">사용 ${v.count}회 · 평균 ${v.avgRows} rows</div>
+            <div><button type="button" class="btn btn-ghost btn-sm" data-action="apply-pattern-sql" data-pattern-sql="${encodeURIComponent(optimizedSql)}">적용</button></div>
+          </div>
+        `;
+      }).join('') + '<div class="form-help" style="margin-top:8px;">추천 패턴은 메타데이터 카탈로그 태그(Hot Query Pattern)로 반영되는 시나리오를 가정합니다.</div>';
+      if (showToast) toast('패턴 분석 완료', `최근 로그에서 ${top.length}개 패턴을 추출했습니다.`, 'success');
+    }
+
+    function applyPatternSql(encodedSql) {
+      const ta = document.getElementById('sqlEditor');
+      if (!ta) return;
+      const sql = decodeURIComponent(encodedSql || '');
+      if (!sql) return;
+      ta.value = sql;
+      highlightSQL();
+      toast('패턴 적용', '최적화 후보 SQL을 에디터에 반영했습니다.');
+    }
+
+    function lintCurrentSql() {
+      const ta = document.getElementById('sqlEditor');
+      const sql = (ta?.value || '').trim();
+      const findings = [];
+      if (!sql) {
+        findings.push({ cat: '기본', rule: 'SQL 비어있음 — 우선 쿼리를 작성하세요', sev: 'warn', impact: '실행불가' });
+        return { sql, findings };
+      }
+      const sqlLower = sql.toLowerCase();
+      // 1) SELECT * 사용
+      if (/\bselect\s+\*/i.test(sql)) {
+        findings.push({ cat: '성능', rule: 'SELECT * 사용 — 필요한 컬럼만 선택하면 스캔량/네트워크 비용 절감', sev: 'warn', impact: '비용↑' });
+      } else {
+        findings.push({ cat: '성능', rule: '명시적 컬럼 SELECT — 권장 패턴 준수', sev: 'good', impact: 'PASS' });
+      }
+      // 2) LIMIT 절 존재
+      if (!/\blimit\s+\d+/i.test(sql)) {
+        findings.push({ cat: '성능', rule: 'LIMIT 절 없음 — 결과 폭주 및 메모리 위험', sev: 'warn', impact: 'OOM 위험' });
+      } else {
+        const lm = sql.match(/\blimit\s+(\d+)/i);
+        const lim = lm ? parseInt(lm[1], 10) : 0;
+        if (lim > 1000) {
+          findings.push({ cat: '성능', rule: `LIMIT ${lim} — 1,000 초과, 페이지네이션 권장`, sev: 'warn', impact: '느림' });
+        } else {
+          findings.push({ cat: '성능', rule: `LIMIT ${lim} 설정 — 안전 범위`, sev: 'good', impact: 'PASS' });
+        }
+      }
+      // 3) WHERE 절
+      if (!/\bwhere\b/i.test(sql)) {
+        findings.push({ cat: '성능', rule: 'WHERE 절 없음 — 풀 테이블 스캔 발생', sev: 'warn', impact: '비용↑' });
+      }
+      // 4) PII 컬럼 노출
+      const piiCols = ['cust_nm', 'phone', 'address', 'birth_dt', 'resident_no', 'rrn'];
+      const piiHits = piiCols.filter((c) => sqlLower.includes(c));
+      if (piiHits.length) {
+        findings.push({
+          cat: '보안',
+          rule: `PII 컬럼 감지: ${piiHits.join(', ')} — 동적 마스킹 자동 적용, 해제는 결재 워크플로우 필요`,
+          sev: 'warn',
+          impact: 'MASK'
+        });
+      } else {
+        findings.push({ cat: '보안', rule: 'PII 컬럼 미감지 — Privacy by Design 준수', sev: 'good', impact: 'PASS' });
+      }
+      // 5) DDL/DML 패턴 차단
+      if (/\b(insert|update|delete|drop|alter|truncate|grant|revoke)\b/i.test(sql)) {
+        findings.push({
+          cat: '보안',
+          rule: '쓰기 DDL/DML 감지 — 본 포털은 SELECT 전용 (SQL Client 차단 대체)',
+          sev: 'error',
+          impact: 'BLOCK'
+        });
+      } else {
+        findings.push({ cat: '보안', rule: 'SELECT 전용 — SQL Client 대체 정책 준수', sev: 'good', impact: 'PASS' });
+      }
+      // 6) JOIN 카테시안 위험
+      if (/\bjoin\b/i.test(sql) && !/\bon\s+/i.test(sql) && !/\busing\s*\(/i.test(sql)) {
+        findings.push({ cat: '성능', rule: 'JOIN ON 절 누락 — Cartesian Product 위험', sev: 'error', impact: '폭주' });
+      }
+      // 7) 인라인 리터럴 (SQL Injection 시뮬레이션 대비)
+      const literalCount = (sql.match(/'[^']*'/g) || []).length;
+      if (literalCount >= 3) {
+        findings.push({
+          cat: '관측성',
+          rule: `인라인 리터럴 ${literalCount}개 — 파라미터 바인딩 권장 (감사 로그 가독성↑)`,
+          sev: 'warn',
+          impact: 'AUDIT'
+        });
+      }
+      // 8) CI/CD 표준
+      findings.push({ cat: 'CI', rule: 'Lint · Unit Test · SQL Policy Test 파이프라인', sev: 'good', impact: 'PASS' });
+      findings.push({ cat: 'CD', rule: 'Blue/Green 배포 · 롤백 자동화', sev: 'good', impact: '준수' });
+      // 9) 관측성
+      findings.push({ cat: '관측성', rule: 'Query SLA · Error Budget · 비용 모니터링 (SRE)', sev: piiHits.length ? 'warn' : 'good', impact: piiHits.length ? 'Watch' : '정상' });
+      return { sql, findings };
+    }
+
+    function renderDevOpsStandardPanel(showSummary) {
+      const host = document.getElementById('devopsStandardPanel');
+      if (!host) return;
+      const { findings } = lintCurrentSql();
+      const counts = findings.reduce((acc, f) => { acc[f.sev] = (acc[f.sev] || 0) + 1; return acc; }, {});
+      const summary = `
+        <div style="display:flex; gap:8px; margin-bottom:10px; flex-wrap:wrap; align-items:center;">
+          <span class="badge badge-success">PASS ${counts.good || 0}</span>
+          <span class="badge badge-warning">WARN ${counts.warn || 0}</span>
+          <span class="badge badge-danger">ERROR ${counts.error || 0}</span>
+          <span style="color:var(--ink-500); font-size:13px;">현재 SQL 기준 실시간 점검</span>
+        </div>
+      `;
+      const rows = findings.map((f) => {
+        const sevBadge = f.sev === 'good'  ? '<span class="badge badge-success">PASS</span>'
+                       : f.sev === 'warn'  ? '<span class="badge badge-warning">WARN</span>'
+                       : f.sev === 'error' ? '<span class="badge badge-danger">ERROR</span>'
+                       : '<span class="badge badge-info">INFO</span>';
+        return `
+          <div class="q-issue">
+            <div class="q-issue-table">${f.cat}</div>
+            <div class="q-issue-rule">${escapeHtmlCell(f.rule)}</div>
+            <div class="q-issue-impact">${f.impact}</div>
+            <div>${sevBadge}</div>
+          </div>
+        `;
+      }).join('');
+      host.innerHTML = summary + rows;
+      if (showSummary) {
+        const verdict = counts.error
+          ? `❌ ERROR ${counts.error}건 — 실행 차단 필요`
+          : counts.warn
+            ? `⚠ WARN ${counts.warn}건 — 검토 후 실행 권장`
+            : '✅ 모든 표준 항목 통과';
+        toast('DevOps 점검 결과', verdict, counts.error ? 'error' : counts.warn ? 'warning' : 'success');
+      }
+    }
+
+    function runDevOpsQuickCheck() {
+      renderDevOpsStandardPanel(true);
+      addSystemNotification('ops', 'DevOps 표준 점검', 'Query 서비스 표준 체크리스트를 실행했습니다. CI/CD/보안/관측성 상태를 갱신했습니다.');
+    }
+
+    function copyCursorPrompt(preset) {
+      const text = CURSOR_PROMPT_PRESETS[preset];
+      if (!text) {
+        toast('복사 실패', '프롬프트 템플릿을 찾을 수 없습니다.');
+        return;
+      }
+      if (navigator?.clipboard?.writeText) {
+        navigator.clipboard.writeText(text)
+          .then(() => toast('프롬프트 복사', '클립보드에 복사했습니다.', 'success'))
+          .catch(() => toast('프롬프트 복사', '복사 권한이 없어 수동 복사가 필요합니다.', 'warning'));
+        return;
+      }
+      toast('프롬프트 복사', '브라우저 환경에서 자동 복사를 지원하지 않습니다.');
     }
 
     /* ================================================
@@ -4200,7 +5763,7 @@ th{background:#f5f7f9}
       body.innerHTML = `
         <div class="qctx-stat-card">
           <div class="qctx-stat-card-label">대상 테이블</div>
-          <div class="qctx-stat-card-value" style="font-family:'JetBrains Mono',monospace; font-size:14px;">${tbl}</div>
+          <div class="qctx-stat-card-value" style="font-family:'Pretendard Variable', Pretendard, sans-serif; font-size:14px;">${tbl}</div>
         </div>
         <div class="qctx-stat-card">
           <div class="qctx-stat-card-label">결과 행 / 컬럼</div>
@@ -4222,6 +5785,39 @@ th{background:#f5f7f9}
     function renderQctxPlan() {
       const body = document.getElementById('qctxBody');
       if (!body) return;
+      // 1) Real parsed plan from explainSQL() (preferred)
+      if (lastExplainPlan && lastExplainPlan.length) {
+        const totalCost = lastExplainPlan.reduce((s, x) => s + (x.cost || 0), 0) || 1;
+        body.innerHTML = `
+          <div class="qplan-summary">
+            <div class="qplan-summary-row"><span>총 단계</span><strong>${lastExplainPlan.length}</strong></div>
+            <div class="qplan-summary-row"><span>예상 비용 합계</span><strong>${totalCost.toFixed(2)}</strong></div>
+          </div>
+        ` + lastExplainPlan.map((s, i) => {
+          const sevColor = s.severity === 'warn' ? 'var(--warning)'
+                         : s.severity === 'good' ? 'var(--success)'
+                         : 'var(--ml-blue)';
+          const costPct = Math.round(((s.cost || 0) / totalCost) * 100);
+          return `
+            <div class="qplan-step" style="border-left:3px solid ${sevColor};">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px;">
+                <strong>${i + 1}. ${s.k}</strong>
+                <span style="font-size:13px; color:var(--ink-500); font-variant-numeric:tabular-nums;">cost ${(s.cost || 0).toFixed(2)} · ${costPct}%</span>
+              </div>
+              <div class="qplan-step-detail">${s.d}</div>
+              <div style="height:4px; background:var(--ink-100); border-radius:2px; margin-top:6px; overflow:hidden;">
+                <div style="height:100%; width:${costPct}%; background:${sevColor}; border-radius:2px;"></div>
+              </div>
+            </div>
+          `;
+        }).join('') + `
+          <div style="font-size:13px; color:var(--ink-500); margin-top:10px; line-height:1.5;">
+            ※ Photon 엔진 + Z-Order 인덱스 자동 적용 · 결과 캐시 24시간 (Cluster suspended 시에도 캐시 조회 가능)
+          </div>
+        `;
+        return;
+      }
+      // 2) Fallback: heuristic plan from SQL keywords (original behavior)
       const sql = (document.getElementById('sqlEditor')?.value || '').toUpperCase();
       const steps = [];
       if (sql.includes('FROM'))   steps.push({ k: 'TABLE SCAN', d: 'Delta Lake · Z-Order on customer_id' });
@@ -4235,17 +5831,21 @@ th{background:#f5f7f9}
           <strong>${s.k}</strong>
           <div class="qplan-step-detail">${s.d}</div>
         </div>
-      `).join('');
+      `).join('') + `
+        <div style="font-size:13px; color:var(--ink-500); margin-top:10px; line-height:1.5;">
+          💡 'Explain' 버튼을 누르면 현재 SQL 의 실제 실행 계획(스캔 행 수 · 필터 비율 · 비용)을 분석합니다.
+        </div>
+      `;
     }
     function renderQctxPolicy() {
       const body = document.getElementById('qctxBody');
       if (!body) return;
       const sql = (document.getElementById('sqlEditor')?.value || '').toLowerCase();
-      const piiCols = ['cust_nm', 'phone', 'address', 'birth_dt'];
+      const piiCols = ['cust_nm', 'phone', 'address', 'birth_dt', 'resident_no', 'rrn'];
       const detected = piiCols.filter(c => sql.includes(c));
       body.innerHTML = `
         <div class="qctx-policy-row">
-          <div class="qctx-policy-key">권한 체계 (SFR-008)</div>
+          <div class="qctx-policy-key">권한 체계 (RBAC)</div>
           <div class="qctx-policy-val">Unity Catalog · 행/열 단위 RBAC</div>
         </div>
         <div class="qctx-policy-row">
@@ -4259,11 +5859,11 @@ th{background:#f5f7f9}
         </div>
         <div class="qctx-policy-row">
           <div class="qctx-policy-key">동적 마스킹</div>
-          <div class="qctx-policy-val">${detected.length > 0 ? '⚠️ 자동 적용 · 해제는 SFR-010 결재' : '대상 없음'}</div>
+          <div class="qctx-policy-val">${detected.length > 0 ? '⚠️ 자동 적용 · 해제는 결재 워크플로우 필요' : '대상 없음'}</div>
         </div>
         <div class="qctx-policy-row">
           <div class="qctx-policy-key">감사 로그</div>
-          <div class="qctx-policy-val">자동 기록 · SFR-010 / SVR-007 (캡처 차단)</div>
+          <div class="qctx-policy-val">자동 기록 · 감사로그 + 캡처 차단 정책 연동</div>
         </div>
         <div class="qctx-policy-row">
           <div class="qctx-policy-key">암호화</div>
@@ -4589,7 +6189,7 @@ th{background:#f5f7f9}
             <strong>${h.ok ? '성공' : '실패'} · ${new Date(h.ts).toLocaleString('ko-KR')}</strong>
             <span class="badge ${h.ok ? 'badge-success' : 'badge-danger'}">${h.ok ? `${h.rowCount} rows` : 'error'}</span>
           </div>
-          <div class="evidence-detail" style="font-family: ui-monospace, monospace;">${escapeHtmlCell(h.sql.slice(0, 240))}</div>
+          <div class="evidence-detail" style="font-family: 'Pretendard Variable', Pretendard, sans-serif;">${escapeHtmlCell(h.sql.slice(0, 240))}</div>
           <div style="margin-top:8px; display:flex; justify-content:flex-end;">
             <button type="button" class="btn btn-ghost btn-sm" data-action="run-history-query" data-history-id="${h.id}">다시 실행</button>
           </div>
@@ -4611,6 +6211,7 @@ th{background:#f5f7f9}
       queryHistory = [];
       persistQueryHistory();
       renderQueryHistory();
+      renderPatternOptimizationPanel(false);
       toast('이력 삭제', '쿼리 실행 이력을 비웠습니다.');
     }
     const schemaExpanded = {};
@@ -4691,6 +6292,159 @@ th{background:#f5f7f9}
       el.appendChild(chip);
       toast('필드 추가', `${el.dataset.clause} 절에 ${name} 이 추가되었습니다.`);
       rebuildSQLFromBuilder();
+    }
+
+    /* ───── 강화된 GUI Drag & Drop 빌더 ───── */
+    function dndZoneDragOver(e, zone) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'copy';
+      zone.classList.add('is-drag-over');
+    }
+    function dndZoneDragLeave(e, zone) {
+      zone.classList.remove('is-drag-over');
+    }
+    function dndZoneDrop(e, zone) {
+      e.preventDefault();
+      zone.classList.remove('is-drag-over');
+      const raw = e.dataTransfer.getData('text/plain');
+      if (!raw) return;
+      const colName = raw.includes('.') ? raw.split('.').pop() : raw;
+      const body = zone.querySelector('.dnd-zone-body');
+      if (!body) return;
+      const exists = body.querySelector(`[data-dnd-col="${colName}"]`);
+      if (exists) {
+        toast('이미 추가됨', `${colName} 은(는) 이미 ${zone.dataset.clause} 절에 있습니다.`);
+        return;
+      }
+      const chip = document.createElement('span');
+      const isWhere = zone.dataset.dndZone === 'WHERE';
+      chip.className = isWhere ? 'dnd-chip dnd-chip--cond' : 'dnd-chip';
+      chip.dataset.dndCol = colName;
+      if (isWhere) {
+        chip.innerHTML = `${colName}
+          <select class="dnd-op" data-action="dnd-set-op">
+            <option>=</option><option>≠</option><option>IN</option><option>LIKE</option>
+          </select>
+          <input class="dnd-val" data-action="dnd-set-val" value="ACTIVE"/>
+          <button type="button" data-action="dnd-remove">×</button>`;
+      } else {
+        chip.innerHTML = `${colName}<button type="button" data-action="dnd-remove">×</button>`;
+      }
+      body.appendChild(chip);
+      chip.querySelectorAll('.dnd-op, .dnd-val').forEach((el) => {
+        el.addEventListener('input', () => updateDndPreview());
+        el.addEventListener('change', () => updateDndPreview());
+      });
+      toast('필드 추가', `${zone.dataset.clause} 에 ${colName} 추가됨`);
+      updateDndPreview();
+    }
+    function dndRemoveChip(btn) {
+      const chip = btn.closest('.dnd-chip');
+      chip?.remove();
+      updateDndPreview();
+    }
+    function dndApplyTemplate(tpl) {
+      const zones = {
+        SELECT: document.querySelector('#dndBuilder [data-dnd-target="SELECT"]'),
+        WHERE: document.querySelector('#dndBuilder [data-dnd-target="WHERE"]'),
+        GROUP: document.querySelector('#dndBuilder [data-dnd-target="GROUP"]'),
+        ORDER: document.querySelector('#dndBuilder [data-dnd-target="ORDER"]')
+      };
+      Object.values(zones).forEach((z) => {
+        if (!z) return;
+        z.querySelectorAll('.dnd-chip').forEach((c) => c.remove());
+      });
+      const dom = document.getElementById('guiDomainSelect');
+      const status = document.getElementById('guiStatusSelect');
+      if (tpl === 'active_contract') {
+        if (dom) dom.value = 'dm_policy.fact_contract';
+        if (status) status.value = 'ACTIVE';
+        ['customer_id', 'policy_no', 'contract_dt', 'premium'].forEach((c) => addDndChip('SELECT', c));
+        addDndCondChip('status', '=', 'ACTIVE');
+        addDndChip('ORDER', 'contract_dt');
+      } else if (tpl === 'vip_customer') {
+        if (dom) dom.value = 'dm_customer.dim_customer';
+        if (status) status.value = 'VIP';
+        ['customer_id', 'cust_nm', 'vip_grade', 'region_cd'].forEach((c) => addDndChip('SELECT', c));
+        addDndCondChip('vip_grade', '=', 'VIP');
+        addDndChip('GROUP', 'region_cd');
+      } else if (tpl === 'claim_high') {
+        if (dom) dom.value = 'dm_claim.fact_claim_event';
+        if (status) status.value = '';
+        ['claim_id', 'customer_id', 'claim_amt', 'claim_dt'].forEach((c) => addDndChip('SELECT', c));
+        addDndCondChip('claim_amt', '>', '50000000');
+        addDndChip('ORDER', 'claim_amt');
+      }
+      updateDndPreview();
+      toast('템플릿 적용', `${tpl} 시나리오가 GUI 빌더에 로드되었습니다.`);
+    }
+    function addDndChip(zoneKey, colName) {
+      const body = document.querySelector(`#dndBuilder [data-dnd-target="${zoneKey}"]`);
+      if (!body || body.querySelector(`[data-dnd-col="${colName}"]`)) return;
+      const chip = document.createElement('span');
+      chip.className = 'dnd-chip';
+      chip.dataset.dndCol = colName;
+      chip.innerHTML = `${colName}<button type="button" data-action="dnd-remove">×</button>`;
+      body.appendChild(chip);
+    }
+    function addDndCondChip(colName, op, val) {
+      const body = document.querySelector('#dndBuilder [data-dnd-target="WHERE"]');
+      if (!body || body.querySelector(`[data-dnd-col="${colName}"]`)) return;
+      const chip = document.createElement('span');
+      chip.className = 'dnd-chip dnd-chip--cond';
+      chip.dataset.dndCol = colName;
+      chip.innerHTML = `${colName}
+        <select class="dnd-op" data-action="dnd-set-op">
+          <option ${op === '=' ? 'selected' : ''}>=</option>
+          <option ${op === '≠' ? 'selected' : ''}>≠</option>
+          <option ${op === '>' ? 'selected' : ''}>&gt;</option>
+          <option ${op === '<' ? 'selected' : ''}>&lt;</option>
+          <option ${op === 'IN' ? 'selected' : ''}>IN</option>
+          <option ${op === 'LIKE' ? 'selected' : ''}>LIKE</option>
+        </select>
+        <input class="dnd-val" data-action="dnd-set-val" value="${val || ''}"/>
+        <button type="button" data-action="dnd-remove">×</button>`;
+      body.appendChild(chip);
+      chip.querySelectorAll('.dnd-op, .dnd-val').forEach((el) => {
+        el.addEventListener('input', () => updateDndPreview());
+        el.addEventListener('change', () => updateDndPreview());
+      });
+    }
+    function updateDndPreview() {
+      const out = document.getElementById('dndSqlPreview');
+      if (!out) return;
+      const dom = (document.getElementById('guiDomainSelect') || {}).value || 'dm_policy.fact_contract';
+      const lim = parseInt((document.getElementById('guiLimitInput') || {}).value || '100', 10) || 100;
+      const cols = (k) => [...document.querySelectorAll(`#dndBuilder [data-dnd-target="${k}"] .dnd-chip`)];
+      const selCols = cols('SELECT').map((c) => c.dataset.dndCol);
+      const grpCols = cols('GROUP').map((c) => c.dataset.dndCol);
+      const ordCols = cols('ORDER').map((c) => c.dataset.dndCol);
+      const whereChips = cols('WHERE').map((c) => {
+        const op = (c.querySelector('.dnd-op') || {}).value || '=';
+        const val = (c.querySelector('.dnd-val') || {}).value || '';
+        const sym = op === '≠' ? '<>' : op;
+        const v = /^-?\d+(\.\d+)?$/.test(val) ? val : `'${String(val).replace(/'/g, "''")}'`;
+        return `${c.dataset.dndCol} ${sym} ${v}`;
+      });
+      let sql = `SELECT ${selCols.length ? selCols.join(', ') : '*'}\n`;
+      sql += `FROM   ${dom}`;
+      if (whereChips.length) sql += `\nWHERE  ${whereChips.join('\n       AND ')}`;
+      if (grpCols.length) sql += `\nGROUP  BY ${grpCols.join(', ')}`;
+      if (ordCols.length) sql += `\nORDER  BY ${ordCols.join(', ')} DESC`;
+      sql += `\nLIMIT  ${lim};`;
+      out.textContent = sql;
+    }
+    function dndCopyPreview() {
+      const out = document.getElementById('dndSqlPreview');
+      if (!out) return;
+      const text = out.textContent || '';
+      const ta = document.getElementById('sqlEditor');
+      if (ta) {
+        ta.value = text;
+        try { highlightSQL(); } catch (_) {}
+      }
+      try { navigator.clipboard?.writeText(text); } catch (_) {}
+      toast('SQL 복사', '미리보기 SQL이 에디터에 적용되고 클립보드에 복사되었습니다.');
     }
 
     function getChipSqlText(chip) {
@@ -4838,7 +6592,8 @@ th{background:#f5f7f9}
         try {
           const result = executeSqlQuery(ta.value);
           lastQueryResult = result;
-          const ms = Math.max(1, Math.round(performance.now() - t0));
+          const baseMs = Math.max(1, Math.round(performance.now() - t0));
+          const ms = queryClusterSuspended ? Math.max(4, Math.round(baseMs * 0.6)) : baseMs;
           status.style.color = 'var(--success)';
           status.textContent = '● 성공';
           pulseUiState(status, 'status-pulse-success', 560);
@@ -4847,13 +6602,22 @@ th{background:#f5f7f9}
           renderResults(result);
           registerQueryAssetCandidate(ta.value, result.rows.length);
           addQueryHistory(ta.value, result.rows.length, true);
+          renderPatternOptimizationPanel(false);
+          // Auto-refresh DevOps lint + Plan tab on every successful run
+          try { renderDevOpsStandardPanel(false); } catch (_) {}
+          if (activeQctxTab === 'plan') {
+            // Re-render plan if user is currently looking at it
+            try { explainSQL(); } catch (_) {}
+          } else if (activeQctxTab === 'overview' || activeQctxTab === 'policy') {
+            try { setQctxTab(activeQctxTab); } catch (_) {}
+          }
           const piiRisk = /\bcust_nm\b|customer|claim|phone|주소|연락처/i.test(ta.value);
           const hint = document.getElementById('nlqPolicyHint');
           if (hint && piiRisk) {
             hint.textContent = '정책 경고: PII 패턴 감지됨 · 승인 워크플로우를 확인하세요.';
             hint.style.color = 'var(--danger)';
           }
-          toast('쿼리 완료', `${result.rows.length.toLocaleString()}건 반환 · 브라우저 인메모리 엔진`);
+          toast('쿼리 완료', `${result.rows.length.toLocaleString()}건 반환 · ${queryClusterSuspended ? '캐시 즉시조회' : '브라우저 인메모리 엔진'}`);
         } catch (err) {
           lastQueryResult = { cols: ['error'], rows: [[err.message || String(err)]] };
           status.style.color = 'var(--danger)';
@@ -4869,6 +6633,65 @@ th{background:#f5f7f9}
           resultsPane?.classList.remove('is-query-running');
         }
       }, 10);
+    }
+
+    function runQueryDemoScenario() {
+      const nlq = document.getElementById('nlqInput');
+      if (nlq) nlq.value = '최근 고객 20건의 마스킹 결과와 계약상태를 조회';
+      const ta = document.getElementById('sqlEditor');
+      if (ta) {
+        ta.value = "SELECT cust_id, cust_nm, phone, address, tier_cd, status FROM dim_customer WHERE status = 'ACTIVE' LIMIT 20;";
+      }
+      highlightSQL();
+      syncSqlOverlay();
+      runQuery();
+      setTimeout(() => {
+        setResultTab('chart');
+        const chartType = document.getElementById('resultChartType');
+        if (chartType) chartType.value = 'bar';
+        renderResultChart();
+        const hint = document.getElementById('nlqPolicyHint');
+        if (hint) {
+          hint.textContent = '데모 실행 완료 · 개인정보 컬럼은 역할 기반 마스킹 상태로 표시됩니다.';
+          hint.style.color = 'var(--success)';
+        }
+        toast('쿼리 데모', '마스킹 포함 조회 + 차트 렌더링까지 완료했습니다.', 'success');
+      }, 260);
+    }
+
+    function runFullDemoScenario() {
+      const steps = [
+        { delay: 0, fn: () => {
+          toast('종합 데모 시작', '1단계: 수집 모니터링 → 쿼리 실행 → 권한/보안 → 운영 실행 순서로 시연합니다.', 'info');
+          addSystemNotification('info', '종합 데모 시작', '전체 기능 시나리오를 순차 실행합니다.');
+        }},
+        { delay: 1200, fn: () => {
+          addEvidence('운영', 'CDC 정합성 검증 실행', '소스 12,481,920 vs 타겟 12,481,896 · 차이 -24 · 허용 범위', ['정합성 검증']);
+          toast('수집 모니터링', 'CDC 정합성 검증 완료 (차이 24건, 허용 범위)', 'success');
+        }},
+        { delay: 2400, fn: () => {
+          switchView('query');
+          setTimeout(() => runQueryDemoScenario(), 400);
+        }},
+        { delay: 5000, fn: () => {
+          switchView('permission');
+          setTimeout(() => {
+            copyProtectionEnabled = true;
+            mfaVerified = true;
+            syncSecurityPolicyState();
+            addEvidence('보안', '보안 정책 활성화', '캡처/복사 차단 + MFA 인증 완료', ['보안 정책']);
+            toast('보안 활성화', '캡처차단 + MFA 인증 시나리오 완료', 'success');
+          }, 400);
+        }},
+        { delay: 7200, fn: () => {
+          switchView('home');
+          addEvidence('운영', 'DR 복구 테스트 실행', 'RTO 18분, RPO 5분, 시나리오 PASS', ['DR 테스트']);
+          addEvidence('보안', '시큐어코딩 점검 완료', 'Static Scan 완료, Critical 0건', ['시큐어코딩']);
+          toast('종합 데모 완료', '전체 5단계 시나리오가 정상 실행되었습니다.', 'success');
+          addSystemNotification('info', '종합 데모 완료', '수집→쿼리→보안→운영 전 기능이 정상 동작합니다.');
+        }}
+      ];
+      steps.forEach(({ delay, fn }) => setTimeout(fn, delay));
     }
 
     function renderResults(d) {
@@ -5089,6 +6912,21 @@ th{background:#f5f7f9}
         reqs.forEach((r) => { if (r.id === 'SVR-007') r.status = 'completed'; });
       }
     }
+    function runPermissionDemoScenario() {
+      openPermModal();
+      const reasonEl = document.getElementById('permReason');
+      const datasetEl = document.getElementById('permDatasetSelect');
+      if (datasetEl) datasetEl.value = datasetEl.value || 'dm_customer.dim_customer';
+      if (reasonEl) reasonEl.value = '고객 분석 리포트 검증을 위한 일시 조회 권한 요청';
+      submitPermissionRequest();
+      setTimeout(() => {
+        copyProtectionEnabled = true;
+        mfaVerified = true;
+        syncSecurityPolicyState();
+        addSystemNotification('info', '권한 데모 실행', '권한 신청·보안정책·MFA 시나리오를 자동 실행했습니다.');
+        toast('권한 데모', '신청 접수 + 보안정책 활성 + MFA 인증까지 완료했습니다.', 'success');
+      }, 760);
+    }
     function openPermModal()  { document.getElementById('permModal').classList.add('show'); }
     function closePermModal() { document.getElementById('permModal').classList.remove('show'); }
     document.addEventListener('click', (e) => {
@@ -5138,7 +6976,7 @@ th{background:#f5f7f9}
           title: 'Masking',
           text: '민감정보 분류와 사용자 직무를 기준으로 컬럼 단위 동적 마스킹 정책을 적용합니다.',
           owner: '정보보호팀',
-          policy: 'SFR-008 · 역할 기반 마스킹 · 예외 만료 자동회수',
+          policy: '역할 기반 마스킹 · 예외 만료 자동회수',
           checklist: ['민감등급 판정', '정책 템플릿 선택', '예외권한 만료시점 지정']
         },
         approval: {
@@ -5152,7 +6990,7 @@ th{background:#f5f7f9}
           title: 'Audit',
           text: '조회, 내보내기, 정책변경, 승인 이력을 통합 감사 로그로 수집하고 증적 패키지를 자동 생성합니다.',
           owner: '내부통제팀',
-          policy: 'SFR-010 · 1년 보관 · 월별 증적 자동 생성',
+          policy: '1년 보관 · 월별 증적 자동 생성',
           checklist: ['이벤트 정합성 체크', '보관주기 준수', '감사 리포트 발행']
         }
       };
@@ -5410,9 +7248,403 @@ th{background:#f5f7f9}
     /* ================================================
        Module 0 — Home
        ================================================ */
+    function syncHomeSimControls() {
+      const pill = document.getElementById('homeSimPill');
+      const txt = document.getElementById('homeSimPillText');
+      const btn = document.getElementById('homeSimPauseBtn');
+      if (pill) pill.classList.toggle('live-pill-paused', homeSimPaused);
+      if (txt) txt.textContent = homeSimPaused ? '일시정지 중' : '시뮬레이션 가동';
+      if (btn) btn.textContent = homeSimPaused ? '재개' : '일시정지';
+    }
+
     function initHome() {
-      // 모든 인터랙션이 CSS 애니메이션과 정적 콘텐츠로 구성
-      // 추가 차트가 필요할 경우 여기에 작성
+      homeSimPaused = false;
+      syncHomeSimControls();
+
+      // ── 메인 모니터링: 실시간 TPS 추이 라인 차트 ──
+      const homeTpsCanvas = document.getElementById('homeMainTpsChart');
+      if (homeTpsCanvas && typeof Chart !== 'undefined') {
+        Chart.getChart(homeTpsCanvas)?.destroy();
+        const ctx = homeTpsCanvas.getContext('2d');
+        const tpsLabels = Array.from({ length: 30 }, (_, i) => `${i + 1}m`);
+        const tpsSeed = [];
+        let tv = 38000;
+        for (let i = 0; i < 30; i++) {
+          tv += (Math.random() - 0.45) * 3500;
+          tv = Math.max(28000, Math.min(56000, tv));
+          tpsSeed.push(Math.round(tv));
+        }
+        const tpsGrad = ctx.createLinearGradient(0, 0, 0, 280);
+        tpsGrad.addColorStop(0, 'rgba(0, 144, 218, 0.28)');
+        tpsGrad.addColorStop(1, 'rgba(0, 144, 218, 0)');
+        const homeMainTpsChart = new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels: tpsLabels,
+            datasets: [{
+              label: 'TPS',
+              data: tpsSeed,
+              borderColor: '#0090DA',
+              backgroundColor: tpsGrad,
+              borderWidth: 2.4,
+              tension: 0.4,
+              pointRadius: 0,
+              pointHoverRadius: 5,
+              pointHoverBackgroundColor: '#0090DA',
+              pointHoverBorderColor: '#ffffff',
+              pointHoverBorderWidth: 2,
+              fill: true
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: '#FFFFFF',
+                titleColor: '#222222',
+                bodyColor: '#4A5568',
+                borderColor: '#E2E8F0',
+                borderWidth: 1,
+                titleFont: { family: 'Pretendard Variable', weight: '600' },
+                bodyFont: { family: 'Pretendard Variable' },
+                padding: 10,
+                cornerRadius: 8,
+                callbacks: { label: (c) => `TPS  ${c.parsed.y.toLocaleString()}` }
+              }
+            },
+            scales: {
+              x: {
+                grid: { display: false },
+                border: { color: '#E2E8F0' },
+                ticks: {
+                  color: '#94A3B8',
+                  font: { family: 'Pretendard Variable', size: 11.5, weight: '500' },
+                  maxRotation: 0,
+                  autoSkip: false,
+                  callback: function(_, index) {
+                    return (index + 1) % 5 === 0 ? this.getLabelForValue(index) : '';
+                  }
+                }
+              },
+              y: {
+                grid: { color: '#F1F5F9', drawTicks: false },
+                border: { display: false },
+                ticks: {
+                  color: '#94A3B8',
+                  font: { family: 'Pretendard Variable', size: 11.5, weight: '500' },
+                  padding: 8,
+                  maxTicksLimit: 6,
+                  callback: (v) => (v / 1000).toFixed(0) + 'K'
+                }
+              }
+            }
+          }
+        });
+        if (window._homeMainTpsTimer) clearInterval(window._homeMainTpsTimer);
+        window._homeMainTpsTimer = setInterval(() => {
+          if (currentView !== 'home' || !homeMainTpsChart || homeSimPaused) return;
+          const arr = homeMainTpsChart.data.datasets[0].data;
+          let nv = arr[arr.length - 1] + (Math.random() - 0.45) * 3500;
+          nv = Math.max(28000, Math.min(56000, nv));
+          arr.shift();
+          arr.push(Math.round(nv));
+          homeMainTpsChart.update('none');
+        }, 2200);
+      }
+
+      // ── 메인 모니터링: 상태 분포 도넛 차트 ──
+      const homeStatusCanvas = document.getElementById('homeMainStatusChart');
+      if (homeStatusCanvas && typeof Chart !== 'undefined') {
+        Chart.getChart(homeStatusCanvas)?.destroy();
+        const sCtx = homeStatusCanvas.getContext('2d');
+        new Chart(sCtx, {
+          type: 'doughnut',
+          data: {
+            labels: ['정상', '경고', '실패', '대기'],
+            datasets: [{
+              data: [2986, 84, 18, 36],
+              backgroundColor: ['#0090DA', '#F59E0B', '#EF4444', '#B3DFF7'],
+              borderColor: '#ffffff',
+              borderWidth: 2,
+              hoverOffset: 6
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '62%',
+            layout: { padding: { top: 4, bottom: 4 } },
+            plugins: {
+              legend: {
+                position: 'bottom',
+                align: 'center',
+                labels: {
+                  color: '#475569',
+                  font: { family: 'Pretendard Variable', size: 12.5, weight: '600' },
+                  boxWidth: 12,
+                  boxHeight: 12,
+                  padding: 18,
+                  usePointStyle: true,
+                  pointStyle: 'circle',
+                  generateLabels: (chart) => {
+                    const data = chart.data;
+                    const ds = data.datasets[0];
+                    const total = ds.data.reduce((a, b) => a + b, 0);
+                    return data.labels.map((label, i) => ({
+                      text: `${label}  ${ds.data[i].toLocaleString()}`,
+                      fillStyle: ds.backgroundColor[i],
+                      strokeStyle: ds.backgroundColor[i],
+                      lineWidth: 0,
+                      pointStyle: 'circle',
+                      hidden: false,
+                      index: i
+                    }));
+                  }
+                }
+              },
+              tooltip: {
+                backgroundColor: '#FFFFFF',
+                titleColor: '#222222',
+                bodyColor: '#4A5568',
+                borderColor: '#E2E8F0',
+                borderWidth: 1,
+                padding: 10,
+                cornerRadius: 8,
+                titleFont: { family: 'Pretendard Variable', weight: '600' },
+                bodyFont: { family: 'Pretendard Variable' },
+                callbacks: { label: (c) => `${c.label}  ${c.parsed.toLocaleString()} 건` }
+              }
+            }
+          }
+        });
+      }
+
+      const feedHost = document.getElementById('homeOpsFeed');
+      const statusStrip = document.getElementById('homeOpsStatusStrip');
+      let recentJobStatuses = [];
+      function renderOpsStatusStrip() {
+        if (!statusStrip) return;
+        const lab = { ok: '성공', warn: '임계', fail: '실패' };
+        const cls = { ok: 'home-ops-chip home-ops-chip--ok', warn: 'home-ops-chip home-ops-chip--warn', fail: 'home-ops-chip home-ops-chip--fail' };
+        if (!recentJobStatuses.length) {
+          statusStrip.innerHTML = '<span class="home-ops-strip-label">상태</span><span class="home-ops-strip-empty">—</span>';
+          return;
+        }
+        statusStrip.innerHTML =
+          '<span class="home-ops-strip-label">상태</span>'
+          + recentJobStatuses.map((s, i, a) =>
+            `<span class="${cls[s]}">${lab[s]}</span>${i < a.length - 1 ? '<span class="home-ops-strip-sep">·</span>' : ''}`
+          ).join('');
+      }
+
+      const jobTemplates = [
+        { src: 'ADF', name: 'copy_oracle_policy_to_adls', status: 'ok', ms: 12400, rows: '8.2M' },
+        { src: 'ADF', name: 'incremental_claim_file_merge', status: 'ok', ms: 6200, rows: '1.1M' },
+        { src: 'Databricks', name: 'bronze_to_silver_contract', status: 'ok', ms: 840000, rows: '420k' },
+        { src: 'Databricks', name: 'dq_profile_customer_dims', status: 'warn', ms: 2100000, rows: '—' },
+        { src: 'CDC', name: 'iidr_queue_high_contract_header', status: 'ok', ms: 380, rows: '18.2k/s' },
+        { src: 'CDC', name: 'mq_replicate_legacy_claim', status: 'ok', ms: 520, rows: '9.4k/s' },
+        { src: 'Databricks', name: 'adf_trigger_backfill_nightly', status: 'ok', ms: 3600000, rows: '62M' },
+        { src: 'ADF', name: 'sensitive_column_mask_prelanding', status: 'ok', ms: 9100, rows: 'PII 1.2M' },
+        { src: 'Databricks', name: 'unity_grant_rbac_sync_job', status: 'fail', ms: 45000, rows: '0' }
+      ];
+
+      function pushFeedLine() {
+        if (!feedHost || homeSimPaused) return;
+        const j = jobTemplates[Math.floor(Math.random() * jobTemplates.length)];
+        const badge = j.status === 'warn' ? 'badge-warning' : j.status === 'fail' ? 'badge-danger' : 'badge-success';
+        const label = j.status === 'warn' ? '임계' : j.status === 'fail' ? '실패' : '성공';
+        const ts = new Date().toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        const row = document.createElement('div');
+        row.className = 'home-ops-feed-row';
+        row.innerHTML = `
+          <span class="home-ops-feed-ts">${ts}</span>
+          <span class="home-ops-feed-src">${j.src}</span>
+          <span class="home-ops-feed-name" title="${j.name}">${j.name}</span>
+          <span class="home-ops-feed-lat">${(j.ms / 1000).toFixed(j.ms >= 100000 ? 0 : 1)}s</span>
+          <span class="home-ops-feed-rows">${j.rows}</span>
+          <span class="badge ${badge} home-ops-feed-status">${label}</span>`;
+        feedHost.insertBefore(row, feedHost.firstChild);
+        while (feedHost.children.length > 10) feedHost.removeChild(feedHost.lastChild);
+        recentJobStatuses.unshift(j.status);
+        recentJobStatuses = recentJobStatuses.slice(0, 8);
+        renderOpsStatusStrip();
+      }
+
+      const labels = Array.from({ length: 60 }, (_, i) => (i === 59 ? '현재' : `-${60 - i}m`));
+      let tpsSeries = Array.from({ length: 60 }, () => 1680 + Math.random() * 360);
+      let okSeries = Array.from({ length: 60 }, () => 98.4 + Math.random() * 1.1);
+
+      const homeOpsCanvas = document.getElementById('homeOpsMixChart');
+      if (homeOpsCanvas && typeof Chart !== 'undefined') {
+        Chart.getChart(homeOpsCanvas)?.destroy();
+        const ctx = homeOpsCanvas.getContext('2d');
+        const grad = ctx.createLinearGradient(0, 0, 0, 200);
+        grad.addColorStop(0, 'rgba(0, 144, 218, 0.22)');
+        grad.addColorStop(1, 'rgba(0, 144, 218, 0)');
+        new Chart(ctx, {
+          type: 'line',
+          data: {
+            labels,
+            datasets: [
+              {
+                label: 'TPS',
+                data: tpsSeries.slice(),
+                yAxisID: 'y',
+                borderColor: '#0090DA',
+                backgroundColor: grad,
+                borderWidth: 2,
+                tension: 0.35,
+                fill: true,
+                pointRadius: 0,
+                pointHoverRadius: 4
+              },
+              {
+                label: '성공률 %',
+                data: okSeries.slice(),
+                yAxisID: 'y1',
+                borderColor: '#10B981',
+                borderWidth: 2,
+                borderDash: [6, 4],
+                tension: 0.35,
+                fill: false,
+                pointRadius: 0,
+                pointHoverRadius: 4
+              }
+            ]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: 'index', intersect: false },
+            layout: { padding: { top: 4, right: 6, bottom: 0, left: 4 } },
+            plugins: {
+              legend: {
+                display: true,
+                position: 'top',
+                align: 'end',
+                labels: {
+                  color: '#475569',
+                  font: { family: 'Pretendard Variable', size: 12, weight: '600' },
+                  boxWidth: 12,
+                  boxHeight: 12,
+                  padding: 14,
+                  usePointStyle: true,
+                  pointStyle: 'circle'
+                }
+              },
+              tooltip: {
+                backgroundColor: '#fff',
+                titleColor: '#1e293b',
+                bodyColor: '#475569',
+                borderColor: '#e2e8f0',
+                borderWidth: 1,
+                padding: 10
+              }
+            },
+            scales: {
+              x: {
+                grid: { display: false },
+                border: { color: '#E2E8F0' },
+                ticks: { maxTicksLimit: 8, color: '#94A3B8', font: { family: 'Pretendard Variable', size: 11.5, weight: '500' } }
+              },
+              y: {
+                position: 'left',
+                grid: { color: '#F1F5F9', drawTicks: false },
+                border: { display: false },
+                ticks: { color: '#94A3B8', font: { family: 'Pretendard Variable', size: 11.5, weight: '500' }, padding: 6 },
+                title: { display: true, text: 'TPS', color: '#94A3B8', font: { family: 'Pretendard Variable', size: 11, weight: '600' } }
+              },
+              y1: {
+                position: 'right',
+                grid: { drawOnChartArea: false },
+                border: { display: false },
+                min: 97,
+                max: 100,
+                ticks: { color: '#94A3B8', font: { family: 'Pretendard Variable', size: 11.5, weight: '500' }, padding: 6 },
+                title: { display: true, text: '성공률 %', color: '#94A3B8', font: { family: 'Pretendard Variable', size: 11, weight: '600' } }
+              }
+            }
+          }
+        });
+      }
+
+      let tickCount = 0;
+      function tick() {
+        if (homeSimPaused) return;
+        tickCount += 1;
+        const tps = Math.round(1720 + Math.sin(tickCount / 4.2) * 120 + (Math.random() - 0.5) * 55);
+        const p95 = Math.round(400 + Math.random() * 85);
+        const pipe = Math.min(3000, Math.max(2940, 2987 + Math.round((Math.random() - 0.5) * 6)));
+        const batchOk = +(99.2 + (Math.random() - 0.45) * 0.35).toFixed(2);
+        const longRun = Math.max(0, Math.min(5, 2 + (Math.random() > 0.82 ? 1 : 0) - (Math.random() > 0.9 ? 1 : 0)));
+        const cpu = Math.min(92, Math.max(48, 64 + Math.round((Math.random() - 0.5) * 10)));
+        const mem = Math.min(88, Math.max(58, 71 + Math.round((Math.random() - 0.5) * 8)));
+        const stor = +(1.6 + Math.random() * 0.5).toFixed(1);
+        const recon = Math.max(0, Math.min(12, 4 + Math.round((Math.random() - 0.5) * 3)));
+        const audit = Math.max(980, Math.min(1580, 1240 + Math.round((Math.random() - 0.5) * 80)));
+
+        const setText = (id, v) => {
+          const n = document.getElementById(id);
+          if (n) n.textContent = typeof v === 'number' && Number.isInteger(v) ? v.toLocaleString('ko-KR') : String(v);
+        };
+        setText('homeLiveTps', tps);
+        setText('homePipeRunning', pipe);
+        setText('homeBatchSuccess', batchOk.toFixed(2));
+        setText('homeP95Ms', p95);
+        setText('homeLongRunWarn', longRun);
+        setText('homeCpuPct', cpu);
+        setText('homeMemPct', mem);
+        setText('homeStorDelta', `+${stor}`);
+        setText('homeReconQueue', recon);
+        setText('homeAuditRate', audit);
+
+        const ds = 12480 + Math.round((Math.random() - 0.48) * 6);
+        const dq = 2046 + Math.round((Math.random() - 0.5) * 8);
+        const qOk = +(99.05 + Math.random() * 0.25).toFixed(2);
+        const appr = Math.max(4, Math.min(9, 6 + Math.round((Math.random() - 0.5) * 2)));
+        const cost = Math.round(170 + Math.random() * 4);
+        const budgetPct = +((cost / 250) * 100).toFixed(1);
+        setText('homeKpiDatasets', ds);
+        setText('homeKpiDatasetsDelta', `+${120 + Math.round(Math.random() * 16)}`);
+        setText('homeKpiQueries', dq);
+        setText('homeKpiQuerySuccess', qOk);
+        setText('homeKpiApprovals', appr);
+        setText('homeKpiSlaNote', appr >= 7 ? '주의 2건' : '주의 1건');
+        setText('homeKpiCostM', cost);
+        setText('homeKpiBudgetPct', budgetPct);
+        setText('homeKpiBarDsAvg', Math.max(120, Math.round(ds / 80)));
+        setText('homeKpiBarDsPeak', Math.max(200, Math.round(ds / 50)));
+        const yoyEl = document.getElementById('homeKpiBarDsYoy');
+        if (yoyEl) yoyEl.textContent = `+${(9 + (Math.random() - 0.5) * 0.4).toFixed(1)}%`;
+        setText('homeKpiBarQAvg', Math.max(180, Math.round(dq / 9)));
+        setText('homeKpiBarQPeak', Math.max(340, Math.round(dq / 5)));
+        setText('homeKpiBarQp95', Math.max(620, Math.min(980, p95 + Math.round((Math.random() - 0.5) * 28))));
+        setText('homeKpiAprTotalBar', Math.max(12, appr * 3 + Math.round((Math.random() - 0.5) * 2)));
+        setText('homeKpiAprCritBar', appr >= 7 ? 2 : 1);
+        const headroomPctInt = Math.round(100 - budgetPct);
+        setText('homeKpiBarCostAvg', Math.max(34, Math.round(cost * 0.238)));
+        setText('homeKpiBarCostPeak', Math.max(cost, Math.round(cost * 1.04 + (Math.random() - 0.5) * 2)));
+        setText('homeKpiBarCostHeadroom', Math.max(24, Math.min(42, headroomPctInt)));
+
+        const chart = typeof Chart !== 'undefined' && homeOpsCanvas ? Chart.getChart(homeOpsCanvas) : null;
+        if (chart) {
+          tpsSeries = [...tpsSeries.slice(1), tps];
+          okSeries = [...okSeries.slice(1), Math.min(99.85, Math.max(98.2, qOk))];
+          chart.data.datasets[0].data = tpsSeries;
+          chart.data.datasets[1].data = okSeries;
+          chart.update('none');
+        }
+
+        if (tickCount % 2 === 0) pushFeedLine();
+      }
+
+      for (let i = 0; i < 6; i++) pushFeedLine();
+      renderOpsStatusStrip();
+      tick();
+      homeLifecycleTimer = window.setInterval(tick, 2400);
     }
 
     /* ================================================
@@ -5501,7 +7733,7 @@ th{background:#f5f7f9}
 
     document.addEventListener('DOMContentLoaded', () => {
       if (typeof Chart !== 'undefined') {
-        Chart.defaults.font.family = "'Pretendard Variable', Pretendard, system-ui, sans-serif";
+        Chart.defaults.font.family = "'Pretendard Variable', Pretendard, sans-serif";
       }
       loadRequirementState();
       loadRequirementUiState();

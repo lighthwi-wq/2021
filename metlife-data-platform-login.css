@@ -132,6 +132,35 @@
 .donut-widget.c .donut-mini-bars .bar.b2 { height: 32px; }
 .donut-widget.c .donut-mini-bars .bar.b3 { height: 24px; }
 .donut-widget.c .donut-mini-bars .bar.b4 { height: 38px; }
+.donut-widget.d {
+  width: 198px;
+  height: 198px;
+  left: 412px;
+  top: 568px;
+  transform: translate(calc(var(--mx) * 8px), calc(var(--my) * 6px));
+  opacity: 0.94;
+}
+.donut-widget.d::before {
+  -webkit-mask: radial-gradient(circle, transparent 57%, #000 58%);
+  mask: radial-gradient(circle, transparent 57%, #000 58%);
+  animation-duration: 11.5s;
+  animation-direction: reverse;
+}
+.donut-widget.d .donut-center-live.mini {
+  width: 70%;
+  height: 70%;
+}
+.donut-widget.d .donut-mini-bars {
+  gap: 6px;
+  height: 46px;
+}
+.donut-widget.d .donut-mini-bars .bar {
+  width: 9px;
+}
+.donut-widget.d .donut-mini-bars .bar.b1 { height: 18px; }
+.donut-widget.d .donut-mini-bars .bar.b2 { height: 34px; }
+.donut-widget.d .donut-mini-bars .bar.b3 { height: 28px; }
+.donut-widget.d .donut-mini-bars .bar.b4 { height: 40px; }
 .donut-center-live {
   position: absolute;
   width: 56%;
