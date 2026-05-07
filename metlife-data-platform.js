@@ -1874,8 +1874,9 @@ th{background:#f5f7f9}
                   <svg class="kpi-spark-svg kpi-spark-svg--bars" viewBox="0 0 240 96" preserveAspectRatio="xMidYMid meet">
                     <defs>
                       <linearGradient id="kpiBarBaseDs" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="#BFDBFE"/>
-                        <stop offset="100%" stop-color="#3B82F6"/>
+                        <stop offset="0%" stop-color="#CBE89A"/>
+                        <stop offset="45%" stop-color="#7CC8F0"/>
+                        <stop offset="100%" stop-color="#0090DA"/>
                       </linearGradient>
                     </defs>
                     <circle class="kpi-card-accent" cx="218" cy="14" r="22" fill="rgba(0,144,218,0.07)"/>
@@ -1894,10 +1895,10 @@ th{background:#f5f7f9}
                       <rect class="mix-bar" x="119" y="34.94" width="14" height="45.06" rx="2.5" fill="url(#kpiBarBaseDs)" data-chart-hover="true" data-chart-label="L5 · DM" data-chart-value="176건"/>
                       <rect class="mix-bar" x="145" y="30.85" width="14" height="49.15" rx="2.5" fill="url(#kpiBarBaseDs)" data-chart-hover="true" data-chart-label="L6 · BI" data-chart-value="192건"/>
                       <rect class="mix-bar" x="171" y="26.24" width="14" height="53.76" rx="2.5" fill="url(#kpiBarBaseDs)" data-chart-hover="true" data-chart-label="L7 · App" data-chart-value="210건"/>
-                      <rect class="mix-bar mix-bar--peak" x="197" y="16.51" width="14" height="63.49" rx="2.5" fill="#0090DA" data-chart-hover="true" data-chart-label="L8 · External (Peak)" data-chart-value="248건"/>
+                      <rect class="mix-bar mix-bar--peak" x="197" y="16.51" width="14" height="63.49" rx="2.5" fill="#005A9C" data-chart-hover="true" data-chart-label="L8 · External (Peak)" data-chart-value="248건"/>
                     </g>
                     <g class="kpi-peak-label">
-                      <rect x="190" y="3.5" width="28" height="11" rx="2" fill="#0090DA"/>
+                      <rect x="190" y="3.5" width="28" height="11" rx="2" fill="#005A9C"/>
                       <text x="204" y="11.2" font-size="7" font-weight="700" fill="#fff" text-anchor="middle" font-variant-numeric="tabular-nums" letter-spacing="-0.01em">248</text>
                     </g>
                     <line class="kpi-bar-baseline spark-baseline" x1="2" y1="80" x2="222" y2="80"/>
@@ -1928,8 +1929,9 @@ th{background:#f5f7f9}
                   <svg class="kpi-spark-svg kpi-spark-svg--bars" viewBox="0 0 240 96" preserveAspectRatio="xMidYMid meet">
                     <defs>
                       <linearGradient id="kpiBarBaseQ" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="#BFDBFE"/>
-                        <stop offset="100%" stop-color="#3B82F6"/>
+                        <stop offset="0%" stop-color="#E8F5CC"/>
+                        <stop offset="35%" stop-color="#B3DFF7"/>
+                        <stop offset="100%" stop-color="#006FBC"/>
                       </linearGradient>
                     </defs>
                     <circle class="kpi-card-accent" cx="218" cy="14" r="22" fill="rgba(0,144,218,0.07)"/>
@@ -1946,14 +1948,14 @@ th{background:#f5f7f9}
                       <rect class="mix-bar" x="57" y="51.84" width="12" height="28.16" rx="2.5" fill="url(#kpiBarBaseQ)" data-chart-hover="true" data-chart-label="11:00" data-chart-value="198건"/>
                       <rect class="mix-bar" x="79" y="43.59" width="12" height="36.41" rx="2.5" fill="url(#kpiBarBaseQ)" data-chart-hover="true" data-chart-label="12:00" data-chart-value="256건"/>
                       <rect class="mix-bar" x="100" y="35.64" width="12" height="44.36" rx="2.5" fill="url(#kpiBarBaseQ)" data-chart-hover="true" data-chart-label="13:00" data-chart-value="312건"/>
-                      <rect class="mix-bar mix-bar--peak" x="122" y="21.41" width="12" height="58.59" rx="2.5" fill="#0090DA" data-chart-hover="true" data-chart-label="14:00 (Peak)" data-chart-value="412건"/>
+                      <rect class="mix-bar mix-bar--peak" x="122" y="21.41" width="12" height="58.59" rx="2.5" fill="#005A9C" data-chart-hover="true" data-chart-label="14:00 (Peak)" data-chart-value="412건"/>
                       <rect class="mix-bar" x="143" y="30.51" width="12" height="49.49" rx="2.5" fill="url(#kpiBarBaseQ)" data-chart-hover="true" data-chart-label="15:00" data-chart-value="348건"/>
                       <rect class="mix-bar" x="165" y="39.47" width="12" height="40.53" rx="2.5" fill="url(#kpiBarBaseQ)" data-chart-hover="true" data-chart-label="16:00" data-chart-value="285건"/>
                       <rect class="mix-bar" x="186" y="50.13" width="12" height="29.87" rx="2.5" fill="url(#kpiBarBaseQ)" data-chart-hover="true" data-chart-label="17:00" data-chart-value="210건"/>
                       <rect class="mix-bar" x="208" y="57.82" width="12" height="22.18" rx="2.5" fill="url(#kpiBarBaseQ)" data-chart-hover="true" data-chart-label="18:00" data-chart-value="156건"/>
                     </g>
                     <g class="kpi-peak-label">
-                      <rect x="114" y="8.4" width="28" height="11" rx="2" fill="#0090DA"/>
+                      <rect x="114" y="8.4" width="28" height="11" rx="2" fill="#005A9C"/>
                       <text x="128" y="16.1" font-size="7" font-weight="700" fill="#fff" text-anchor="middle" font-variant-numeric="tabular-nums" letter-spacing="-0.01em">412</text>
                     </g>
                     <line class="kpi-bar-baseline spark-baseline" x1="2" y1="80" x2="222" y2="80"/>
@@ -1982,8 +1984,9 @@ th{background:#f5f7f9}
                   <svg class="kpi-spark-svg kpi-spark-svg--bars" viewBox="0 0 240 96" preserveAspectRatio="xMidYMid meet">
                     <defs>
                       <linearGradient id="kpiBarBaseApr" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="#BFDBFE"/>
-                        <stop offset="100%" stop-color="#3B82F6"/>
+                        <stop offset="0%" stop-color="#F0F8E8"/>
+                        <stop offset="40%" stop-color="#CBE89A"/>
+                        <stop offset="100%" stop-color="#8AB84D"/>
                       </linearGradient>
                     </defs>
                     <circle class="kpi-card-accent" cx="218" cy="14" r="22" fill="rgba(0,144,218,0.07)"/>
@@ -2032,8 +2035,9 @@ th{background:#f5f7f9}
                   <svg class="kpi-spark-svg kpi-spark-svg--bars" viewBox="0 0 240 96" preserveAspectRatio="xMidYMid meet">
                     <defs>
                       <linearGradient id="kpiBarBaseCost" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="0%" stop-color="#BFDBFE"/>
-                        <stop offset="100%" stop-color="#3B82F6"/>
+                        <stop offset="0%" stop-color="#CBE89A"/>
+                        <stop offset="50%" stop-color="#4DB3E8"/>
+                        <stop offset="100%" stop-color="#007EC8"/>
                       </linearGradient>
                     </defs>
                     <circle class="kpi-card-accent" cx="218" cy="14" r="22" fill="rgba(0,144,218,0.07)"/>
@@ -2050,11 +2054,11 @@ th{background:#f5f7f9}
                       <rect class="mix-bar" x="77" y="35.2" width="18" height="44.8" rx="2.5" fill="url(#kpiBarBaseCost)" data-chart-hover="true" data-chart-label="W-4" data-chart-value="₩44M"/>
                       <rect class="mix-bar" x="108" y="41.6" width="18" height="38.4" rx="2.5" fill="url(#kpiBarBaseCost)" data-chart-hover="true" data-chart-label="W-3" data-chart-value="₩42M"/>
                       <rect class="mix-bar" x="139" y="38.4" width="18" height="41.6" rx="2.5" fill="url(#kpiBarBaseCost)" data-chart-hover="true" data-chart-label="W-2" data-chart-value="₩43M"/>
-                      <rect class="mix-bar mix-bar--peak" x="170" y="28.8" width="18" height="51.2" rx="2.5" fill="#0090DA" data-chart-hover="true" data-chart-label="W-1 (Peak)" data-chart-value="₩46M"/>
+                      <rect class="mix-bar mix-bar--peak" x="170" y="28.8" width="18" height="51.2" rx="2.5" fill="#005A9C" data-chart-hover="true" data-chart-label="W-1 (Peak)" data-chart-value="₩46M"/>
                       <rect class="mix-bar" x="200" y="44.8" width="18" height="35.2" rx="2.5" fill="url(#kpiBarBaseCost)" data-chart-hover="true" data-chart-label="현재 주" data-chart-value="₩41M"/>
                     </g>
                     <g class="kpi-peak-label">
-                      <rect x="165" y="15.8" width="28" height="11" rx="2" fill="#0090DA"/>
+                      <rect x="165" y="15.8" width="28" height="11" rx="2" fill="#005A9C"/>
                       <text x="179" y="23.5" font-size="7" font-weight="700" fill="#fff" text-anchor="middle" font-variant-numeric="tabular-nums" letter-spacing="-0.01em">46M</text>
                     </g>
                     <line class="kpi-bar-baseline spark-baseline" x1="2" y1="80" x2="222" y2="80"/>
