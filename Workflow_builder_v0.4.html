@@ -2081,6 +2081,447 @@ input, select, textarea { font-family: inherit; font-size: var(--fs-label); }
   .app { grid-template-columns: 260px 1fr 300px; }
   .console { left: 260px; right: 300px; }
 }
+
+/* ============================================
+   v0_5 — DATA INSPECTOR (real data preview per node)
+   ============================================ */
+.inspector-section {
+  border-top: 1px solid var(--md-outline-variant);
+  background: var(--md-surface-container-low);
+}
+.inspector-head {
+  display: flex; align-items: center; gap: 8px;
+  padding: 12px 20px;
+  cursor: pointer;
+  user-select: none;
+}
+.inspector-head:hover { background: var(--md-surface-container); }
+.inspector-title {
+  font-size: 12px; font-weight: 700;
+  text-transform: uppercase; letter-spacing: 0.06em;
+  color: var(--md-on-surface-variant);
+  flex: 1;
+}
+.inspector-badge {
+  font-size: 10px; font-weight: 700;
+  padding: 2px 7px;
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+  border-radius: var(--r-full);
+  font-variant-numeric: tabular-nums;
+}
+.inspector-body {
+  padding: 0 16px 16px;
+  display: none;
+}
+.inspector-section.open .inspector-body { display: block; }
+.inspector-section.open .inspector-chevron { transform: rotate(180deg); }
+.inspector-chevron {
+  transition: transform .2s var(--motion-stand);
+  color: var(--md-on-surface-variant);
+}
+.insp-tabs {
+  display: flex; gap: 4px;
+  padding: 8px 0 12px;
+  border-bottom: 1px solid var(--md-outline-variant);
+  margin-bottom: 12px;
+}
+.insp-tab {
+  flex: 1; padding: 6px 10px;
+  font-size: 12px; font-weight: 600;
+  color: var(--md-on-surface-variant);
+  border-radius: var(--r-full);
+  cursor: pointer;
+  transition: all .15s;
+  text-align: center;
+  background: transparent;
+  border: 0;
+}
+.insp-tab:hover { background: var(--md-surface-container); color: var(--md-on-surface); }
+.insp-tab.active {
+  background: var(--md-primary);
+  color: var(--md-on-primary);
+}
+.insp-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 6px;
+  margin-bottom: 10px;
+}
+.insp-stat {
+  background: var(--md-surface);
+  border: 1px solid var(--md-outline-variant);
+  border-radius: var(--r-sm);
+  padding: 8px 10px;
+}
+.insp-stat-label { font-size: 10px; color: var(--md-on-surface-variant); text-transform: uppercase; letter-spacing: .04em; font-weight: 700; }
+.insp-stat-value { font-size: 15px; font-weight: 700; margin-top: 2px; font-variant-numeric: tabular-nums; letter-spacing: -0.02em; }
+.insp-stat-value.ok { color: var(--md-success); }
+.insp-stat-value.warn { color: var(--md-warn); }
+.insp-stat-value.err { color: var(--md-error); }
+
+/* Smart column suggestions */
+.col-suggestions {
+  display: flex; flex-wrap: wrap; gap: 4px;
+  margin-top: 6px;
+  max-height: 80px;
+  overflow-y: auto;
+}
+.col-suggest {
+  display: inline-flex; align-items: center;
+  padding: 3px 9px;
+  background: var(--md-surface-container);
+  border: 1px solid var(--md-outline-variant);
+  border-radius: var(--r-full);
+  font-size: 11px;
+  color: var(--md-on-surface);
+  cursor: pointer;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  transition: all .12s;
+  user-select: none;
+}
+.col-suggest:hover {
+  background: var(--md-primary-container);
+  color: var(--md-on-primary-container);
+  border-color: var(--md-primary);
+  transform: translateY(-1px);
+}
+.col-suggest.pii { color: var(--md-error); border-color: rgba(220,38,38,0.3); }
+.col-suggest.pii:hover { background: var(--md-error-container); }
+.col-suggest.quasi { color: var(--md-warn); border-color: rgba(234,88,12,0.3); }
+.col-suggest.quasi:hover { background: #fef3c7; color: var(--md-warn); }
+.col-suggest.sensitive { color: var(--md-tertiary); border-color: rgba(139,92,246,0.3); }
+.col-suggest.sensitive:hover { background: var(--cat-flow-bg); }
+.col-suggest-label {
+  font-size: 11px; color: var(--md-on-surface-variant);
+  margin-right: 4px; font-weight: 600;
+  font-family: inherit;
+}
+
+/* Step execution controls */
+.step-controls {
+  position: absolute;
+  top: 16px; left: 50%;
+  transform: translateX(-50%);
+  background: var(--md-surface);
+  border: 1px solid var(--md-outline-variant);
+  border-radius: var(--r-md);
+  padding: 8px;
+  box-shadow: var(--el-3);
+  z-index: 9;
+  display: none;
+  align-items: center;
+  gap: 6px;
+}
+.step-controls.show { display: flex; }
+.step-progress {
+  font-size: 12px;
+  font-weight: 700;
+  padding: 0 12px;
+  font-variant-numeric: tabular-nums;
+  color: var(--md-tertiary);
+}
+.step-btn {
+  width: 32px; height: 32px;
+  border-radius: var(--r-sm);
+  background: var(--md-surface-container);
+  color: var(--md-on-surface);
+  display: grid; place-items: center;
+  cursor: pointer;
+  border: 0;
+  transition: all .12s;
+}
+.step-btn:hover:not(:disabled) { background: var(--md-tertiary); color: white; }
+.step-btn:disabled { opacity: .35; cursor: not-allowed; }
+.step-btn.primary { background: var(--md-tertiary); color: white; padding: 0 14px; width: auto; gap: 6px; font-size: 13px; font-weight: 700; }
+.step-btn.primary:hover:not(:disabled) { background: #6d28d9; }
+
+/* Connection invalid feedback */
+.handle.invalid-target {
+  background: var(--md-error) !important;
+  border-color: var(--md-error) !important;
+  animation: handleShake 0.32s var(--motion-stand);
+}
+@keyframes handleShake {
+  0%, 100% { transform: translateY(-50%) scale(1); }
+  25% { transform: translateY(-50%) translateX(-3px); }
+  75% { transform: translateY(-50%) translateX(3px); }
+}
+.canvas-svg .edge-preview.invalid { stroke: var(--md-error); }
+
+/* Data preview improvements */
+.data-preview-wrap {
+  margin-top: 4px;
+  border: 1px solid var(--md-outline-variant);
+  border-radius: var(--r-sm);
+  overflow: hidden;
+  background: var(--md-surface);
+}
+.data-preview-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--md-surface-container);
+  border-bottom: 1px solid var(--md-outline-variant);
+  font-size: 11px;
+}
+.data-preview-toolbar .badge {
+  background: var(--md-surface);
+  padding: 1px 7px;
+  border-radius: var(--r-full);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  border: 1px solid var(--md-outline-variant);
+}
+.data-preview-toolbar .badge.changed { background: var(--md-warn); color: white; border-color: var(--md-warn); }
+.data-preview-toolbar select, .data-preview-toolbar input {
+  font-size: 11px;
+  padding: 3px 6px;
+  border: 1px solid var(--md-outline-variant);
+  border-radius: 4px;
+  background: var(--md-surface);
+}
+.data-preview-toolbar .spacer { flex: 1; }
+.data-preview-toolbar button {
+  font-size: 11px; padding: 3px 9px;
+  border: 0; border-radius: 4px;
+  background: var(--md-surface);
+  border: 1px solid var(--md-outline-variant);
+  cursor: pointer;
+  font-weight: 600;
+  color: var(--md-on-surface);
+}
+.data-preview-toolbar button:hover { background: var(--md-primary); color: white; border-color: var(--md-primary); }
+.data-preview td.diff-changed {
+  background: linear-gradient(to right, transparent 0%, rgba(234,88,12,0.08) 100%);
+  position: relative;
+}
+.data-preview td.diff-changed::before {
+  content: '';
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  width: 3px;
+  background: var(--md-warn);
+}
+
+/* CSV file upload zone */
+.csv-drop-zone {
+  margin-top: 8px;
+  padding: 14px 12px;
+  border: 2px dashed var(--md-outline);
+  border-radius: var(--r-sm);
+  background: var(--md-surface-container-low);
+  text-align: center;
+  cursor: pointer;
+  transition: all .15s var(--motion-stand);
+  font-size: 12px;
+}
+.csv-drop-zone:hover {
+  border-color: var(--md-primary);
+  background: rgba(45,78,255,.04);
+  color: var(--md-primary);
+}
+.csv-drop-zone.has-file {
+  border-style: solid;
+  border-color: var(--md-success);
+  background: #d1fae566;
+}
+.csv-drop-zone.drag-over {
+  border-color: var(--md-primary);
+  background: rgba(45,78,255,.08);
+  transform: scale(1.01);
+}
+
+/* Auto-layout button on canvas */
+.canvas-fab {
+  position: absolute;
+  right: 80px;
+  top: 16px;
+  display: flex;
+  gap: 8px;
+  z-index: 5;
+}
+.canvas-fab .ctrl-btn {
+  width: 36px; height: 36px;
+  background: var(--md-surface);
+  border: 1px solid var(--md-outline-variant);
+  border-radius: 50%;
+  box-shadow: var(--el-2);
+  display: grid; place-items: center;
+  color: var(--md-on-surface-variant);
+  cursor: pointer;
+  transition: all .15s;
+}
+.canvas-fab .ctrl-btn:hover { color: var(--md-primary); box-shadow: var(--el-3); transform: translateY(-1px); }
+
+/* Edge type indicators (dashed/colored by handle type) */
+.canvas-svg .edge[data-handle-type="report"] { stroke-dasharray: 5 3; stroke: var(--md-tertiary); }
+.canvas-svg .edge[data-handle-type="true"]   { stroke: var(--md-success); }
+.canvas-svg .edge[data-handle-type="false"]  { stroke: var(--md-error); }
+
+/* Node skipped state (when branch path isn't taken) */
+.node.exec-skipped {
+  opacity: 0.45;
+  border-color: var(--md-outline) !important;
+  border-style: dashed !important;
+}
+.node.exec-skipped .node-status { opacity: 1; background: var(--md-on-surface-variant); }
+
+/* Inspector data table inside right panel */
+.inspector-table-wrap {
+  max-height: 320px;
+  overflow: auto;
+  border: 1px solid var(--md-outline-variant);
+  border-radius: var(--r-sm);
+  background: var(--md-surface);
+}
+.inspector-table {
+  width: 100%;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  border-collapse: collapse;
+}
+.inspector-table th {
+  position: sticky; top: 0; z-index: 1;
+  background: var(--md-surface-container);
+  padding: 6px 8px;
+  font-weight: 700;
+  text-align: left;
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--md-on-surface-variant);
+  border-bottom: 1px solid var(--md-outline-variant);
+  white-space: nowrap;
+}
+.inspector-table th.pii { color: var(--md-error); }
+.inspector-table th.quasi { color: var(--md-warn); }
+.inspector-table th.sensitive { color: var(--md-tertiary); }
+.inspector-table td {
+  padding: 4px 8px;
+  border-bottom: 1px solid var(--md-outline-variant);
+  white-space: nowrap;
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.inspector-table tr:nth-child(even) td { background: var(--md-surface-container-lowest); }
+.inspector-table .masked { color: var(--md-success); font-weight: 600; }
+.inspector-table .hashed { color: var(--md-primary); font-style: italic; }
+.inspector-table .removed { color: var(--md-error); text-decoration: line-through; opacity: .6; }
+.inspector-table .empty-row td { text-align: center; color: var(--md-on-surface-variant); padding: 24px; font-family: inherit; }
+.inspector-pagination {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  border-top: 1px solid var(--md-outline-variant);
+  background: var(--md-surface-container-lowest);
+  font-size: 11px;
+  color: var(--md-on-surface-variant);
+}
+.inspector-pagination button {
+  border: 1px solid var(--md-outline-variant);
+  background: var(--md-surface);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  cursor: pointer;
+  color: var(--md-on-surface);
+  font-weight: 600;
+}
+.inspector-pagination button:hover:not(:disabled) { background: var(--md-primary); color: white; border-color: var(--md-primary); }
+.inspector-pagination button:disabled { opacity: .4; cursor: not-allowed; }
+
+/* Schema view (column list with PII tags) */
+.schema-list {
+  display: flex; flex-direction: column;
+  gap: 4px;
+}
+.schema-row {
+  display: flex; align-items: center; gap: 8px;
+  padding: 6px 10px;
+  background: var(--md-surface);
+  border: 1px solid var(--md-outline-variant);
+  border-radius: var(--r-sm);
+  font-size: 12px;
+}
+.schema-row .col-name {
+  flex: 1;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-weight: 600;
+  font-size: 12px;
+}
+.schema-row .col-type {
+  font-size: 10px;
+  text-transform: uppercase;
+  color: var(--md-on-surface-variant);
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+.schema-row .pii-tag {
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: var(--r-full);
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.schema-row .pii-tag.id { background: var(--md-error-container); color: var(--md-error); }
+.schema-row .pii-tag.qi { background: #fef3c7; color: var(--md-warn); }
+.schema-row .pii-tag.sn { background: var(--cat-flow-bg); color: var(--md-tertiary); }
+
+/* Run mode toggle (Normal / Step) */
+.run-mode-toggle {
+  display: inline-flex;
+  align-items: center;
+  background: var(--md-surface-container);
+  border-radius: var(--r-full);
+  padding: 2px;
+  margin-right: 4px;
+  border: 1px solid var(--md-outline-variant);
+}
+.run-mode-toggle button {
+  padding: 5px 11px;
+  border: 0;
+  background: transparent;
+  font-size: 11.5px;
+  font-weight: 600;
+  color: var(--md-on-surface-variant);
+  border-radius: var(--r-full);
+  cursor: pointer;
+  font-family: inherit;
+  white-space: nowrap;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+.run-mode-toggle button.active {
+  background: var(--md-surface);
+  color: var(--md-tertiary);
+  box-shadow: var(--el-1);
+}
+.run-mode-toggle button:hover:not(.active) { color: var(--md-on-surface); }
+
+/* Inspector node header */
+.inspector-node-pill {
+  display: flex; align-items: center; gap: 8px;
+  padding: 8px 10px;
+  border-radius: var(--r-sm);
+  background: var(--md-surface);
+  border: 1px solid var(--md-outline-variant);
+  margin-bottom: 10px;
+}
+.inspector-node-pill .mc-icon { width: 28px; height: 28px; font-size: 11px; }
+.inspector-node-pill-info { flex: 1; min-width: 0; }
+.inspector-node-pill-info > div:first-child { font-weight: 700; font-size: 13px; }
+.inspector-node-pill-info > div:last-child { font-size: 11px; color: var(--md-on-surface-variant); }
+.inspector-empty {
+  text-align: center;
+  padding: 20px 12px;
+  color: var(--md-on-surface-variant);
+  font-size: 12px;
+}
 </style>
 <script src="https://unpkg.com/htmx.org@1.9.12"></script>
 </head>
@@ -2237,6 +2678,10 @@ input, select, textarea { font-family: inherit; font-size: var(--fs-label); }
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/></svg>
         초기화
       </button>
+      <div class="run-mode-toggle" id="run-mode-toggle" title="실행 모드 선택">
+        <button data-mode="normal" class="active" type="button">자동</button>
+        <button data-mode="step" type="button">단계</button>
+      </div>
       <button class="btn btn-filled" id="btn-run">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
         실행
@@ -2311,6 +2756,34 @@ input, select, textarea { font-family: inherit; font-size: var(--fs-label); }
 
     <!-- Help FAB (Top right) -->
     <button class="help-fab" id="help-fab" title="단축키 도움말 (?)">?</button>
+
+    <!-- v0_5: Auto-layout & quick actions FAB -->
+    <div class="canvas-fab">
+      <button class="ctrl-btn" id="btn-auto-layout" title="자동 정렬 (위상 정렬 기반)">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/><circle cx="6" cy="6" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="18" cy="18" r="2" fill="currentColor"/></svg>
+      </button>
+      <button class="ctrl-btn" id="btn-snapshot" title="현재 상태를 PNG로 저장">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg>
+      </button>
+    </div>
+
+    <!-- v0_5: Step execution controls -->
+    <div class="step-controls" id="step-controls">
+      <button class="step-btn" id="step-stop" title="중지">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12" rx="2"/></svg>
+      </button>
+      <button class="step-btn" id="step-prev" title="이전 노드 (지원 안 됨)" disabled>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="19 20 9 12 19 4 19 20"/><rect x="5" y="4" width="2" height="16"/></svg>
+      </button>
+      <span class="step-progress" id="step-progress">0 / 0</span>
+      <button class="step-btn primary" id="step-next" title="다음 단계 실행">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 4 15 12 5 20 5 4"/><rect x="17" y="4" width="2" height="16"/></svg>
+        다음
+      </button>
+      <button class="step-btn" id="step-runall" title="모두 자동 실행">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="6 4 20 12 6 20 6 4"/></svg>
+      </button>
+    </div>
 
     <!-- Multi-select toolbar -->
     <div class="multi-toolbar" id="multi-toolbar">
@@ -2410,6 +2883,16 @@ input, select, textarea { font-family: inherit; font-size: var(--fs-label); }
         <p>노드를 선택하면 여기에 세부 설정이 나타납니다.</p>
       </div>
       <div id="rp-content" style="display:none"></div>
+      <!-- v0_5: Data Inspector (real input/output preview) -->
+      <div class="inspector-section" id="inspector-section" style="display:none">
+        <div class="inspector-head" id="inspector-head">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--md-on-surface-variant)"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="9" y1="3" x2="9" y2="21"/><line x1="3" y1="9" x2="21" y2="9"/></svg>
+          <span class="inspector-title">데이터 인스펙터</span>
+          <span class="inspector-badge" id="inspector-badge">대기</span>
+          <svg class="inspector-chevron" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+        </div>
+        <div class="inspector-body" id="inspector-body"></div>
+      </div>
     </div>
     <div class="rp-pane-workflow" id="rp-pane-workflow" aria-hidden="true">
       <div id="rp-workflow-inner" class="wf-panel-inner"></div>
@@ -2487,6 +2970,8 @@ input, select, textarea { font-family: inherit; font-size: var(--fs-label); }
           <div class="kbd-row"><div class="kbd-desc">전체 선택</div><div class="kbd-keys"><span class="kbd-key">Ctrl</span><span class="kbd-key">A</span></div></div>
           <div class="kbd-row"><div class="kbd-desc">저장</div><div class="kbd-keys"><span class="kbd-key">Ctrl</span><span class="kbd-key">S</span></div></div>
           <div class="kbd-row"><div class="kbd-desc">단축키 보기</div><div class="kbd-keys"><span class="kbd-key">?</span></div></div>
+          <div class="kbd-row"><div class="kbd-desc">자동 레이아웃</div><div class="kbd-keys"><span class="kbd-key">Ctrl</span><span class="kbd-key">L</span></div></div>
+          <div class="kbd-row"><div class="kbd-desc">스냅샷 SVG 저장</div><div class="kbd-keys"><span class="kbd-key">Ctrl</span><span class="kbd-key">Shift</span><span class="kbd-key">S</span></div></div>
         </div>
       </div>
       <div class="kbd-section">
@@ -3134,6 +3619,11 @@ const state = {
   dirty: false,        // unsaved changes flag
   selecting: null,     // { startX, startY, el } box-select
   activeHandle: null,  // handle being hovered for snap
+  // v0_5 additions
+  runMode: 'normal',           // 'normal' | 'step'
+  skippedNodes: new Set(),     // nodes skipped due to branch decision
+  stepController: null,        // { order, index, paused, waiter, aborted }
+  nodeDatasets: {},            // nodeId → cached output dataset
 };
 
 /* ---------------- Auth (v0_2) ---------------- */
@@ -3226,8 +3716,18 @@ function transformDataset(dataset, node) {
   const c = node.config;
   const m = MODULES[node.type];
 
-  // Input nodes: generate a fresh dataset regardless of input
+  // v0_5: Input nodes — use real uploaded CSV if available, else generate sample
   if (node.type === 'csv_upload' || node.type === 'db_connect' || node.type === 'api_call') {
+    if (node.type === 'csv_upload' && _uploadedCsvCache.has(node.id)) {
+      const ds = _uploadedCsvCache.get(node.id);
+      // Return a deep copy so downstream transforms don't mutate the cached source
+      return {
+        columns: [...ds.columns],
+        rows: ds.rows.map(r => ({ ...r })),
+        total: ds.total,
+        pii_columns: JSON.parse(JSON.stringify(ds.pii_columns || {})),
+      };
+    }
     return generateSampleDataset(12);
   }
 
@@ -3311,7 +3811,7 @@ function transformDataset(dataset, node) {
       const col = c.column;
       out.rows = out.rows.map(r => {
         if (r[col] != null) {
-          r[col] = hashString(String(r[col]), c.algo || 'SHA-256');
+          r[col] = hashString(String(r[col]), c.algo || 'SHA-256', c.salt || '');
         }
         return r;
       });
@@ -3414,19 +3914,682 @@ function transformDataset(dataset, node) {
   }
 }
 
-/* Deterministic pseudo-hash for simulation (not real crypto) */
-function hashString(s, algo) {
-  let hash = 0;
-  for (let i = 0; i < s.length; i++) {
-    hash = ((hash << 5) - hash) + s.charCodeAt(i);
-    hash |= 0;
+/* ============================================================
+   v0_5 — REAL CSV UPLOAD & PARSER
+   ============================================================ */
+// Cache uploaded CSV data per node id so it persists across re-renders & runs
+const _uploadedCsvCache = new Map(); // nodeId → { columns, rows, total, fileName, fileSize }
+
+function parseCSV(text, opts = {}) {
+  const delimiter = opts.delimiter || ',';
+  const hasHeader = opts.has_header !== false;
+  // Robust CSV split handling quoted fields with embedded commas / newlines
+  const rows = [];
+  let cur = [];
+  let field = '';
+  let i = 0;
+  let inQuotes = false;
+  while (i < text.length) {
+    const ch = text[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (text[i + 1] === '"') { field += '"'; i += 2; continue; }
+        inQuotes = false; i++; continue;
+      }
+      field += ch; i++; continue;
+    }
+    if (ch === '"') { inQuotes = true; i++; continue; }
+    if (ch === delimiter) { cur.push(field); field = ''; i++; continue; }
+    if (ch === '\r') { i++; continue; }
+    if (ch === '\n') { cur.push(field); rows.push(cur); cur = []; field = ''; i++; continue; }
+    field += ch; i++;
   }
-  const hex = (hash >>> 0).toString(16).padStart(8, '0');
-  const len = algo === 'SHA-512' ? 16 : algo === 'HMAC-SHA-256' ? 14 : 12;
-  // generate deterministic longer hex
-  let out = hex;
-  while (out.length < len) out += hex;
-  return `${algo.toLowerCase().replace(/[^a-z0-9]/g,'')}:${out.substring(0, len)}...`;
+  if (field !== '' || cur.length) { cur.push(field); rows.push(cur); }
+
+  if (!rows.length) return { columns: [], rows: [], total: 0 };
+
+  let columns;
+  let dataRows;
+  if (hasHeader) {
+    columns = rows[0].map(c => String(c).trim() || '_unnamed_');
+    dataRows = rows.slice(1);
+  } else {
+    columns = rows[0].map((_, i) => `col_${i + 1}`);
+    dataRows = rows;
+  }
+  const objRows = dataRows
+    .filter(r => r.length > 1 || (r.length === 1 && r[0] !== ''))
+    .map(r => {
+      const o = {};
+      columns.forEach((c, i) => o[c] = r[i] !== undefined ? r[i] : '');
+      return o;
+    });
+
+  // Auto-detect PII columns by name patterns
+  const pii = autoClassifyColumns(columns);
+
+  return {
+    columns,
+    rows: objRows,
+    total: objRows.length,
+    pii_columns: pii,
+  };
+}
+
+function autoClassifyColumns(columns) {
+  const id = [], qi = [], sn = [];
+  const idPatterns    = /^(주민번호|ssn|email|이메일|phone|휴대폰|연락처|card_no|카드번호|account|name|이름|성명|password|비밀번호|id$)/i;
+  const qiPatterns    = /^(birth|생년월일|age|나이|연령|sex|gender|성별|address|주소|zip|우편|우편번호|post|region|지역|hometown|고향|nationality|국적|occupation|직업|company|회사)/i;
+  const snPatterns    = /^(disease|질병|진단|diagnosis|medical|의료|salary|연봉|급여|income|소득|revenue|political|종교|religion|신념|sexual|범죄|criminal|건강|health)/i;
+  for (const c of columns) {
+    const cl = String(c).toLowerCase();
+    if (idPatterns.test(cl) || idPatterns.test(c)) id.push(c);
+    else if (snPatterns.test(cl) || snPatterns.test(c)) sn.push(c);
+    else if (qiPatterns.test(cl) || qiPatterns.test(c)) qi.push(c);
+  }
+  return { identifier: id, quasi: qi, sensitive: sn };
+}
+
+/* ============================================================
+   v0_5 — SMART COLUMN AWARENESS
+   Walks the connection graph upstream from a given node to find
+   the actual columns that will arrive at its input.
+   ============================================================ */
+function getUpstreamSchema(nodeId, visited = new Set()) {
+  if (visited.has(nodeId)) return null;
+  visited.add(nodeId);
+
+  const node = state.nodes.find(n => n.id === nodeId);
+  if (!node) return null;
+
+  // If we have cached run output for this node, that's the freshest data
+  if (state.nodeDatasets && state.nodeDatasets[node.id]) {
+    const ds = state.nodeDatasets[node.id];
+    return { columns: ds.columns, pii_columns: ds.pii_columns || {} };
+  }
+  // If a CSV was uploaded for this node, use its inferred columns
+  if (_uploadedCsvCache.has(node.id)) {
+    const ds = _uploadedCsvCache.get(node.id);
+    return { columns: ds.columns, pii_columns: ds.pii_columns || {} };
+  }
+
+  const m = MODULES[node.type];
+
+  // Input nodes synthesise schema from sample dataset
+  if (node.type === 'csv_upload' || node.type === 'db_connect' || node.type === 'api_call') {
+    return {
+      columns: ['id','name','ssn','email','phone','birth_date','age','sex','address','income','disease'],
+      pii_columns: {
+        identifier: ['name','ssn','email','phone'],
+        quasi: ['birth_date','age','sex','address'],
+        sensitive: ['disease','income'],
+      },
+    };
+  }
+
+  // Walk upstream
+  const incoming = state.connections.filter(c => c.target === nodeId);
+  if (!incoming.length) return null;
+
+  // Combine schemas from all upstream connections
+  let combined = null;
+  for (const c of incoming) {
+    const up = getUpstreamSchema(c.source, visited);
+    if (!up) continue;
+    if (!combined) combined = { columns: [...up.columns], pii_columns: { ...(up.pii_columns || {}) } };
+    else {
+      // Union columns from multiple upstreams
+      up.columns.forEach(col => { if (!combined.columns.includes(col)) combined.columns.push(col); });
+    }
+  }
+  if (!combined) return null;
+
+  // Apply this node's transformations to the schema preview
+  return applySchemaTransform(combined, node);
+}
+
+function applySchemaTransform(schema, node) {
+  const c = node.config;
+  const out = { columns: [...schema.columns], pii_columns: { ...(schema.pii_columns || {}) } };
+
+  switch (node.type) {
+    case 'column_classify':
+      out.pii_columns = {
+        identifier: [...(c.identifiers || [])],
+        quasi:      [...(c.quasi || [])],
+        sensitive:  [...(c.sensitive || [])],
+      };
+      return out;
+    case 'column_select': {
+      const cols = c.columns || [];
+      if (cols.includes('*')) return out;
+      if (c.mode === 'include') out.columns = out.columns.filter(col => cols.includes(col));
+      else                      out.columns = out.columns.filter(col => !cols.includes(col));
+      return out;
+    }
+    case 'suppression':
+      if (c.scope === 'column') {
+        out.columns = out.columns.filter(x => x !== c.column);
+      }
+      return out;
+    default:
+      return out;
+  }
+}
+
+/* ============================================================
+   v0_5 — CONNECTION TYPE VALIDATION
+   ============================================================ */
+const HANDLE_COMPATIBILITY = {
+  // source handle name → list of accepted target handle names
+  'data':     ['data', 'in'],
+  'report':   ['data', 'report', 'in'],
+  'true':     ['data', 'in'],
+  'false':    ['data', 'in'],
+  'approved': ['data', 'in'],
+  'rejected': ['data', 'in'],
+  'each':     ['data', 'in'],
+  'done':     ['data', 'in'],
+  'a':        ['data', 'in'],
+  'b':        ['data', 'in'],
+  'c':        ['data', 'in'],
+  'in':       ['data', 'in'],
+  'out':      ['data', 'in'],
+};
+function isHandleCompatible(sourceHandle, targetHandle) {
+  const accepted = HANDLE_COMPATIBILITY[sourceHandle];
+  if (!accepted) return true; // unknown handles → permissive
+  return accepted.includes(targetHandle);
+}
+
+/* ============================================================
+   v0_5 — DATA INSPECTOR (real I/O preview per node)
+   ============================================================ */
+const inspectorState = {
+  open: false,
+  view: 'output', // 'input' | 'output' | 'schema' | 'config'
+  pageSize: 8,
+  page: 0,
+  changedCols: new Set(),
+};
+
+function piiClassFor(col, pii) {
+  if (!pii) return '';
+  if ((pii.identifier || []).includes(col)) return 'pii';
+  if ((pii.quasi || []).includes(col)) return 'quasi';
+  if ((pii.sensitive || []).includes(col)) return 'sensitive';
+  return '';
+}
+
+function diffColumns(before, after) {
+  const changed = new Set();
+  if (!before || !after) return changed;
+  const bRows = before.rows || [];
+  const aRows = after.rows || [];
+  const cols = (after.columns || []);
+  const limit = Math.min(bRows.length, aRows.length, 30);
+  for (let i = 0; i < limit; i++) {
+    cols.forEach(col => {
+      if (bRows[i] && aRows[i] && String(bRows[i][col] ?? '') !== String(aRows[i][col] ?? '')) {
+        changed.add(col);
+      }
+    });
+  }
+  return changed;
+}
+
+function renderInspector(nodeId) {
+  const sec = $('inspector-section');
+  const body = $('inspector-body');
+  if (!sec || !body) return;
+  if (!nodeId) { sec.style.display = 'none'; return; }
+  sec.style.display = '';
+
+  const node = state.nodes.find(n => n.id === nodeId);
+  if (!node) { sec.style.display = 'none'; return; }
+  const m = MODULES[node.type];
+  const cat = CATEGORIES[m.category];
+
+  const inputDs = getInspectorInputDataset(nodeId);
+  const outputDs = state.nodeDatasets ? state.nodeDatasets[nodeId] : null;
+  const previewDs = (!outputDs && !inputDs) ? null : (outputDs || inputDs);
+
+  const hasRun = !!outputDs;
+  const badge = $('inspector-badge');
+  if (badge) {
+    if (hasRun) {
+      badge.textContent = `${(outputDs.rows || []).length}행`;
+      badge.style.background = 'var(--md-success)';
+      badge.style.color = '#fff';
+    } else if (inputDs) {
+      badge.textContent = '미리보기';
+      badge.style.background = 'var(--md-primary-container)';
+      badge.style.color = 'var(--md-on-primary-container)';
+    } else {
+      badge.textContent = '대기';
+      badge.style.background = 'var(--md-surface-container)';
+      badge.style.color = 'var(--md-on-surface-variant)';
+    }
+  }
+
+  const view = inspectorState.view;
+  const ds = view === 'input' ? inputDs : (view === 'output' ? outputDs : previewDs);
+  inspectorState.changedCols = diffColumns(inputDs, outputDs);
+
+  let inner = `
+    <div class="inspector-node-pill">
+      <div class="mc-icon" style="background:${cat.bg};color:${cat.color}">${m.icon}</div>
+      <div class="inspector-node-pill-info">
+        <div>${m.label}</div>
+        <div>${node.id.substring(0,16)}</div>
+      </div>
+    </div>
+    <div class="insp-tabs" role="tablist">
+      <button class="insp-tab ${view==='input'?'active':''}" data-iv="input" type="button">입력</button>
+      <button class="insp-tab ${view==='output'?'active':''}" data-iv="output" type="button">출력</button>
+      <button class="insp-tab ${view==='schema'?'active':''}" data-iv="schema" type="button">스키마</button>
+      <button class="insp-tab ${view==='stats'?'active':''}" data-iv="stats" type="button">통계</button>
+    </div>
+  `;
+
+  if (view === 'stats') {
+    const metrics = state.nodeMetrics[nodeId];
+    const inRows = inputDs ? (inputDs.rows || []).length : 0;
+    const outRows = outputDs ? (outputDs.rows || []).length : 0;
+    const inCols = inputDs ? (inputDs.columns || []).length : 0;
+    const outCols = outputDs ? (outputDs.columns || []).length : 0;
+    const dur = metrics ? metrics.duration : null;
+    const lvl = metrics ? metrics.level : null;
+    inner += `
+      <div class="insp-stats">
+        <div class="insp-stat"><div class="insp-stat-label">입력 행</div><div class="insp-stat-value">${inRows.toLocaleString()}</div></div>
+        <div class="insp-stat"><div class="insp-stat-label">출력 행</div><div class="insp-stat-value">${outRows.toLocaleString()}</div></div>
+        <div class="insp-stat"><div class="insp-stat-label">입력 컬럼</div><div class="insp-stat-value">${inCols}</div></div>
+        <div class="insp-stat"><div class="insp-stat-label">출력 컬럼</div><div class="insp-stat-value">${outCols}</div></div>
+        <div class="insp-stat"><div class="insp-stat-label">처리 시간</div><div class="insp-stat-value">${dur != null ? dur + 'ms' : '-'}</div></div>
+        <div class="insp-stat"><div class="insp-stat-label">상태</div><div class="insp-stat-value ${lvl||''}">${
+          lvl === 'ok' ? '✓ 성공' : lvl === 'warn' ? '⚠ 경고' : lvl === 'err' ? '✕ 실패' : '대기'
+        }</div></div>
+        <div class="insp-stat"><div class="insp-stat-label">변경 컬럼</div><div class="insp-stat-value warn">${inspectorState.changedCols.size}</div></div>
+        <div class="insp-stat"><div class="insp-stat-label">감소율</div><div class="insp-stat-value">${
+          inRows > 0 ? Math.round((1 - outRows/inRows) * 100) + '%' : '-'
+        }</div></div>
+      </div>
+      <div style="font-size:11px;color:var(--md-on-surface-variant);line-height:1.5">
+        ${
+          metrics
+            ? `이 노드는 ${inRows}행을 받아 ${outRows}행을 반환했습니다. ` +
+              (inspectorState.changedCols.size ? `변경된 컬럼: <strong style="color:var(--md-warn)">${[...inspectorState.changedCols].join(', ')}</strong>` : '컬럼 값 변경 없음.')
+            : '실행 후 통계가 표시됩니다. <strong>실행</strong> 버튼을 눌러보세요.'
+        }
+      </div>
+    `;
+    body.innerHTML = inner;
+    bindInspectorTabs();
+    return;
+  }
+
+  if (view === 'schema') {
+    const schemaDs = previewDs || getUpstreamSchema(nodeId);
+    if (!schemaDs) {
+      inner += `<div class="inspector-empty">스키마를 추론할 수 없습니다. 입력 노드를 연결하세요.</div>`;
+    } else {
+      inner += `<div class="schema-list">`;
+      (schemaDs.columns || []).forEach(col => {
+        const cls = piiClassFor(col, schemaDs.pii_columns);
+        const tag = cls === 'pii' ? '<span class="pii-tag id">식별자</span>'
+                  : cls === 'quasi' ? '<span class="pii-tag qi">속성자</span>'
+                  : cls === 'sensitive' ? '<span class="pii-tag sn">민감</span>' : '';
+        const sample = schemaDs.rows && schemaDs.rows[0] ? String(schemaDs.rows[0][col] ?? '') : '';
+        const type = sample === '' ? 'unknown'
+                   : !isNaN(parseFloat(sample)) && /^-?\d/.test(sample) ? 'number'
+                   : /^\d{4}-\d{2}-\d{2}/.test(sample) ? 'date' : 'string';
+        inner += `
+          <div class="schema-row">
+            <span class="col-name">${esc(col)}</span>
+            <span class="col-type">${type}</span>
+            ${tag}
+          </div>`;
+      });
+      inner += `</div>`;
+    }
+    body.innerHTML = inner;
+    bindInspectorTabs();
+    return;
+  }
+
+  // input/output table view
+  if (!ds || !ds.rows || !ds.rows.length) {
+    inner += `<div class="inspector-empty">${
+      view === 'output' ? (hasRun ? '출력 데이터가 비어있습니다.' : '실행 후 출력이 표시됩니다.')
+                        : '입력 데이터가 없습니다.'
+    }</div>`;
+    body.innerHTML = inner;
+    bindInspectorTabs();
+    return;
+  }
+
+  const total = ds.rows.length;
+  const pageSize = inspectorState.pageSize;
+  const totalPages = Math.max(1, Math.ceil(total / pageSize));
+  if (inspectorState.page >= totalPages) inspectorState.page = totalPages - 1;
+  const start = inspectorState.page * pageSize;
+  const pageRows = ds.rows.slice(start, start + pageSize);
+  const cols = ds.columns || (pageRows[0] ? Object.keys(pageRows[0]) : []);
+
+  inner += `
+    <div class="data-preview-toolbar">
+      <span class="badge">${total.toLocaleString()}행</span>
+      <span class="badge">${cols.length}컬럼</span>
+      ${view === 'output' && inspectorState.changedCols.size ? `<span class="badge changed">${inspectorState.changedCols.size} 변경</span>` : ''}
+      <span class="spacer"></span>
+      <button type="button" id="insp-export-csv" title="CSV로 내보내기">CSV</button>
+      <button type="button" id="insp-export-json" title="JSON으로 내보내기">JSON</button>
+    </div>
+    <div class="inspector-table-wrap">
+      <table class="inspector-table">
+        <thead>
+          <tr>
+            ${cols.map(col => {
+              const cls = piiClassFor(col, ds.pii_columns);
+              return `<th class="${cls}" title="${esc(col)}${cls ? ' · '+(cls==='pii'?'식별자':cls==='quasi'?'속성자':'민감정보') : ''}">${esc(col)}</th>`;
+            }).join('')}
+          </tr>
+        </thead>
+        <tbody>
+          ${pageRows.map(r => `
+            <tr>
+              ${cols.map(col => {
+                const v = r[col];
+                const changed = view === 'output' && inspectorState.changedCols.has(col);
+                let cellCls = '';
+                let display = v == null ? '<span style="color:var(--md-on-surface-variant)">∅</span>' : esc(v);
+                const sv = String(v ?? '');
+                if (sv.startsWith('sha256:') || sv.startsWith('sha512:') || sv.startsWith('hmacsha256:')) cellCls = 'hashed';
+                else if (sv === '[삭제]') cellCls = 'removed';
+                else if (sv.includes('*')) cellCls = 'masked';
+                return `<td class="${cellCls} ${changed?'diff-changed':''}" title="${esc(sv)}">${display}</td>`;
+              }).join('')}
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>
+    </div>
+    <div class="inspector-pagination">
+      <button type="button" id="insp-page-prev" ${inspectorState.page === 0 ? 'disabled' : ''}>‹</button>
+      <span>${start + 1} – ${Math.min(start + pageSize, total)} / ${total.toLocaleString()}</span>
+      <button type="button" id="insp-page-next" ${inspectorState.page >= totalPages - 1 ? 'disabled' : ''}>›</button>
+    </div>
+  `;
+  body.innerHTML = inner;
+  bindInspectorTabs();
+
+  body.querySelector('#insp-page-prev')?.addEventListener('click', () => {
+    inspectorState.page = Math.max(0, inspectorState.page - 1);
+    renderInspector(nodeId);
+  });
+  body.querySelector('#insp-page-next')?.addEventListener('click', () => {
+    inspectorState.page = Math.min(totalPages - 1, inspectorState.page + 1);
+    renderInspector(nodeId);
+  });
+  body.querySelector('#insp-export-csv')?.addEventListener('click', () => exportDatasetAsCSV(ds, `${node.id}_${view}.csv`));
+  body.querySelector('#insp-export-json')?.addEventListener('click', () => exportDatasetAsJSON(ds, `${node.id}_${view}.json`));
+}
+
+function getInspectorInputDataset(nodeId) {
+  const incomingConns = state.connections.filter(c => c.target === nodeId);
+  if (!incomingConns.length) {
+    // input nodes preview their own generated/uploaded data
+    if (_uploadedCsvCache.has(nodeId)) return _uploadedCsvCache.get(nodeId);
+    return null;
+  }
+  for (const c of incomingConns) {
+    const ds = state.nodeDatasets ? state.nodeDatasets[c.source] : null;
+    if (ds) return ds;
+  }
+  return null;
+}
+
+function bindInspectorTabs() {
+  document.querySelectorAll('.insp-tab').forEach(t => {
+    t.addEventListener('click', () => {
+      inspectorState.view = t.getAttribute('data-iv');
+      inspectorState.page = 0;
+      renderInspector(state.selectedNodeId);
+    });
+  });
+}
+
+function exportDatasetAsCSV(ds, filename) {
+  if (!ds || !ds.rows) return;
+  const cols = ds.columns || Object.keys(ds.rows[0] || {});
+  const escCell = (v) => {
+    const s = String(v == null ? '' : v);
+    return /[",\n\r]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s;
+  };
+  const csv = [cols.join(','), ...ds.rows.map(r => cols.map(c => escCell(r[c])).join(','))].join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type: 'text/csv;charset=utf-8' });
+  triggerDownload(blob, filename);
+  toast('CSV로 내보냈습니다', 'ok');
+}
+function exportDatasetAsJSON(ds, filename) {
+  const blob = new Blob([JSON.stringify(ds, null, 2)], { type: 'application/json' });
+  triggerDownload(blob, filename);
+  toast('JSON으로 내보냈습니다', 'ok');
+}
+function triggerDownload(blob, filename) {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 200);
+}
+
+/* ============================================================
+   v0_5 — AUTO LAYOUT (Sugiyama-style layered layout)
+   ============================================================ */
+function autoLayout() {
+  if (!state.nodes.length) {
+    toast('정렬할 노드가 없습니다', 'warn', 1600);
+    return;
+  }
+  const COL_W = 280;
+  const ROW_H = 150;
+  const PAD_X = 60;
+  const PAD_Y = 80;
+
+  const incoming = {};
+  const outgoing = {};
+  state.nodes.forEach(n => { incoming[n.id] = 0; outgoing[n.id] = []; });
+  state.connections.forEach(c => {
+    if (incoming[c.target] !== undefined) incoming[c.target]++;
+    if (outgoing[c.source]) outgoing[c.source].push(c.target);
+  });
+
+  // Layer assignment via longest path from sources
+  const layer = {};
+  state.nodes.forEach(n => layer[n.id] = 0);
+  const inDeg = { ...incoming };
+  const queue = state.nodes.filter(n => incoming[n.id] === 0).map(n => n.id);
+  while (queue.length) {
+    const id = queue.shift();
+    outgoing[id].forEach(tid => {
+      layer[tid] = Math.max(layer[tid], layer[id] + 1);
+      inDeg[tid]--;
+      if (inDeg[tid] === 0) queue.push(tid);
+    });
+  }
+  // Detect cycles → place remaining nodes at last layer + 1
+  const cycleNodes = state.nodes.filter(n => inDeg[n.id] > 0);
+  const maxLayer = Math.max(0, ...Object.values(layer));
+  cycleNodes.forEach(n => layer[n.id] = maxLayer + 1);
+
+  // Group by layer
+  const byLayer = {};
+  state.nodes.forEach(n => {
+    const l = layer[n.id];
+    if (!byLayer[l]) byLayer[l] = [];
+    byLayer[l].push(n);
+  });
+
+  // Within each layer, sort by current Y for stability, then assign Y
+  const newPos = {};
+  Object.keys(byLayer).map(Number).sort((a,b) => a - b).forEach(l => {
+    const nodes = byLayer[l].sort((a, b) => a.y - b.y);
+    nodes.forEach((n, idx) => {
+      newPos[n.id] = { x: PAD_X + l * COL_W, y: PAD_Y + idx * ROW_H };
+    });
+  });
+
+  // Animate
+  const startPositions = {};
+  state.nodes.forEach(n => startPositions[n.id] = { x: n.x, y: n.y });
+  const startTime = performance.now();
+  const duration = 480;
+  function tick(t) {
+    const elapsed = t - startTime;
+    const k = Math.min(1, elapsed / duration);
+    const ease = 1 - Math.pow(1 - k, 3); // easeOutCubic
+    state.nodes.forEach(n => {
+      const start = startPositions[n.id];
+      const end = newPos[n.id] || start;
+      n.x = start.x + (end.x - start.x) * ease;
+      n.y = start.y + (end.y - start.y) * ease;
+      const el = document.getElementById(n.id);
+      if (el) {
+        el.style.left = n.x + 'px';
+        el.style.top = n.y + 'px';
+      }
+    });
+    renderEdges();
+    renderMinimap();
+    if (k < 1) requestAnimationFrame(tick);
+    else {
+      pushHistory();
+      setTimeout(fitView, 80);
+      toast(`${state.nodes.length}개 노드를 자동 정렬했습니다`, 'ok');
+      log('ok', `자동 정렬 완료 · ${Object.keys(byLayer).length}개 계층`);
+    }
+  }
+  requestAnimationFrame(tick);
+}
+
+/* ============================================================
+   v0_5 — SNAPSHOT (canvas → SVG/PNG-ish)
+   We render the current canvas as an offline SVG and download it.
+   ============================================================ */
+function downloadCanvasSnapshot() {
+  if (!state.nodes.length) {
+    toast('내보낼 내용이 없습니다', 'warn');
+    return;
+  }
+  const pad = 60;
+  const minX = Math.min(...state.nodes.map(n => n.x)) - pad;
+  const minY = Math.min(...state.nodes.map(n => n.y)) - pad;
+  const maxX = Math.max(...state.nodes.map(n => n.x + 240)) + pad;
+  const maxY = Math.max(...state.nodes.map(n => n.y + 110)) + pad;
+  const w = maxX - minX, h = maxY - minY;
+  let svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="${minX} ${minY} ${w} ${h}" font-family="Pretendard, sans-serif">`;
+  svg += `<rect x="${minX}" y="${minY}" width="${w}" height="${h}" fill="#f4f5f8"/>`;
+  // dotted bg
+  svg += `<defs><pattern id="dots" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" fill="rgba(20,30,60,.08)"/></pattern></defs>`;
+  svg += `<rect x="${minX}" y="${minY}" width="${w}" height="${h}" fill="url(#dots)"/>`;
+  // edges
+  state.connections.forEach(c => {
+    const aEl = document.getElementById(c.source);
+    const bEl = document.getElementById(c.target);
+    if (!aEl || !bEl) return;
+    const sn = state.nodes.find(n => n.id === c.source);
+    const tn = state.nodes.find(n => n.id === c.target);
+    if (!sn || !tn) return;
+    const sw = aEl.offsetWidth || 220;
+    const sh = aEl.offsetHeight || 100;
+    const ax = sn.x + sw, ay = sn.y + sh / 2;
+    const bx = tn.x, by = tn.y + (bEl.offsetHeight || 100) / 2;
+    const dx = Math.max(50, Math.abs(bx - ax) * 0.5);
+    let stroke = '#6b7280';
+    if (c.sourceHandle === 'true') stroke = '#059669';
+    else if (c.sourceHandle === 'false') stroke = '#dc2626';
+    else if (c.sourceHandle === 'report') stroke = '#8b5cf6';
+    svg += `<path d="M ${ax} ${ay} C ${ax+dx} ${ay}, ${bx-dx} ${by}, ${bx} ${by}" fill="none" stroke="${stroke}" stroke-width="2"/>`;
+  });
+  // nodes
+  state.nodes.forEach(n => {
+    const m = MODULES[n.type];
+    const cat = CATEGORIES[m.category];
+    const elN = document.getElementById(n.id);
+    const wN = elN ? elN.offsetWidth : 220;
+    const hN = elN ? elN.offsetHeight : 92;
+    svg += `<g transform="translate(${n.x},${n.y})">
+      <rect width="${wN}" height="${hN}" rx="12" fill="#fff" stroke="#dfe3ec" stroke-width="1.5"/>
+      <rect width="4" height="40" fill="${cat.color}"/>
+      <rect x="10" y="10" width="22" height="22" rx="6" fill="${cat.bg}"/>
+      <text x="21" y="25" text-anchor="middle" font-size="10" font-weight="700" fill="${cat.color}">${esc(m.icon)}</text>
+      <text x="40" y="25" font-size="13" font-weight="600" fill="#1b1d22">${esc(m.label)}</text>
+      <text x="14" y="58" font-size="11" fill="#45474d">${esc((m.summary ? m.summary(n.config) : m.desc).replace(/<[^>]+>/g,' ').trim()).substring(0, 40)}</text>
+    </g>`;
+  });
+  svg += `</svg>`;
+  const blob = new Blob([svg], { type: 'image/svg+xml' });
+  triggerDownload(blob, `${state.workflow.name.replace(/\s+/g, '_')}_snapshot.svg`);
+  toast('스냅샷을 SVG로 저장했습니다', 'ok');
+  log('ok', `스냅샷 저장 · ${state.nodes.length}개 노드, ${state.connections.length}개 연결`);
+}
+
+/* Deterministic pseudo-hash for simulation
+   v0_5: real synchronous hash via FNV-1a + djb2 mix (fast, deterministic, looks like a real digest).
+   Real Web Crypto SHA is also available via hashStringAsync() — we precompute it
+   into a cache so subsequent renders are sync-friendly. */
+const _hashCache = new Map(); // `${algo}|${value}|${salt}` → hex
+function hashString(s, algo, salt) {
+  const key = `${algo}|${s}|${salt || ''}`;
+  if (_hashCache.has(key)) return _hashCache.get(key);
+
+  // Synchronous fallback using FNV-1a 32-bit + djb2 32-bit mixed, expanded to 64 hex chars
+  // This is deterministic and gives a SHA-like appearance for instant rendering
+  const input = (salt || '') + s;
+  let h1 = 0x811c9dc5; // FNV-1a init
+  let h2 = 5381;       // djb2 init
+  for (let i = 0; i < input.length; i++) {
+    const c = input.charCodeAt(i);
+    h1 ^= c; h1 = Math.imul(h1, 0x01000193) >>> 0;
+    h2 = ((h2 << 5) + h2 + c) >>> 0;
+  }
+  let h3 = 0; let h4 = 0;
+  for (let i = input.length - 1; i >= 0; i--) {
+    const c = input.charCodeAt(i);
+    h3 = ((h3 << 7) - h3 + c) >>> 0;
+    h4 = (h4 ^ c) * 0x9e3779b1 >>> 0;
+  }
+  const len = algo === 'SHA-512' ? 64 : (algo === 'HMAC-SHA-256' ? 64 : 64);
+  let hex = (h1.toString(16).padStart(8,'0')
+           + h2.toString(16).padStart(8,'0')
+           + h3.toString(16).padStart(8,'0')
+           + h4.toString(16).padStart(8,'0'));
+  while (hex.length < len) hex += hex;
+  hex = hex.substring(0, len);
+  const result = `${algo.toLowerCase().replace(/[^a-z0-9]/g,'')}:${hex.substring(0, 16)}…`;
+  _hashCache.set(key, result);
+  // Asynchronously upgrade to real crypto digest for the next render
+  if (window.crypto && window.crypto.subtle && (algo === 'SHA-256' || algo === 'SHA-512')) {
+    hashStringAsync(s, algo, salt).then(real => {
+      _hashCache.set(key, real);
+    }).catch(()=>{});
+  }
+  return result;
+}
+async function hashStringAsync(s, algo, salt) {
+  try {
+    const algoMap = { 'SHA-256': 'SHA-256', 'SHA-512': 'SHA-512', 'HMAC-SHA-256': 'SHA-256' };
+    const a = algoMap[algo] || 'SHA-256';
+    const enc = new TextEncoder();
+    const data = enc.encode((salt || '') + s);
+    const buf = await window.crypto.subtle.digest(a, data);
+    const hex = Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    return `${algo.toLowerCase().replace(/[^a-z0-9]/g,'')}:${hex.substring(0, 16)}…`;
+  } catch (e) {
+    return hashString(s, algo, salt);
+  }
 }
 
 /* ---------------- Utilities ---------------- */
@@ -3754,6 +4917,9 @@ function selectNode(id) {
   });
   renderEdges();
   renderProps();
+  // v0_5: render inspector for selected node
+  inspectorState.page = 0;
+  if (typeof renderInspector === 'function') renderInspector(id);
   updateMultiToolbar();
 }
 function clearSelection() {
@@ -3766,6 +4932,8 @@ function clearSelection() {
   });
   renderEdges();
   renderProps();
+  // v0_5: hide inspector
+  if (typeof renderInspector === 'function') renderInspector(null);
   updateMultiToolbar();
 }
 
@@ -4090,6 +5258,7 @@ function renderProps() {
     <div class="rp-section">
       <div class="rp-label">설정값</div>
       ${m.fields.map(f => renderField(node, f)).join('')}
+      ${node.type === 'csv_upload' ? renderCsvUploadZone(node) : ''}
     </div>
     <div class="rp-section">
       <div class="rp-label">I/O 포트</div>
@@ -4120,6 +5289,31 @@ function renderProps() {
     </div>
   `;
   content.innerHTML = html;
+
+  // v0_5: bind column suggestion chips
+  content.querySelectorAll('.col-suggestions').forEach(sg => {
+    const fieldKey = sg.getAttribute('data-suggest-for');
+    sg.querySelectorAll('.col-suggest').forEach(chip => {
+      chip.addEventListener('click', (e) => {
+        e.preventDefault();
+        const colName = chip.getAttribute('data-col');
+        const isMulti = chip.getAttribute('data-multi') === 'true';
+        if (isMulti) {
+          const cur = Array.isArray(node.config[fieldKey]) ? node.config[fieldKey] : [];
+          if (cur.includes(colName)) node.config[fieldKey] = cur.filter(c => c !== colName);
+          else                       node.config[fieldKey] = [...cur, colName];
+        } else {
+          node.config[fieldKey] = colName;
+        }
+        updateNodeBody(node.id);
+        renderProps();
+        markDirty(); scheduleAutoSave(); validateWorkflow();
+      });
+    });
+  });
+
+  // v0_5: bind CSV file upload (if csv_upload node)
+  if (node.type === 'csv_upload') bindCsvUploadZone(node, content);
 
   // Bind field changes
   m.fields.forEach(f => {
@@ -4162,7 +5356,8 @@ function renderProps() {
         node.config[f.key] = v;
         updateNodeBody(node.id);
         // don't re-render entire props to preserve focus
-        content.querySelector('textarea[readonly]').value = JSON.stringify(node.config, null, 2);
+        const rawJson = content.querySelector('textarea[readonly]');
+        if (rawJson) rawJson.value = JSON.stringify(node.config, null, 2);
         markDirty(); scheduleAutoSave();
       });
       el.addEventListener('change', () => {
@@ -4173,11 +5368,120 @@ function renderProps() {
       });
     }
   });
+
+  // v0_5: render inspector for the now-visible node
+  renderInspector(node.id);
+}
+
+/* v0_5: CSV upload zone for csv_upload nodes — actually parses real files */
+function renderCsvUploadZone(node) {
+  const cached = _uploadedCsvCache.get(node.id);
+  if (cached) {
+    return `
+      <div class="csv-drop-zone has-file" id="csv-drop-${node.id}">
+        <div style="font-weight:700;color:var(--md-success)">✓ ${esc(cached.fileName)}</div>
+        <div style="font-size:11px;color:var(--md-on-surface-variant);margin-top:2px">
+          ${cached.total.toLocaleString()}행 · ${cached.columns.length}컬럼 · ${(cached.fileSize/1024).toFixed(1)} KB
+        </div>
+        <div style="font-size:11px;color:var(--md-primary);margin-top:4px;font-weight:600">새 파일을 선택하려면 클릭하세요</div>
+      </div>`;
+  }
+  return `
+    <div class="csv-drop-zone" id="csv-drop-${node.id}">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:4px"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      <div style="font-weight:700">CSV 파일 업로드</div>
+      <div style="font-size:11px;color:var(--md-on-surface-variant);margin-top:2px">클릭하거나 드래그하여 실제 데이터를 로드합니다</div>
+    </div>`;
+}
+
+function bindCsvUploadZone(node, container) {
+  const zone = container.querySelector(`#csv-drop-${node.id}`);
+  if (!zone) return;
+  const inp = document.createElement('input');
+  inp.type = 'file';
+  inp.accept = '.csv,.tsv,text/csv,text/plain';
+  inp.style.display = 'none';
+  zone.appendChild(inp);
+
+  zone.addEventListener('click', () => inp.click());
+  zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    zone.classList.remove('drag-over');
+    const f = e.dataTransfer?.files?.[0];
+    if (f) handleCsvFile(node, f);
+  });
+  inp.addEventListener('change', () => {
+    const f = inp.files?.[0];
+    if (f) handleCsvFile(node, f);
+  });
+}
+
+function handleCsvFile(node, file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const text = reader.result;
+      const ds = parseCSV(text, {
+        delimiter: node.config.delimiter || ',',
+        has_header: node.config.has_header !== false,
+      });
+      ds.fileName = file.name;
+      ds.fileSize = file.size;
+      _uploadedCsvCache.set(node.id, ds);
+      // also reflect filename in config
+      node.config.filename = file.name;
+      updateNodeBody(node.id);
+      renderProps();
+      markDirty(); scheduleAutoSave(); validateWorkflow();
+      toast(`CSV 로드 완료: ${ds.total.toLocaleString()}행 × ${ds.columns.length}컬럼`, 'ok');
+      log('ok', `CSV 업로드: ${file.name} · ${ds.total}행 · 컬럼: ${ds.columns.slice(0,4).join(', ')}${ds.columns.length>4?'...':''}`);
+    } catch (err) {
+      toast('CSV 파싱 실패: ' + err.message, 'err');
+      log('err', `CSV 파싱 실패: ${err.message}`);
+    }
+  };
+  reader.onerror = () => {
+    toast('파일 읽기 실패', 'err');
+  };
+  reader.readAsText(file, node.config.encoding === 'EUC-KR' || node.config.encoding === 'CP949' ? 'EUC-KR' : 'UTF-8');
 }
 
 function renderField(node, f) {
   const val = node.config[f.key];
   const help = f.help ? `<div class="field-help">${f.help}</div>` : '';
+
+  // v0_5: smart column suggestions for fields that take column names
+  const colSuggestKeys = ['column','identifiers','quasi','sensitive','quasi_identifiers','columns'];
+  let suggestions = '';
+  if (colSuggestKeys.includes(f.key)) {
+    const schema = getUpstreamSchema(node.id);
+    if (schema && schema.columns && schema.columns.length) {
+      const pii = schema.pii_columns || {};
+      const tagKey = f.key === 'identifiers' ? 'identifier'
+                   : f.key === 'quasi' || f.key === 'quasi_identifiers' ? 'quasi'
+                   : f.key === 'sensitive' ? 'sensitive' : null;
+      let cols = schema.columns.slice();
+      if (tagKey) {
+        const auto = pii[tagKey] || [];
+        const others = cols.filter(c => !auto.includes(c));
+        cols = [...auto, ...others];
+      }
+      const isMulti = (f.type === 'chips');
+      const currentArr = isMulti ? (Array.isArray(val) ? val : []) : [];
+      suggestions = `
+        <div class="col-suggestions" data-suggest-for="${f.key}">
+          <span class="col-suggest-label">상위:</span>
+          ${cols.map(c => {
+            const cls = piiClassFor(c, pii);
+            const active = (isMulti ? currentArr.includes(c) : val === c) ? 'active-suggest' : '';
+            return `<span class="col-suggest ${cls}" data-col="${esc(c)}" data-multi="${isMulti}" title="클릭하여 ${isMulti ? '추가' : '선택'}">${esc(c)}</span>`;
+          }).join('')}
+        </div>`;
+    }
+  }
+
   if (f.type === 'switch') {
     return `<div class="field"><div class="switch-row"><label class="field-label" style="margin:0">${f.label}</label><div class="switch ${val ? 'on' : ''}" data-field="${f.key}"></div></div>${help}</div>`;
   }
@@ -4189,7 +5493,7 @@ function renderField(node, f) {
   }
   if (f.type === 'textarea') {
     return `<div class="field"><label class="field-label">${f.label}</label>
-      <textarea class="field-textarea" data-field="${f.key}" rows="3">${val||''}</textarea>${help}</div>`;
+      <textarea class="field-textarea" data-field="${f.key}" rows="3">${val||''}</textarea>${help}${suggestions}</div>`;
   }
   if (f.type === 'number') {
     return `<div class="field"><label class="field-label">${f.label}</label>
@@ -4201,10 +5505,11 @@ function renderField(node, f) {
       <div class="chips-wrap" data-field="${f.key}">
         ${arr.map(v => `<span class="chip-item">${v}<button class="chip-remove" type="button"><svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button></span>`).join('')}
         <input class="chips-input" placeholder="입력 후 Enter" />
-      </div>${help}</div>`;
+      </div>${help}${suggestions}</div>`;
   }
+  // text input — also gets suggestions
   return `<div class="field"><label class="field-label">${f.label}</label>
-    <input class="field-input" type="text" data-field="${f.key}" value="${val==null?'':val}" />${help}</div>`;
+    <input class="field-input" type="text" data-field="${f.key}" value="${val==null?'':val}" />${help}${suggestions}</div>`;
 }
 
 /* ---------------- Drag nodes (move) ---------------- */
@@ -4295,6 +5600,24 @@ function finishConnection(nodeId, handle, type) {
   if (!state.connecting) return;
   if (type !== 'in') return;
   if (nodeId === state.connecting.fromNode) { state.connecting = null; renderEdges(); return; }
+
+  // v0_5: Connection type validation
+  const sourceHandle = state.connecting.fromHandle;
+  if (!isHandleCompatible(sourceHandle, handle)) {
+    // Visual shake feedback
+    const targetEl = document.getElementById(nodeId);
+    const handleEl = targetEl?.querySelector(`.handle.input[data-handle="${handle}"]`);
+    if (handleEl) {
+      handleEl.classList.add('invalid-target');
+      setTimeout(() => handleEl.classList.remove('invalid-target'), 400);
+    }
+    toast(`연결 불가: '${sourceHandle}' → '${handle}' (호환되지 않는 포트 타입)`, 'err', 2400);
+    log('warn', `연결 거부: ${sourceHandle} → ${handle} (타입 불일치)`);
+    state.connecting = null;
+    renderEdges();
+    return;
+  }
+
   // Avoid duplicates
   const exists = state.connections.some(c =>
     c.source === state.connecting.fromNode && c.sourceHandle === state.connecting.fromHandle &&
@@ -4388,6 +5711,7 @@ function renderEdges() {
     path.setAttribute('class', 'edge' + (state.selectedEdgeId === c.id ? ' selected' : ''));
     path.setAttribute('marker-end', 'url(#arrow)');
     path.setAttribute('data-conn-id', c.id); // v0_4: for fade-out animation targeting
+    path.setAttribute('data-handle-type', c.sourceHandle); // v0_5: for color-coded edges
 
     const flow = document.createElementNS('http://www.w3.org/2000/svg', 'path');
     flow.setAttribute('d', d);
@@ -4799,7 +6123,9 @@ function importFromJSON(data, opts = {}) {
   }
 }
 
-/* ---------------- Execution simulation (v0_2 enhanced: data flow + metrics) ---------------- */
+/* ---------------- Execution simulation (v0_2 enhanced: data flow + metrics)
+   v0_5 enhancements: real branch logic (true/false path), parallel splits,
+   loop iteration, step-by-step debugging, auto vs step execution mode. */
 async function runWorkflow() {
   if (state.isRunning) return;
   if (!state.nodes.length) {
@@ -4829,10 +6155,12 @@ async function runWorkflow() {
   // Clear previous metrics
   state.nodeMetrics = {};
   state.nodeDatasets = {};
+  state.skippedNodes = new Set();
   document.querySelectorAll('.node-metrics').forEach(el => el.innerHTML = '');
+  document.querySelectorAll('.node').forEach(el => el.classList.remove('exec-skipped'));
 
   const runStart = Date.now();
-  log('info', `▶ 실행 시작: "${state.workflow.name}"`);
+  log('info', `▶ 실행 시작: "${state.workflow.name}" (${state.runMode === 'step' ? '단계 모드' : '자동 모드'})`);
   log('info', `노드 ${state.nodes.length}개, 연결 ${state.connections.length}개`);
 
   // Clean previous run visuals
@@ -4865,43 +6193,101 @@ async function runWorkflow() {
     return;
   }
 
+  // v0_5: Set up step controller
+  state.stepController = {
+    order,
+    index: 0,
+    paused: state.runMode === 'step',
+    waiter: null,
+    aborted: false,
+  };
+  if (state.runMode === 'step') {
+    showStepControls(0, order.length);
+  }
+
   // Execute with real data flow
   let errCount = 0;
   let warnCount = 0;
-  for (const id of order) {
+  for (let stepIdx = 0; stepIdx < order.length; stepIdx++) {
+    if (state.stepController.aborted) {
+      log('warn', '실행이 사용자에 의해 중단되었습니다');
+      break;
+    }
+    state.stepController.index = stepIdx;
+    if (state.runMode === 'step') {
+      updateStepProgress(stepIdx, order.length);
+      // Wait for user to click next
+      await new Promise(resolve => {
+        state.stepController.waiter = resolve;
+      });
+      if (state.stepController.aborted) break;
+    }
+
+    const id = order[stepIdx];
+
+    // v0_5: skip nodes whose all incoming branches were not taken
+    if (state.skippedNodes.has(id)) {
+      const el = document.getElementById(id);
+      if (el) el.classList.add('exec-skipped');
+      log('info', `[건너뜀] ${MODULES[state.nodes.find(n=>n.id===id).type].label} · 분기 미선택`);
+      continue;
+    }
+
     const node = state.nodes.find(n => n.id === id);
     const m = MODULES[node.type];
     const el = document.getElementById(id);
     el.classList.add('active-exec');
-    log('info', `[실행] ${m.label} · ${id.substring(0,12)}`);
+    log('info', `[실행 ${stepIdx+1}/${order.length}] ${m.label} · ${id.substring(0,12)}`);
 
     // activate incoming edges
     state.connections.filter(c => c.target === id).forEach(c => c._active = true);
     renderEdges();
 
     const nodeStart = Date.now();
-    const delay = 400 + Math.random() * 500;
+    const delay = state.runMode === 'step' ? 240 : (240 + Math.random() * 360);
     await sleep(delay);
 
-    // v0_2: Process actual data
+    // Process actual data
     let inputDataset = null;
     const incomingConns = state.connections.filter(c => c.target === id);
     if (incomingConns.length > 0) {
-      // use first input's dataset (simplified — combine if multiple)
-      const srcId = incomingConns[0].source;
-      inputDataset = state.nodeDatasets[srcId];
+      // v0_5: Combine multiple inputs by union of rows (simple merge)
+      const datasets = incomingConns
+        .map(c => state.nodeDatasets[c.source])
+        .filter(Boolean);
+      if (datasets.length === 1) {
+        inputDataset = datasets[0];
+      } else if (datasets.length > 1) {
+        // union columns and concatenate rows
+        const allCols = [];
+        datasets.forEach(d => (d.columns || []).forEach(c => { if (!allCols.includes(c)) allCols.push(c); }));
+        const allRows = datasets.flatMap(d => d.rows || []);
+        const piiUnion = { identifier: [], quasi: [], sensitive: [] };
+        datasets.forEach(d => {
+          ['identifier','quasi','sensitive'].forEach(k => {
+            (d.pii_columns?.[k] || []).forEach(c => { if (!piiUnion[k].includes(c)) piiUnion[k].push(c); });
+          });
+        });
+        inputDataset = { columns: allCols, rows: allRows, total: allRows.length, pii_columns: piiUnion };
+      }
     }
 
     let outputDataset = null;
     let result;
+    let branchTaken = null; // For branch nodes
     try {
-      // Run simulation
       result = simulateResult(node, inputDataset);
-      // Transform dataset through node
-      if (typeof transformDataset === 'function') {
-        outputDataset = transformDataset(inputDataset, node);
-      }
+      outputDataset = transformDataset(inputDataset, node);
       state.nodeDatasets[id] = outputDataset;
+
+      // v0_5: For branch nodes, evaluate condition and decide which path to take
+      if (node.type === 'branch') {
+        branchTaken = evaluateBranchCondition(node.config.condition, inputDataset);
+        result.msg = `조건식 [${node.config.condition}] → ${branchTaken} 경로 선택 (${inputDataset ? inputDataset.rows.length : 0}행 평가)`;
+        // Skip nodes downstream of the not-taken branch
+        const skipHandle = branchTaken === 'true' ? 'false' : 'true';
+        markSkippedDownstream(id, skipHandle);
+      }
     } catch (err) {
       result = { level: 'err', msg: `처리 중 오류: ${err.message}` };
     }
@@ -4935,26 +6321,113 @@ async function runWorkflow() {
     }
     el.classList.add('exec-done');
 
-    // activate outgoing edges for visual flow
-    await sleep(120);
-    state.connections.filter(c => c.source === id).forEach(c => c._active = true);
+    // v0_5: For branch nodes, only activate the taken handle's edges
+    await sleep(80);
+    if (branchTaken) {
+      state.connections.filter(c => c.source === id && c.sourceHandle === branchTaken).forEach(c => c._active = true);
+    } else {
+      state.connections.filter(c => c.source === id).forEach(c => c._active = true);
+    }
     renderEdges();
+
+    // v0_5: If selected node is the one just executed, refresh the inspector
+    if (state.selectedNodeId === id) renderInspector(id);
   }
+
+  hideStepControls();
 
   const totalTime = Date.now() - runStart;
   const totalRows = Object.values(state.nodeMetrics).reduce((s, m) => s + (m.rowsOut || 0), 0);
+  const skipped = state.skippedNodes.size;
 
   if (errCount > 0) {
     log('err', `✗ 실행 실패 · 총 소요: ${totalTime}ms`);
     toast(`실행 중 오류 발생 (${errCount}건)`, 'err');
   } else if (warnCount > 0) {
-    log('warn', `▲ 경고와 함께 완료 · 경고 ${warnCount}건 · 총 소요: ${totalTime}ms`);
+    log('warn', `▲ 경고와 함께 완료 · 경고 ${warnCount}건 · 총 소요: ${totalTime}ms · 건너뜀 ${skipped}개`);
     toast(`경고 ${warnCount}건과 함께 완료`, 'warn');
   } else {
-    log('ok', `✓ 실행 완료 · ${order.length}개 노드 처리 · 총 소요: ${totalTime}ms`);
-    toast('워크플로우 실행이 완료되었습니다', 'ok');
+    log('ok', `✓ 실행 완료 · 처리 ${order.length - skipped}개 / 전체 ${order.length}개 · 총 소요: ${totalTime}ms · ${totalRows.toLocaleString()}행 산출`);
+    toast(`완료: ${order.length - skipped}개 노드 처리 (${totalTime}ms)`, 'ok');
   }
+  hideStepControls();
+  state.stepController = null;
   finishRun();
+}
+
+/* v0_5: branch evaluation against input dataset */
+function evaluateBranchCondition(expr, dataset) {
+  if (!expr) return 'true';
+  if (!dataset || !dataset.rows || !dataset.rows.length) return 'true';
+  // Examples: "risk > 0.3", "k < 5", "age >= 18", "income > 5000"
+  const m = expr.match(/(\w+)\s*(>=|<=|>|<|!=|==|=)\s*([\-+]?\d*\.?\d+)/);
+  if (!m) {
+    // string equality
+    const sm = expr.match(/(\w+)\s*=\s*['"]?([^'"]+?)['"]?\s*$/);
+    if (sm) {
+      const [, col, val] = sm;
+      const matchCount = dataset.rows.filter(r => String(r[col]) === val).length;
+      return matchCount > dataset.rows.length / 2 ? 'true' : 'false';
+    }
+    return 'true';
+  }
+  const [, col, op, valStr] = m;
+  const target = parseFloat(valStr);
+  const samples = dataset.rows.map(r => parseFloat(r[col])).filter(v => !isNaN(v));
+  if (!samples.length) {
+    // Variables like 'risk' or 'k' aren't real columns — synthesize a value
+    const synthetic = col === 'risk' ? Math.random() * 0.5 : col === 'k' ? 3 + Math.floor(Math.random()*6) : Math.random()*100;
+    return compare(synthetic, op, target) ? 'true' : 'false';
+  }
+  const avg = samples.reduce((a,b) => a+b, 0) / samples.length;
+  return compare(avg, op, target) ? 'true' : 'false';
+}
+function compare(a, op, b) {
+  switch(op) {
+    case '>': return a > b;
+    case '>=': return a >= b;
+    case '<': return a < b;
+    case '<=': return a <= b;
+    case '!=': return a !== b;
+    case '=': case '==': return a === b;
+  }
+  return false;
+}
+function markSkippedDownstream(nodeId, skipHandle) {
+  // Mark every node reachable ONLY through the skipped handle as skipped
+  const skipEdges = state.connections.filter(c => c.source === nodeId && c.sourceHandle === skipHandle);
+  const visited = new Set();
+  const stack = skipEdges.map(c => c.target);
+  while (stack.length) {
+    const id = stack.pop();
+    if (visited.has(id)) continue;
+    visited.add(id);
+    // A node is truly skipped only if ALL its incoming non-self edges originate from skipped nodes
+    const incoming = state.connections.filter(c => c.target === id);
+    const allFromSkipped = incoming.every(c =>
+      visited.has(c.source) ||
+      (c.source === nodeId && c.sourceHandle === skipHandle) ||
+      state.skippedNodes.has(c.source)
+    );
+    if (allFromSkipped) {
+      state.skippedNodes.add(id);
+      state.connections.filter(c => c.source === id).forEach(c => stack.push(c.target));
+    }
+  }
+}
+
+function showStepControls(idx, total) {
+  const sc = $('step-controls');
+  if (sc) sc.classList.add('show');
+  updateStepProgress(idx, total);
+}
+function hideStepControls() {
+  const sc = $('step-controls');
+  if (sc) sc.classList.remove('show');
+}
+function updateStepProgress(idx, total) {
+  const p = $('step-progress');
+  if (p) p.textContent = `${idx + 1} / ${total}`;
 }
 
 function finishRun() {
@@ -5319,6 +6792,25 @@ document.addEventListener('keydown', (e) => {
     e.preventDefault();
     fillExportHubModal();
     openModal('export-hub-modal');
+    return;
+  }
+
+  // v0_5: Auto-layout (Ctrl+L)
+  if (ctrlMeta && (e.key === 'l' || e.key === 'L') && !e.shiftKey) {
+    e.preventDefault();
+    if (state.nodes.length > 0) {
+      autoLayout();
+      toast('자동 레이아웃 적용됨', 'success');
+    }
+    return;
+  }
+  // v0_5: Snapshot (Ctrl+Shift+S)
+  if (ctrlMeta && e.shiftKey && (e.key === 's' || e.key === 'S')) {
+    e.preventDefault();
+    if (state.nodes.length > 0) {
+      downloadCanvasSnapshot();
+      toast('스냅샷 SVG 내보내기 완료', 'success');
+    }
     return;
   }
 
@@ -6099,6 +7591,76 @@ function initApp() {
 
   // Help
   $('help-fab').addEventListener('click', () => openModal('kbd-modal'));
+
+  // ===== v0_5 wiring =====
+  // Run mode toggle (자동 / 단계)
+  document.querySelectorAll('.run-mode-toggle button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.run-mode-toggle button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      state.runMode = btn.dataset.mode || 'normal';
+      log('info', `실행 모드: ${state.runMode === 'step' ? '단계 실행' : '자동 실행'}`);
+    });
+  });
+
+  // Auto-layout button
+  const btnAuto = document.getElementById('btn-auto-layout');
+  if (btnAuto) btnAuto.addEventListener('click', () => {
+    if (state.nodes.length === 0) { toast('레이아웃할 노드가 없습니다', 'warn'); return; }
+    autoLayout();
+    toast('자동 레이아웃 적용됨', 'success');
+  });
+
+  // Snapshot button
+  const btnSnap = document.getElementById('btn-snapshot');
+  if (btnSnap) btnSnap.addEventListener('click', () => {
+    if (state.nodes.length === 0) { toast('스냅샷할 노드가 없습니다', 'warn'); return; }
+    downloadCanvasSnapshot();
+    toast('스냅샷 SVG 내보내기 완료', 'success');
+  });
+
+  // Step controls
+  const stepNext = document.getElementById('step-next');
+  if (stepNext) stepNext.addEventListener('click', () => {
+    if (state.stepController && state.stepController.waiter) {
+      const w = state.stepController.waiter;
+      state.stepController.waiter = null;
+      w();
+    }
+  });
+  const stepStop = document.getElementById('step-stop');
+  if (stepStop) stepStop.addEventListener('click', () => {
+    if (state.stepController) {
+      state.stepController.aborted = true;
+      if (state.stepController.waiter) {
+        const w = state.stepController.waiter;
+        state.stepController.waiter = null;
+        w();
+      }
+    }
+    log('warn', '단계 실행이 사용자에 의해 중지되었습니다');
+  });
+  const stepRunAll = document.getElementById('step-runall');
+  if (stepRunAll) stepRunAll.addEventListener('click', () => {
+    state.runMode = 'normal';
+    document.querySelectorAll('.run-mode-toggle button').forEach(b => {
+      b.classList.toggle('active', b.dataset.mode === 'normal');
+    });
+    if (state.stepController && state.stepController.waiter) {
+      const w = state.stepController.waiter;
+      state.stepController.waiter = null;
+      w();
+    }
+    log('info', '나머지 단계를 자동으로 실행합니다');
+  });
+
+  // Inspector section toggle
+  const inspHead = document.getElementById('inspector-head');
+  if (inspHead) inspHead.addEventListener('click', () => {
+    const sec = document.getElementById('inspector-section');
+    if (sec) sec.classList.toggle('open');
+  });
+  // ===== end v0_5 wiring =====
 
   // Multi-select toolbar
   $('multi-align-left').addEventListener('click', alignLeft);
