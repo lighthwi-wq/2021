@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+<meta name="theme-color" content="#FAF7FF" />
+<title>Chemi · 케미가 맞는 팀을 만나다</title>
+<link rel="stylesheet" as="style" crossorigin href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css" />
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,400,0,0&family=Material+Symbols+Rounded:opsz,wght,FILL,GRAD@24,500,1,0" />
+
+<style>
+/* ============ Tokens ============ */
+:root{
+  /* Pastel diversity palette */
+  --p-pink:    #FFD9E4;
+  --p-peach:   #FFE2CC;
+  --p-yellow:  #FFF1B8;
+  --p-mint:    #C9F2DC;
+  --p-sky:     #CCE6FF;
+  --p-lilac:   #E0D5FF;
+  --p-rose:    #FFD1D1;
+  --p-cream:   #FFF6E1;
+
+  --p-pink-d:   #F291AE;
+  --p-peach-d:  #F2A372;
+  --p-yellow-d: #E6B800;
+  --p-mint-d:   #4FB07A;
+  --p-sky-d:    #4F9BE6;
+  --p-lilac-d:  #8A6FE0;
+  --p-rose-d:   #E26D6D;
+
+  /* Surface (M3 inspired) */
+  --bg:        #FAF7FF;
+  --surface:   #FFFFFF;
+  --surface-2: #F4EEFF;
+  --surface-3: #ECE5FA;
+  --outline:   #E6E0F0;
+  --outline-2: #D9D2E8;
+
+  /* Text */
+  --on-bg:     #1C1B1F;
+  --on-bg-2:   #49454F;
+  --on-bg-3:   #79747E;
+  --on-primary:#FFFFFF;
+
+  --primary:   #7A5CFF;
+  --primary-2: #EBE3FF;
+  --primary-3: #5D40E0;
+
+  /* Effects */
+  --shadow-1: 0 1px 2px rgba(28,27,31,.06), 0 1px 3px rgba(28,27,31,.04);
+  --shadow-2: 0 2px 6px rgba(28,27,31,.06), 0 8px 20px rgba(28,27,31,.06);
+  --shadow-3: 0 6px 16px rgba(122,92,255,.18), 0 12px 28px rgba(28,27,31,.08);
+
+  --r-sm: 12px;
+  --r-md: 18px;
+  --r-lg: 24px;
+  --r-xl: 28px;
+  --r-pill: 999px;
+}
+
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{
+  margin:0;padding:0;
+  font-family:'Pretendard Variable','Pretendard',-apple-system,BlinkMacSystemFont,system-ui,Roboto,sans-serif;
+  font-feature-settings:"ss03","cv11";
+  color:var(--on-bg);
+  background:
+    radial-gradient(1200px 600px at 10% -10%, #FFE7F0 0%, transparent 60%),
+    radial-gradient(1000px 500px at 110% 10%, #DFF1FF 0%, transparent 55%),
+    radial-gradient(1100px 600px at 50% 120%, #EFE4FF 0%, transparent 60%),
+    #FAF7FF;
+  min-height:100vh;
+  -webkit-font-smoothing:antialiased;
+  letter-spacing:-0.01em;
+}
+button{font-family:inherit;color:inherit;border:0;background:none;cursor:pointer;padding:0}
+input,textarea,select{font-family:inherit;color:inherit}
+
+.mat{font-family:'Material Symbols Rounded';font-weight:400;font-style:normal;font-variation-settings:'FILL' 0,'wght' 400,'GRAD' 0,'opsz' 24;line-height:1;-webkit-font-smoothing:antialiased}
+.mat.fill{font-variation-settings:'FILL' 1,'wght' 500,'GRAD' 0,'opsz' 24}
+
+/* ============ Phone frame (desktop) ============ */
+.stage{
+  min-height:100vh;
+  display:flex;align-items:center;justify-content:center;
+  padding:24px;
+  gap:48px;
+  flex-wrap:wrap;
+}
+.stage-info{
+  max-width:340px;color:var(--on-bg-2);
+}
+.stage-info h1{
+  font-size:34px;line-height:1.15;letter-spacing:-0.03em;
+  margin:0 0 12px;color:var(--on-bg);font-weight:700;
+}
+.stage-info h1 em{
+  font-style:normal;
+  background:linear-gradient(135deg,var(--p-pink-d),var(--p-lilac-d) 55%,var(--p-sky-d));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.stage-info p{font-size:15px;line-height:1.6;margin:0 0 18px}
+.legend{display:flex;flex-wrap:wrap;gap:8px}
+.legend .chip{
+  background:var(--surface);border:1px solid var(--outline);
+  padding:6px 12px;border-radius:var(--r-pill);font-size:12px;font-weight:500;
+  display:inline-flex;align-items:center;gap:6px;
+}
+.legend .dot{width:8px;height:8px;border-radius:50%}
+
+.phone{
+  width:393px;height:852px;max-height:calc(100vh - 48px);
+  background:var(--bg);
+  border-radius:54px;
+  position:relative;
+  box-shadow:
+    0 0 0 12px #1C1B1F,
+    0 0 0 13px #2A2632,
+    0 30px 60px -20px rgba(28,27,31,.45),
+    0 60px 120px -40px rgba(122,92,255,.35);
+  overflow:hidden;
+  isolation:isolate;
+}
+@media(max-width:880px){
+  .stage{padding:0;gap:0}
+  .stage-info{display:none}
+  .phone{
+    width:100vw;height:100vh;max-height:100vh;
+    border-radius:0;box-shadow:none;
+  }
+}
+
+/* Dynamic Island */
+.island{
+  position:absolute;top:10px;left:50%;transform:translateX(-50%);
+  width:118px;height:34px;background:#0E0E13;border-radius:20px;z-index:60;
+}
+.statusbar{
+  position:absolute;top:0;left:0;right:0;height:54px;z-index:55;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:18px 32px 0;font-size:15px;font-weight:600;
+  color:var(--on-bg);pointer-events:none;
+}
+.statusbar .right{display:flex;align-items:center;gap:6px}
+.statusbar .mat{font-size:17px}
+
+.viewport{
+  position:absolute;inset:0;
+  padding-top:54px;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+
+/* ============ Screens ============ */
+.screen{
+  position:absolute;inset:54px 0 0;
+  display:flex;flex-direction:column;
+  background:transparent;
+  opacity:0;visibility:hidden;
+  transform:translateX(24px);
+  transition:opacity .35s ease, transform .35s cubic-bezier(.2,.7,.2,1), visibility .35s;
+}
+.screen.active{opacity:1;visibility:visible;transform:translateX(0)}
+.scroll{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none}
+.scroll::-webkit-scrollbar{display:none}
+
+/* ============ App bar ============ */
+.appbar{
+  display:flex;align-items:center;gap:8px;
+  padding:8px 20px 4px;
+}
+.appbar .title{flex:1;font-size:22px;font-weight:700;letter-spacing:-0.02em}
+.iconbtn{
+  width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;
+  color:var(--on-bg);transition:background .2s;
+}
+.iconbtn:hover,.iconbtn:active{background:var(--surface-2)}
+.iconbtn .mat{font-size:24px}
+
+/* ============ Splash / Onboarding ============ */
+#splash{padding:0}
+#splash .scroll{padding:0;display:flex;flex-direction:column}
+.splash-hero{
+  flex:1;min-height:0;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-align:center;padding:24px;position:relative;overflow:hidden;
+}
+.splash-orbits{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none}
+.orbit{
+  position:absolute;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  animation:spin 24s linear infinite;
+}
+.orbit.o1{width:300px;height:300px;border:1.5px dashed rgba(122,92,255,.18)}
+.orbit.o2{width:460px;height:460px;border:1.5px dashed rgba(122,92,255,.10);animation-duration:48s;animation-direction:reverse}
+.orbit .planet{
+  position:absolute;
+  width:54px;height:54px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:13px;color:#1C1B1F;
+  box-shadow:var(--shadow-2);
+}
+.orbit.o1 .planet:nth-child(1){top:-27px;left:50%;transform:translateX(-50%);background:var(--p-pink)}
+.orbit.o1 .planet:nth-child(2){bottom:-27px;left:50%;transform:translateX(-50%);background:var(--p-mint)}
+.orbit.o1 .planet:nth-child(3){top:50%;left:-27px;transform:translateY(-50%);background:var(--p-sky)}
+.orbit.o1 .planet:nth-child(4){top:50%;right:-27px;transform:translateY(-50%);background:var(--p-yellow)}
+.orbit.o2 .planet:nth-child(1){top:8%;left:18%;background:var(--p-lilac)}
+.orbit.o2 .planet:nth-child(2){bottom:14%;right:10%;background:var(--p-peach)}
+.orbit.o2 .planet:nth-child(3){bottom:8%;left:14%;background:var(--p-rose)}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.logo-mark{
+  position:relative;z-index:2;
+  width:96px;height:96px;border-radius:30px;
+  background:linear-gradient(135deg,#FFFFFF 0%,#F4EEFF 100%);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow-3);
+  margin-bottom:24px;
+}
+.logo-mark svg{width:54px;height:54px}
+.splash-title{
+  position:relative;z-index:2;
+  font-size:38px;font-weight:800;letter-spacing:-0.04em;line-height:1.05;
+  margin:0 0 10px;
+  background:linear-gradient(120deg,#1C1B1F 0%,#5D40E0 60%,#E26D6D 100%);
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.splash-sub{
+  position:relative;z-index:2;
+  font-size:15px;color:var(--on-bg-2);line-height:1.55;max-width:280px;margin:0 auto;
+}
+.splash-actions{
+  padding:24px 24px 36px;display:flex;flex-direction:column;gap:10px;
+}
+.btn{
+  height:56px;border-radius:var(--r-pill);font-size:16px;font-weight:600;letter-spacing:-0.01em;
+  display:inline-flex;align-items:center;justify-content:center;gap:8px;
+  transition:transform .15s ease, box-shadow .15s ease, background .2s;
+  user-select:none;
+}
+.btn:active{transform:scale(.98)}
+.btn.primary{background:var(--on-bg);color:#fff;box-shadow:var(--shadow-3)}
+.btn.primary:hover{background:#000}
+.btn.tonal{background:var(--surface-2);color:var(--on-bg)}
+.btn.tonal:hover{background:var(--surface-3)}
+.btn.outline{background:transparent;border:1.5px solid var(--outline-2);color:var(--on-bg)}
+.btn.ghost{background:transparent;color:var(--on-bg-2)}
+.btn .mat{font-size:20px}
+
+/* ============ Profile setup ============ */
+.step-head{padding:0 20px}
+.step-progress{display:flex;gap:6px;margin:4px 0 18px}
+.step-progress span{flex:1;height:5px;border-radius:99px;background:var(--surface-3);transition:background .3s}
+.step-progress span.done{background:linear-gradient(90deg,var(--p-pink-d),var(--p-lilac-d))}
+.step-num{font-size:12px;font-weight:600;color:var(--on-bg-3);letter-spacing:.04em;text-transform:uppercase}
+.step-title{font-size:26px;font-weight:700;letter-spacing:-0.02em;line-height:1.2;margin:4px 0 6px}
+.step-desc{font-size:14px;color:var(--on-bg-2);line-height:1.55;margin:0 0 22px}
+
+.step-body{flex:1;padding:0 20px 16px}
+
+/* MBTI grid */
+.mbti-grid{
+  display:grid;grid-template-columns:repeat(4,1fr);gap:10px;
+}
+.mbti-cell{
+  aspect-ratio:1/1.05;
+  border-radius:var(--r-md);
+  background:var(--surface);border:1.5px solid var(--outline);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  font-weight:700;font-size:14px;letter-spacing:.02em;
+  color:var(--on-bg);
+  transition:all .2s ease;
+  position:relative;
+}
+.mbti-cell .nick{font-size:10px;color:var(--on-bg-3);font-weight:500;letter-spacing:0}
+.mbti-cell[data-group="analyst"]{background:linear-gradient(160deg,#FFFFFF,var(--p-lilac))}
+.mbti-cell[data-group="diplomat"]{background:linear-gradient(160deg,#FFFFFF,var(--p-mint))}
+.mbti-cell[data-group="sentinel"]{background:linear-gradient(160deg,#FFFFFF,var(--p-sky))}
+.mbti-cell[data-group="explorer"]{background:linear-gradient(160deg,#FFFFFF,var(--p-yellow))}
+.mbti-cell.selected{
+  border-color:var(--on-bg);
+  transform:scale(1.04);
+  box-shadow:var(--shadow-2);
+}
+.mbti-cell.selected::after{
+  content:"";position:absolute;inset:-2px;border-radius:inherit;
+  border:2px solid var(--on-bg);
+}
+
+/* Choice rows */
+.chip-row{display:flex;flex-wrap:wrap;gap:8px}
+.choice{
+  height:46px;padding:0 18px;border-radius:var(--r-pill);
+  background:var(--surface);border:1.5px solid var(--outline);
+  font-size:14px;font-weight:600;color:var(--on-bg);
+  display:inline-flex;align-items:center;gap:8px;
+  transition:all .18s;
+}
+.choice .mat{font-size:18px;color:var(--on-bg-3)}
+.choice:hover{background:var(--surface-2)}
+.choice.selected{
+  background:var(--on-bg);color:#fff;border-color:var(--on-bg);
+}
+.choice.selected .mat{color:#fff}
+.choice.pastel{border-color:transparent}
+.choice.pastel.selected{color:var(--on-bg)}
+.choice.c-pink.selected{background:var(--p-pink)}
+.choice.c-mint.selected{background:var(--p-mint)}
+.choice.c-sky.selected{background:var(--p-sky)}
+.choice.c-yellow.selected{background:var(--p-yellow)}
+.choice.c-lilac.selected{background:var(--p-lilac)}
+.choice.c-peach.selected{background:var(--p-peach)}
+.choice.c-rose.selected{background:var(--p-rose)}
+
+/* Gender cards */
+.gender-row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.gender-card{
+  height:130px;border-radius:var(--r-lg);background:var(--surface);
+  border:1.5px solid var(--outline);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;
+  font-weight:600;color:var(--on-bg);
+  transition:all .2s;
+}
+.gender-card .avatar{
+  width:56px;height:56px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--surface-2);
+}
+.gender-card .avatar .mat{font-size:32px;color:var(--on-bg-2)}
+.gender-card[data-v="female"].selected{background:linear-gradient(160deg,#FFFFFF,var(--p-pink))}
+.gender-card[data-v="male"].selected{background:linear-gradient(160deg,#FFFFFF,var(--p-sky))}
+.gender-card.selected{border-color:var(--on-bg);box-shadow:var(--shadow-2)}
+.gender-card.selected .avatar{background:#fff}
+
+/* Bottom CTA */
+.bottom-cta{
+  padding:14px 20px 28px;
+  background:linear-gradient(180deg,rgba(250,247,255,0) 0%,rgba(250,247,255,.92) 30%,rgba(250,247,255,1) 60%);
+}
+
+/* ============ Purpose ============ */
+.purpose-list{display:flex;flex-direction:column;gap:12px}
+.purpose-card{
+  border-radius:var(--r-lg);padding:18px;
+  display:flex;gap:14px;align-items:center;
+  border:1.5px solid transparent;
+  background:var(--surface);
+  box-shadow:var(--shadow-1);
+  transition:all .2s;
+  text-align:left;
+  width:100%;
+}
+.purpose-card .ico{
+  width:56px;height:56px;border-radius:18px;flex:0 0 56px;
+  display:flex;align-items:center;justify-content:center;
+}
+.purpose-card .ico .mat{font-size:30px;color:var(--on-bg)}
+.purpose-card .meta{flex:1;min-width:0}
+.purpose-card .meta h3{margin:0 0 4px;font-size:17px;font-weight:700;letter-spacing:-0.01em}
+.purpose-card .meta p{margin:0;font-size:13px;color:var(--on-bg-2);line-height:1.45}
+.purpose-card .arrow{color:var(--on-bg-3)}
+.purpose-card.selected{
+  border-color:var(--on-bg);
+  transform:translateY(-2px);
+  box-shadow:var(--shadow-3);
+}
+.purpose-card[data-v="work"] .ico{background:var(--p-sky)}
+.purpose-card[data-v="business"] .ico{background:var(--p-lilac)}
+.purpose-card[data-v="teamwork"] .ico{background:var(--p-mint)}
+.purpose-card[data-v="game"] .ico{background:var(--p-peach)}
+
+/* ============ Matching loading ============ */
+.matching-stage{
+  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  padding:0 32px;text-align:center;gap:14px;
+}
+.matching-rings{
+  width:200px;height:200px;position:relative;margin-bottom:16px;
+}
+.matching-rings::before,
+.matching-rings::after{
+  content:"";position:absolute;inset:0;border-radius:50%;
+  border:2px solid transparent;
+}
+.matching-rings::before{
+  border-top-color:var(--p-pink-d);
+  border-right-color:var(--p-lilac-d);
+  animation:rotate 1.4s linear infinite;
+}
+.matching-rings::after{
+  inset:18px;
+  border-bottom-color:var(--p-sky-d);
+  border-left-color:var(--p-mint-d);
+  animation:rotate 2s linear infinite reverse;
+}
+.matching-rings .core{
+  position:absolute;inset:38px;border-radius:50%;
+  background:linear-gradient(135deg,#FFFFFF,var(--surface-2));
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:var(--shadow-2);
+  font-weight:700;font-size:20px;color:var(--on-bg);
+}
+@keyframes rotate{to{transform:rotate(360deg)}}
+.matching-title{font-size:22px;font-weight:700;letter-spacing:-0.02em;margin:0}
+.matching-sub{font-size:14px;color:var(--on-bg-2);margin:0;line-height:1.55;max-width:260px}
+.matching-log{
+  margin-top:14px;font-size:12px;color:var(--on-bg-3);
+  display:flex;align-items:center;gap:6px;font-variant-numeric:tabular-nums;
+}
+.matching-log .dot{
+  width:6px;height:6px;border-radius:50%;background:var(--p-mint-d);
+  animation:blink 1.2s ease infinite;
+}
+@keyframes blink{50%{opacity:.3}}
+
+/* ============ Results ============ */
+.result-hero{
+  margin:0 20px 14px;padding:18px;border-radius:var(--r-lg);
+  background:linear-gradient(135deg,var(--p-lilac) 0%, var(--p-pink) 50%, var(--p-peach) 100%);
+  position:relative;overflow:hidden;
+}
+.result-hero::before{
+  content:"";position:absolute;right:-30px;top:-30px;
+  width:160px;height:160px;border-radius:50%;
+  background:radial-gradient(closest-side,rgba(255,255,255,.55),transparent);
+}
+.result-hero h2{margin:0;font-size:24px;font-weight:800;letter-spacing:-0.02em;line-height:1.2;position:relative}
+.result-hero p{margin:6px 0 0;font-size:13px;color:var(--on-bg-2);position:relative}
+.result-hero .badge{
+  display:inline-flex;align-items:center;gap:6px;
+  background:#1C1B1F;color:#fff;padding:6px 10px;border-radius:var(--r-pill);
+  font-size:11px;font-weight:600;margin-top:12px;position:relative;
+}
+.result-hero .badge .mat{font-size:14px}
+
+.tab-bar{
+  display:flex;padding:0 20px;gap:6px;margin-bottom:10px;
+  position:sticky;top:0;background:linear-gradient(180deg,var(--bg) 70%, transparent);
+  padding-bottom:6px;z-index:2;
+}
+.tab{
+  height:36px;padding:0 14px;border-radius:var(--r-pill);
+  background:transparent;color:var(--on-bg-2);font-weight:600;font-size:13px;
+}
+.tab.active{background:var(--on-bg);color:#fff}
+
+.team-list{padding:0 20px 16px;display:flex;flex-direction:column;gap:12px}
+.team-card{
+  background:var(--surface);border-radius:var(--r-lg);
+  padding:16px;box-shadow:var(--shadow-1);
+  border:1px solid var(--outline);
+  text-align:left;width:100%;
+  transition:transform .15s ease, box-shadow .2s;
+}
+.team-card:active{transform:scale(.99)}
+.team-card:hover{box-shadow:var(--shadow-2)}
+.team-card .row{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.team-card .name{flex:1;font-size:16px;font-weight:700;letter-spacing:-0.01em}
+.team-card .score{
+  font-size:13px;font-weight:700;color:var(--on-bg);
+  display:inline-flex;align-items:center;gap:4px;
+  padding:5px 10px;border-radius:var(--r-pill);
+  background:var(--p-mint);
+}
+.team-card .score.mid{background:var(--p-yellow)}
+.team-card .score.low{background:var(--p-rose)}
+.team-card .score .mat{font-size:14px}
+.team-card .meta{font-size:12px;color:var(--on-bg-2);line-height:1.5;margin-bottom:12px}
+
+.avatars{display:flex;align-items:center}
+.avatars .av{
+  width:38px;height:38px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;font-size:13px;color:#1C1B1F;
+  margin-left:-8px;border:2px solid #fff;
+  box-shadow:0 1px 3px rgba(0,0,0,.06);
+}
+.avatars .av:first-child{margin-left:0}
+.avatars .more{
+  background:#1C1B1F;color:#fff;font-size:11px;
+}
+
+.member-strip{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.member-tag{
+  font-size:11px;font-weight:600;color:var(--on-bg-2);
+  padding:4px 8px;border-radius:var(--r-pill);
+  background:var(--surface-2);
+  display:inline-flex;align-items:center;gap:4px;
+}
+.member-tag .dot{width:6px;height:6px;border-radius:50%}
+
+/* ============ Team detail ============ */
+.detail-hero{
+  margin:0 20px;padding:22px;border-radius:var(--r-xl);
+  background:linear-gradient(160deg,#FFFFFF, var(--surface-2));
+  box-shadow:var(--shadow-2);position:relative;overflow:hidden;
+}
+.detail-hero .label{font-size:12px;color:var(--on-bg-3);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.detail-hero .title{font-size:26px;font-weight:800;letter-spacing:-0.02em;margin:6px 0 14px;line-height:1.15}
+.synergy-meter{
+  display:flex;align-items:flex-end;gap:14px;
+}
+.synergy-num{
+  font-size:60px;font-weight:800;letter-spacing:-0.05em;line-height:1;
+  background:linear-gradient(135deg,var(--p-lilac-d),var(--p-pink-d));
+  -webkit-background-clip:text;background-clip:text;color:transparent;
+}
+.synergy-num .pct{font-size:22px;color:var(--on-bg);background:none;-webkit-text-fill-color:initial;font-weight:700;margin-left:2px}
+.synergy-bars{flex:1;display:flex;flex-direction:column;gap:6px;padding-bottom:8px}
+.synergy-bar{display:flex;align-items:center;gap:8px;font-size:11px;color:var(--on-bg-2);font-weight:600}
+.synergy-bar .name-l{width:62px}
+.synergy-bar .track{flex:1;height:6px;background:var(--surface-3);border-radius:99px;overflow:hidden}
+.synergy-bar .fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--p-mint-d),var(--p-sky-d))}
+.synergy-bar .val{width:30px;text-align:right;color:var(--on-bg)}
+
+.section{padding:20px 20px 4px}
+.section h3{font-size:13px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;color:var(--on-bg-3);margin:0 0 12px}
+
+.member-card{
+  padding:14px;background:var(--surface);border-radius:var(--r-lg);
+  border:1px solid var(--outline);display:flex;gap:12px;align-items:center;
+  margin-bottom:10px;
+}
+.member-card .av{
+  width:48px;height:48px;border-radius:50%;flex:0 0 48px;
+  display:flex;align-items:center;justify-content:center;
+  font-weight:700;color:#1C1B1F;font-size:14px;
+}
+.member-card .info{flex:1;min-width:0}
+.member-card .info .nm{font-size:15px;font-weight:700;letter-spacing:-0.01em}
+.member-card .info .sub{font-size:12px;color:var(--on-bg-2);margin-top:2px}
+.member-card .role{
+  font-size:11px;font-weight:700;padding:5px 9px;border-radius:var(--r-pill);
+  background:var(--surface-2);color:var(--on-bg);
+}
+
+.insight-card{
+  margin:0 20px 12px;padding:14px 16px;background:var(--surface);
+  border:1px solid var(--outline);border-radius:var(--r-lg);
+  display:flex;gap:12px;
+}
+.insight-card .ico{
+  width:36px;height:36px;border-radius:12px;flex:0 0 36px;
+  display:flex;align-items:center;justify-content:center;
+}
+.insight-card .ico .mat{font-size:20px;color:var(--on-bg)}
+.insight-card .body{flex:1}
+.insight-card h4{margin:0;font-size:14px;font-weight:700;letter-spacing:-0.01em}
+.insight-card p{margin:4px 0 0;font-size:12.5px;color:var(--on-bg-2);line-height:1.55}
+
+/* ============ Bottom navigation ============ */
+.nav{
+  height:84px;padding:8px 16px 22px;
+  display:flex;align-items:center;justify-content:space-around;
+  background:rgba(255,255,255,.88);backdrop-filter:saturate(160%) blur(20px);
+  -webkit-backdrop-filter:saturate(160%) blur(20px);
+  border-top:1px solid var(--outline);
+  position:relative;z-index:10;
+}
+.nav-item{
+  flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;
+  color:var(--on-bg-3);transition:color .2s;
+  padding:6px 0;
+}
+.nav-item.active{color:var(--on-bg)}
+.nav-item .pill{
+  width:54px;height:28px;border-radius:var(--r-pill);
+  display:flex;align-items:center;justify-content:center;
+  transition:background .2s;
+}
+.nav-item.active .pill{background:var(--surface-2)}
+.nav-item .mat{font-size:22px}
+.nav-item.active .mat{font-variation-settings:'FILL' 1,'wght' 500}
+.nav-item .lbl{font-size:11px;font-weight:600;letter-spacing:-0.01em}
+
+/* ============ Home ============ */
+.greeting{padding:8px 20px 4px}
+.greeting .hi{font-size:14px;color:var(--on-bg-2);font-weight:500}
+.greeting .name{font-size:24px;font-weight:800;letter-spacing:-0.02em;margin-top:2px}
+.profile-strip{
+  margin:14px 20px 18px;padding:16px;border-radius:var(--r-lg);
+  background:linear-gradient(135deg,var(--p-cream),var(--p-peach));
+  display:flex;align-items:center;gap:14px;
+}
+.profile-strip .av{
+  width:54px;height:54px;border-radius:50%;background:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:22px;font-weight:800;letter-spacing:-0.02em;
+}
+.profile-strip .info{flex:1;min-width:0}
+.profile-strip .info .lbl{font-size:11px;color:var(--on-bg-3);font-weight:600;letter-spacing:.05em;text-transform:uppercase}
+.profile-strip .info .v{font-size:15px;font-weight:700;margin-top:2px;letter-spacing:-0.01em}
+.profile-strip .info .v small{font-size:11.5px;color:var(--on-bg-2);font-weight:500;margin-left:6px}
+.profile-strip button{
+  width:36px;height:36px;border-radius:50%;background:rgba(255,255,255,.6);
+  display:flex;align-items:center;justify-content:center;
+}
+.profile-strip button .mat{font-size:20px;color:var(--on-bg)}
+
+.section-row{padding:6px 20px 4px;display:flex;align-items:center;justify-content:space-between}
+.section-row h3{font-size:16px;font-weight:700;letter-spacing:-0.01em;margin:0}
+.section-row a{font-size:12px;color:var(--on-bg-3);font-weight:600;text-decoration:none}
+
+.h-scroll{display:flex;gap:10px;padding:8px 20px 12px;overflow-x:auto;scroll-snap-type:x mandatory;scrollbar-width:none}
+.h-scroll::-webkit-scrollbar{display:none}
+.mini-card{
+  flex:0 0 144px;border-radius:var(--r-lg);padding:14px;
+  scroll-snap-align:start;color:#1C1B1F;
+  display:flex;flex-direction:column;justify-content:space-between;
+  min-height:140px;text-align:left;
+}
+.mini-card .mat{font-size:24px}
+.mini-card h4{margin:8px 0 2px;font-size:14px;font-weight:700;letter-spacing:-0.01em}
+.mini-card p{margin:0;font-size:11.5px;color:var(--on-bg-2);line-height:1.4}
+
+/* ============ Profile (my page) ============ */
+.me-head{
+  padding:8px 20px 4px;display:flex;align-items:center;gap:14px;margin-bottom:6px;
+}
+.me-avatar{
+  width:64px;height:64px;border-radius:50%;
+  background:linear-gradient(135deg,var(--p-pink),var(--p-lilac));
+  display:flex;align-items:center;justify-content:center;
+  font-size:24px;font-weight:800;color:#1C1B1F;letter-spacing:-0.02em;
+  box-shadow:var(--shadow-1);
+}
+.me-head .nm{font-size:20px;font-weight:800;letter-spacing:-0.02em}
+.me-head .sub{font-size:13px;color:var(--on-bg-2);margin-top:2px}
+.me-stats{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:14px 20px 4px}
+.me-stat{
+  padding:14px 12px;background:var(--surface);border-radius:var(--r-lg);
+  border:1px solid var(--outline);text-align:center;
+}
+.me-stat .n{font-size:20px;font-weight:800;letter-spacing:-0.02em}
+.me-stat .l{font-size:11px;color:var(--on-bg-2);font-weight:600;margin-top:2px}
+
+.list-row{
+  padding:14px 20px;display:flex;align-items:center;gap:12px;
+  background:var(--surface);margin:8px 16px 0;border-radius:var(--r-md);
+  border:1px solid var(--outline);
+}
+.list-row .ico{
+  width:36px;height:36px;border-radius:12px;
+  display:flex;align-items:center;justify-content:center;
+  background:var(--surface-2);
+}
+.list-row .ico .mat{font-size:20px;color:var(--on-bg)}
+.list-row .l{flex:1;font-size:14px;font-weight:600}
+.list-row .arrow{color:var(--on-bg-3)}
+
+/* ============ Helpers ============ */
+.spacer-bottom{height:24px}
+.fade-up{animation:fadeUp .45s cubic-bezier(.2,.7,.2,1) both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.disabled{opacity:.4;pointer-events:none}
+
+/* Toast */
+.toast{
+  position:absolute;left:50%;bottom:110px;transform:translateX(-50%) translateY(20px);
+  background:#1C1B1F;color:#fff;padding:12px 18px;border-radius:var(--r-pill);
+  font-size:13px;font-weight:600;letter-spacing:-0.01em;
+  box-shadow:var(--shadow-3);z-index:80;
+  opacity:0;pointer-events:none;transition:opacity .2s, transform .25s;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+
+<div class="stage">
+  <aside class="stage-info">
+    <h1>케미가 맞는 사람들로<br><em>최고의 팀</em>을 만들다.</h1>
+    <p>MBTI, 혈액형, 성향, 성별을 입력하면 업무·사업·팀워크·게임 목적에 가장 잘 맞는 팀을 자동으로 매칭해드려요.</p>
+    <div class="legend">
+      <span class="chip"><span class="dot" style="background:var(--p-pink-d)"></span>Pastel palette</span>
+      <span class="chip"><span class="dot" style="background:var(--p-lilac-d)"></span>Material You</span>
+      <span class="chip"><span class="dot" style="background:var(--p-sky-d)"></span>Pretendard</span>
+      <span class="chip"><span class="dot" style="background:var(--p-mint-d)"></span>Hybrid Web · App</span>
+    </div>
+  </aside>
+
+  <div class="phone" id="phone">
+    <div class="island"></div>
+    <div class="statusbar">
+      <span id="clock">9:41</span>
+      <span class="right">
+        <span class="mat">signal_cellular_alt</span>
+        <span class="mat">wifi</span>
+        <span class="mat">battery_full</span>
+      </span>
+    </div>
+
+    <!-- ========== SPLASH ========== -->
+    <section class="screen active" id="splash">
+      <div class="scroll">
+        <div class="splash-hero">
+          <div class="splash-orbits">
+            <div class="orbit o2">
+              <span class="planet">INFJ</span>
+              <span class="planet">ESTP</span>
+              <span class="planet">ENFP</span>
+            </div>
+            <div class="orbit o1">
+              <span class="planet">A</span>
+              <span class="planet">B</span>
+              <span class="planet">O</span>
+              <span class="planet">AB</span>
+            </div>
+          </div>
+          <div class="logo-mark">
+            <svg viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="22" cy="22" r="14" fill="#FFD9E4"/>
+              <circle cx="38" cy="22" r="14" fill="#CCE6FF"/>
+              <circle cx="30" cy="38" r="14" fill="#E0D5FF" fill-opacity=".95"/>
+            </svg>
+          </div>
+          <h1 class="splash-title">Chemi.</h1>
+          <p class="splash-sub">MBTI · 혈액형 · 성향까지 — 케미가 맞는 사람들로 팀을 만들어보세요.</p>
+        </div>
+        <div class="splash-actions">
+          <button class="btn primary" onclick="goto('setup')">
+            시작하기 <span class="mat">arrow_forward</span>
+          </button>
+          <button class="btn ghost" onclick="goto('home')">이미 프로필이 있어요</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== PROFILE SETUP (multi-step) ========== -->
+    <section class="screen" id="setup">
+      <div class="appbar">
+        <button class="iconbtn" onclick="prevStep()"><span class="mat">arrow_back_ios_new</span></button>
+        <span class="title">프로필 만들기</span>
+      </div>
+      <div class="step-head">
+        <div class="step-progress">
+          <span class="done" data-bar="1"></span>
+          <span data-bar="2"></span>
+          <span data-bar="3"></span>
+          <span data-bar="4"></span>
+        </div>
+      </div>
+
+      <div class="scroll">
+        <!-- Step 1: MBTI -->
+        <div class="step" id="step-1">
+          <div class="step-head">
+            <div class="step-num">Step 1 of 4</div>
+            <h2 class="step-title">MBTI를 선택해주세요</h2>
+            <p class="step-desc">16가지 유형 중 자신과 가장 가까운 유형을 골라주세요.</p>
+          </div>
+          <div class="step-body">
+            <div class="mbti-grid" id="mbtiGrid"></div>
+          </div>
+        </div>
+
+        <!-- Step 2: Blood -->
+        <div class="step" id="step-2" style="display:none">
+          <div class="step-head">
+            <div class="step-num">Step 2 of 4</div>
+            <h2 class="step-title">혈액형은 무엇인가요?</h2>
+            <p class="step-desc">팀 케미스트리 분석에 참고할게요.</p>
+          </div>
+          <div class="step-body">
+            <div class="chip-row">
+              <button class="choice pastel c-pink" data-blood="A"><span class="mat">water_drop</span>A형</button>
+              <button class="choice pastel c-mint" data-blood="B"><span class="mat">water_drop</span>B형</button>
+              <button class="choice pastel c-yellow" data-blood="O"><span class="mat">water_drop</span>O형</button>
+              <button class="choice pastel c-sky" data-blood="AB"><span class="mat">water_drop</span>AB형</button>
+              <button class="choice pastel c-lilac" data-blood="?"><span class="mat">help</span>잘 몰라요</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3: Gender -->
+        <div class="step" id="step-3" style="display:none">
+          <div class="step-head">
+            <div class="step-num">Step 3 of 4</div>
+            <h2 class="step-title">성별을 알려주세요</h2>
+            <p class="step-desc">팀 구성 시 다양성 옵션에만 활용돼요.</p>
+          </div>
+          <div class="step-body">
+            <div class="gender-row">
+              <button class="gender-card" data-v="female">
+                <div class="avatar"><span class="mat">female</span></div>
+                여성
+              </button>
+              <button class="gender-card" data-v="male">
+                <div class="avatar"><span class="mat">male</span></div>
+                남성
+              </button>
+            </div>
+            <div style="margin-top:10px">
+              <button class="choice" data-v="other" id="genderOther"><span class="mat">person</span>선택 안함</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 4: Personality tags -->
+        <div class="step" id="step-4" style="display:none">
+          <div class="step-head">
+            <div class="step-num">Step 4 of 4</div>
+            <h2 class="step-title">나의 성향 태그<br><span style="color:var(--on-bg-3);font-weight:600;font-size:14px;letter-spacing:0">(3개까지)</span></h2>
+            <p class="step-desc">팀 안에서 어떤 역할을 잘하는지 알려주세요.</p>
+          </div>
+          <div class="step-body">
+            <div class="chip-row" id="traitChips"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="bottom-cta">
+        <button class="btn primary" id="nextBtn" onclick="nextStep()">다음</button>
+      </div>
+    </section>
+
+    <!-- ========== PURPOSE ========== -->
+    <section class="screen" id="purpose">
+      <div class="appbar">
+        <button class="iconbtn" onclick="goto('setup')"><span class="mat">arrow_back_ios_new</span></button>
+        <span class="title">팀 목적</span>
+      </div>
+      <div class="step-head">
+        <div class="step-num">Match Goal</div>
+        <h2 class="step-title">어떤 팀을 찾고 계신가요?</h2>
+        <p class="step-desc">목적에 따라 가장 잘 맞는 케미 조합이 달라져요.</p>
+      </div>
+      <div class="scroll">
+        <div class="step-body">
+          <div class="purpose-list">
+            <button class="purpose-card" data-v="work">
+              <div class="ico"><span class="mat">work</span></div>
+              <div class="meta">
+                <h3>업무 · 프로젝트</h3>
+                <p>회사 프로젝트, 협업, 실행력 중심</p>
+              </div>
+              <span class="mat arrow">chevron_right</span>
+            </button>
+            <button class="purpose-card" data-v="business">
+              <div class="ico"><span class="mat">rocket_launch</span></div>
+              <div class="meta">
+                <h3>사업 · 창업</h3>
+                <p>비전·전략·기획자 조합 추천</p>
+              </div>
+              <span class="mat arrow">chevron_right</span>
+            </button>
+            <button class="purpose-card" data-v="teamwork">
+              <div class="ico"><span class="mat">diversity_3</span></div>
+              <div class="meta">
+                <h3>팀워크 · 스터디</h3>
+                <p>분위기 좋고 균형 잡힌 팀 만들기</p>
+              </div>
+              <span class="mat arrow">chevron_right</span>
+            </button>
+            <button class="purpose-card" data-v="game">
+              <div class="ico"><span class="mat">sports_esports</span></div>
+              <div class="meta">
+                <h3>게임 · 취미</h3>
+                <p>호흡 잘 맞고 즐거운 파티 매칭</p>
+              </div>
+              <span class="mat arrow">chevron_right</span>
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="bottom-cta">
+        <button class="btn primary disabled" id="matchBtn" onclick="startMatching()">
+          매칭 시작하기 <span class="mat">auto_awesome</span>
+        </button>
+      </div>
+    </section>
+
+    <!-- ========== MATCHING LOADING ========== -->
+    <section class="screen" id="matching">
+      <div class="matching-stage">
+        <div class="matching-rings">
+          <div class="core" id="matchCore">···</div>
+        </div>
+        <h2 class="matching-title">최적의 팀을 찾고 있어요</h2>
+        <p class="matching-sub">8,420명의 케미 데이터 중 당신과 가장 잘 맞는<br>조합을 분석하고 있어요.</p>
+        <div class="matching-log">
+          <span class="dot"></span>
+          <span id="matchLog">MBTI 호환성 계산 중...</span>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== RESULTS ========== -->
+    <section class="screen" id="results">
+      <div class="appbar">
+        <button class="iconbtn" onclick="goto('purpose')"><span class="mat">arrow_back_ios_new</span></button>
+        <span class="title">매칭 결과</span>
+        <button class="iconbtn"><span class="mat">tune</span></button>
+      </div>
+      <div class="scroll">
+        <div class="result-hero" id="resultHero">
+          <h2 id="resultTitle">당신을 위한 베스트 팀 4팀</h2>
+          <p id="resultSub">업무 · ENTJ 리더와의 시너지가 가장 높아요</p>
+          <span class="badge"><span class="mat fill">spark</span><span id="resultPurposeLabel">업무 · 프로젝트</span></span>
+        </div>
+        <div class="tab-bar" id="tabBar">
+          <button class="tab active" data-tab="best">베스트</button>
+          <button class="tab" data-tab="balanced">밸런스</button>
+          <button class="tab" data-tab="creative">크리에이티브</button>
+        </div>
+        <div class="team-list" id="teamList"></div>
+        <div class="spacer-bottom"></div>
+      </div>
+      <nav class="nav">
+        <button class="nav-item" onclick="goto('home')"><span class="pill"><span class="mat">home</span></span><span class="lbl">홈</span></button>
+        <button class="nav-item active"><span class="pill"><span class="mat fill">groups</span></span><span class="lbl">매칭</span></button>
+        <button class="nav-item" onclick="toast('곧 만나요!')"><span class="pill"><span class="mat">chat_bubble</span></span><span class="lbl">채팅</span></button>
+        <button class="nav-item" onclick="goto('me')"><span class="pill"><span class="mat">person</span></span><span class="lbl">프로필</span></button>
+      </nav>
+    </section>
+
+    <!-- ========== TEAM DETAIL ========== -->
+    <section class="screen" id="teamDetail">
+      <div class="appbar">
+        <button class="iconbtn" onclick="goto('results')"><span class="mat">arrow_back_ios_new</span></button>
+        <span class="title">팀 상세</span>
+        <button class="iconbtn" onclick="toast('저장했어요')"><span class="mat">bookmark</span></button>
+        <button class="iconbtn" onclick="toast('공유 링크 복사됨')"><span class="mat">ios_share</span></button>
+      </div>
+      <div class="scroll">
+        <div class="detail-hero">
+          <div class="label">YOUR TEAM</div>
+          <div class="title" id="dTitle">시너지 팀 · 미라클메이커</div>
+          <div class="synergy-meter">
+            <div class="synergy-num" id="dScore">92<span class="pct">%</span></div>
+            <div class="synergy-bars" id="dBars"></div>
+          </div>
+        </div>
+
+        <div class="section">
+          <h3>팀 멤버</h3>
+        </div>
+        <div id="dMembers" style="padding:0 20px"></div>
+
+        <div class="section">
+          <h3>케미 인사이트</h3>
+        </div>
+        <div class="insight-card">
+          <div class="ico" style="background:var(--p-lilac)"><span class="mat">psychology</span></div>
+          <div class="body">
+            <h4>강점</h4>
+            <p id="dStrength">전략(N) + 실행(S)의 균형이 뛰어나, 빠른 의사결정과 안정적 추진이 동시에 가능한 팀이에요.</p>
+          </div>
+        </div>
+        <div class="insight-card">
+          <div class="ico" style="background:var(--p-yellow)"><span class="mat">flag</span></div>
+          <div class="body">
+            <h4>주의할 점</h4>
+            <p id="dWatch">의사결정 속도가 다를 수 있으니, 매주 30분 동기화 미팅을 권장해요.</p>
+          </div>
+        </div>
+        <div class="insight-card">
+          <div class="ico" style="background:var(--p-mint)"><span class="mat">workspace_premium</span></div>
+          <div class="body">
+            <h4>추천 역할 분배</h4>
+            <p id="dRoles">리더는 ENTJ, 기획은 INFJ, 실행은 ISTJ, 분위기 메이커는 ENFP가 적합해요.</p>
+          </div>
+        </div>
+
+        <div style="padding:14px 20px 24px">
+          <button class="btn primary" onclick="toast('팀에게 매칭 요청을 보냈어요')">
+            이 팀에게 매칭 요청 <span class="mat">send</span>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ========== HOME ========== -->
+    <section class="screen" id="home">
+      <div class="appbar">
+        <span class="title">Chemi.</span>
+        <button class="iconbtn"><span class="mat">notifications</span></button>
+        <button class="iconbtn" onclick="goto('me')"><span class="mat">account_circle</span></button>
+      </div>
+      <div class="scroll">
+        <div class="greeting">
+          <div class="hi">안녕하세요 👋</div>
+          <div class="name" id="homeName">오늘은 어떤 팀을 만나볼까요?</div>
+        </div>
+
+        <div class="profile-strip" id="homeProfile">
+          <div class="av" id="homeAv">??</div>
+          <div class="info">
+            <div class="lbl">MY PROFILE</div>
+            <div class="v" id="homeProfileV">프로필을 완성해주세요 <small>탭하여 입력</small></div>
+          </div>
+          <button onclick="goto('setup')"><span class="mat">edit</span></button>
+        </div>
+
+        <div class="section-row">
+          <h3>빠른 매칭</h3>
+          <a href="#" onclick="goto('purpose');return false">전체보기</a>
+        </div>
+        <div class="h-scroll">
+          <button class="mini-card" style="background:var(--p-sky)" onclick="quickStart('work')">
+            <span class="mat">work</span>
+            <div>
+              <h4>업무 매칭</h4>
+              <p>실행력 좋은 팀 찾기</p>
+            </div>
+          </button>
+          <button class="mini-card" style="background:var(--p-lilac)" onclick="quickStart('business')">
+            <span class="mat">rocket_launch</span>
+            <div>
+              <h4>사업 파트너</h4>
+              <p>창업 동료 찾기</p>
+            </div>
+          </button>
+          <button class="mini-card" style="background:var(--p-mint)" onclick="quickStart('teamwork')">
+            <span class="mat">diversity_3</span>
+            <div>
+              <h4>팀워크</h4>
+              <p>균형 잡힌 팀</p>
+            </div>
+          </button>
+          <button class="mini-card" style="background:var(--p-peach)" onclick="quickStart('game')">
+            <span class="mat">sports_esports</span>
+            <div>
+              <h4>게임 파티</h4>
+              <p>호흡 좋은 듀오</p>
+            </div>
+          </button>
+        </div>
+
+        <div class="section-row">
+          <h3>오늘의 케미 인사이트</h3>
+        </div>
+        <div class="insight-card" style="margin-bottom:8px">
+          <div class="ico" style="background:var(--p-rose)"><span class="mat">favorite</span></div>
+          <div class="body">
+            <h4>INFJ는 ENFP와 함께할 때 빛나요</h4>
+            <p>비전을 그리는 INFJ에 ENFP의 에너지가 더해지면, 아이디어 실현 속도가 1.7배 빨라져요.</p>
+          </div>
+        </div>
+        <div class="insight-card">
+          <div class="ico" style="background:var(--p-yellow)"><span class="mat">tips_and_updates</span></div>
+          <div class="body">
+            <h4>업무용 팀, 이런 조합이 좋아요</h4>
+            <p>리더(EJ) 1명 + 전략가(N) 1명 + 실행가(SJ) 2명. 의사결정과 실행이 균형을 이뤄요.</p>
+          </div>
+        </div>
+        <div class="spacer-bottom"></div>
+      </div>
+      <nav class="nav">
+        <button class="nav-item active"><span class="pill"><span class="mat fill">home</span></span><span class="lbl">홈</span></button>
+        <button class="nav-item" onclick="goto('purpose')"><span class="pill"><span class="mat">groups</span></span><span class="lbl">매칭</span></button>
+        <button class="nav-item" onclick="toast('곧 만나요!')"><span class="pill"><span class="mat">chat_bubble</span></span><span class="lbl">채팅</span></button>
+        <button class="nav-item" onclick="goto('me')"><span class="pill"><span class="mat">person</span></span><span class="lbl">프로필</span></button>
+      </nav>
+    </section>
+
+    <!-- ========== MY PAGE ========== -->
+    <section class="screen" id="me">
+      <div class="appbar">
+        <button class="iconbtn" onclick="goto('home')"><span class="mat">arrow_back_ios_new</span></button>
+        <span class="title">내 프로필</span>
+        <button class="iconbtn" onclick="goto('setup')"><span class="mat">edit</span></button>
+      </div>
+      <div class="scroll">
+        <div class="me-head">
+          <div class="me-avatar" id="meAv">??</div>
+          <div>
+            <div class="nm" id="meNm">나의 케미 카드</div>
+            <div class="sub" id="meSub">MBTI · 혈액형 · 성향</div>
+          </div>
+        </div>
+
+        <div class="me-stats">
+          <div class="me-stat"><div class="n">12</div><div class="l">매칭한 팀</div></div>
+          <div class="me-stat"><div class="n">87<span style="font-size:14px">%</span></div><div class="l">평균 케미</div></div>
+          <div class="me-stat"><div class="n">3</div><div class="l">활동 팀</div></div>
+        </div>
+
+        <div class="section" style="padding-top:18px">
+          <h3>나의 성향</h3>
+        </div>
+        <div style="padding:0 20px;display:flex;flex-wrap:wrap;gap:8px" id="meTags"></div>
+
+        <div class="section" style="padding-top:22px">
+          <h3>설정</h3>
+        </div>
+        <button class="list-row" onclick="toast('알림 설정')">
+          <div class="ico"><span class="mat">notifications</span></div>
+          <div class="l">알림</div>
+          <span class="mat arrow">chevron_right</span>
+        </button>
+        <button class="list-row" onclick="toast('개인정보 설정')">
+          <div class="ico"><span class="mat">shield</span></div>
+          <div class="l">개인정보</div>
+          <span class="mat arrow">chevron_right</span>
+        </button>
+        <button class="list-row" onclick="toast('테마 변경')">
+          <div class="ico"><span class="mat">palette</span></div>
+          <div class="l">테마</div>
+          <span class="mat arrow">chevron_right</span>
+        </button>
+        <button class="list-row" onclick="toast('Chemi v1.0.0')">
+          <div class="ico"><span class="mat">info</span></div>
+          <div class="l">앱 정보</div>
+          <span class="mat arrow">chevron_right</span>
+        </button>
+        <div class="spacer-bottom"></div>
+        <div class="spacer-bottom"></div>
+      </div>
+      <nav class="nav">
+        <button class="nav-item" onclick="goto('home')"><span class="pill"><span class="mat">home</span></span><span class="lbl">홈</span></button>
+        <button class="nav-item" onclick="goto('purpose')"><span class="pill"><span class="mat">groups</span></span><span class="lbl">매칭</span></button>
+        <button class="nav-item" onclick="toast('곧 만나요!')"><span class="pill"><span class="mat">chat_bubble</span></span><span class="lbl">채팅</span></button>
+        <button class="nav-item active"><span class="pill"><span class="mat fill">person</span></span><span class="lbl">프로필</span></button>
+      </nav>
+    </section>
+
+    <div class="toast" id="toast">완료</div>
+  </div>
+</div>
+
+<script>
+/* =================== Data =================== */
+const MBTI_LIST = [
+  ['INTJ','전략가','analyst'],['INTP','논리술사','analyst'],['ENTJ','통솔자','analyst'],['ENTP','변론가','analyst'],
+  ['INFJ','옹호자','diplomat'],['INFP','중재자','diplomat'],['ENFJ','선도자','diplomat'],['ENFP','활동가','diplomat'],
+  ['ISTJ','현실주의자','sentinel'],['ISFJ','수호자','sentinel'],['ESTJ','경영자','sentinel'],['ESFJ','집정관','sentinel'],
+  ['ISTP','장인','explorer'],['ISFP','모험가','explorer'],['ESTP','사업가','explorer'],['ESFP','연예인','explorer'],
+];
+const GROUP_COLOR = {
+  analyst:'var(--p-lilac)', diplomat:'var(--p-mint)',
+  sentinel:'var(--p-sky)', explorer:'var(--p-yellow)'
+};
+const GROUP_DOT = {
+  analyst:'var(--p-lilac-d)', diplomat:'var(--p-mint-d)',
+  sentinel:'var(--p-sky-d)', explorer:'var(--p-peach-d)'
+};
+function groupOf(t){return MBTI_LIST.find(m=>m[0]===t)?.[2]||'analyst'}
+
+const TRAITS = [
+  ['리더십','c-rose'],['기획력','c-lilac'],['실행력','c-mint'],['창의성','c-pink'],
+  ['분석력','c-sky'],['소통','c-yellow'],['꼼꼼함','c-peach'],['에너지','c-pink'],
+  ['공감능력','c-mint'],['추진력','c-lilac']
+];
+
+const PURPOSE_LABEL = {
+  work:'업무 · 프로젝트', business:'사업 · 창업',
+  teamwork:'팀워크 · 스터디', game:'게임 · 취미'
+};
+
+/* Sample people for matching */
+const PEOPLE = [
+  {n:'지유',m:'ENTJ',b:'O',g:'F',t:['리더십','추진력','기획력']},
+  {n:'민준',m:'ISTJ',b:'A',g:'M',t:['실행력','꼼꼼함']},
+  {n:'서연',m:'ENFP',b:'B',g:'F',t:['에너지','창의성','소통']},
+  {n:'도윤',m:'INTP',b:'AB',g:'M',t:['분석력','기획력']},
+  {n:'하은',m:'INFJ',b:'A',g:'F',t:['공감능력','기획력','창의성']},
+  {n:'시우',m:'ESTP',b:'O',g:'M',t:['추진력','에너지','실행력']},
+  {n:'예린',m:'ESFJ',b:'A',g:'F',t:['소통','공감능력']},
+  {n:'준호',m:'INTJ',b:'AB',g:'M',t:['전략','분석력','기획력']},
+  {n:'채원',m:'ENFJ',b:'O',g:'F',t:['리더십','소통','공감능력']},
+  {n:'우진',m:'ISTP',b:'B',g:'M',t:['실행력','분석력']},
+  {n:'유나',m:'ESFP',b:'B',g:'F',t:['에너지','창의성']},
+  {n:'태양',m:'ISFJ',b:'A',g:'M',t:['공감능력','꼼꼼함']},
+  {n:'아린',m:'ENTP',b:'O',g:'F',t:['창의성','추진력','기획력']},
+  {n:'재현',m:'INFP',b:'AB',g:'M',t:['공감능력','창의성']},
+];
+
+/* =================== State =================== */
+const state = {
+  mbti:null, blood:null, gender:null, traits:[],
+  step:1, purpose:null, tab:'best',
+  currentTeam:null,
+};
+
+/* =================== Build Step 1: MBTI grid =================== */
+(function buildMbti(){
+  const g = document.getElementById('mbtiGrid');
+  g.innerHTML = MBTI_LIST.map(([code,nick,group])=>`
+    <button class="mbti-cell" data-mbti="${code}" data-group="${group}">
+      <span>${code}</span>
+      <span class="nick">${nick}</span>
+    </button>
+  `).join('');
+  g.querySelectorAll('.mbti-cell').forEach(el=>{
+    el.addEventListener('click',()=>{
+      g.querySelectorAll('.mbti-cell').forEach(x=>x.classList.remove('selected'));
+      el.classList.add('selected');
+      state.mbti = el.dataset.mbti;
+      updateNextBtn();
+    });
+  });
+})();
+
+/* Step 2: Blood */
+document.querySelectorAll('[data-blood]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('[data-blood]').forEach(x=>x.classList.remove('selected'));
+    b.classList.add('selected');
+    state.blood = b.dataset.blood;
+    updateNextBtn();
+  });
+});
+
+/* Step 3: Gender */
+document.querySelectorAll('.gender-card, #genderOther').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('.gender-card, #genderOther').forEach(x=>x.classList.remove('selected'));
+    b.classList.add('selected');
+    state.gender = b.dataset.v;
+    updateNextBtn();
+  });
+});
+
+/* Step 4: traits */
+(function buildTraits(){
+  const t = document.getElementById('traitChips');
+  t.innerHTML = TRAITS.map(([name,color])=>`
+    <button class="choice pastel ${color}" data-trait="${name}">${name}</button>
+  `).join('');
+  t.querySelectorAll('[data-trait]').forEach(el=>{
+    el.addEventListener('click',()=>{
+      const tr = el.dataset.trait;
+      if(state.traits.includes(tr)){
+        state.traits = state.traits.filter(x=>x!==tr);
+        el.classList.remove('selected');
+      } else {
+        if(state.traits.length>=3){toast('최대 3개까지 선택할 수 있어요');return}
+        state.traits.push(tr);
+        el.classList.add('selected');
+      }
+      updateNextBtn();
+    });
+  });
+})();
+
+/* =================== Step navigation =================== */
+function showStep(n){
+  state.step = n;
+  for(let i=1;i<=4;i++){
+    document.getElementById('step-'+i).style.display = (i===n)?'block':'none';
+    const bar = document.querySelector(`[data-bar="${i}"]`);
+    if(bar) bar.classList.toggle('done', i<=n);
+  }
+  document.getElementById('nextBtn').textContent = (n===4)?'완료':'다음';
+  updateNextBtn();
+}
+function nextStep(){
+  if(!validStep(state.step)){toast('선택해주세요');return}
+  if(state.step<4){ showStep(state.step+1); }
+  else{
+    // done -> go to purpose
+    goto('purpose');
+    refreshHome();
+  }
+}
+function prevStep(){
+  if(state.step>1){ showStep(state.step-1); }
+  else{ goto('splash'); }
+}
+function validStep(s){
+  if(s===1) return !!state.mbti;
+  if(s===2) return !!state.blood;
+  if(s===3) return !!state.gender;
+  if(s===4) return state.traits.length>=1;
+  return false;
+}
+function updateNextBtn(){
+  document.getElementById('nextBtn').classList.toggle('disabled', !validStep(state.step));
+}
+
+/* =================== Purpose =================== */
+document.querySelectorAll('#purpose [data-v]').forEach(b=>{
+  b.addEventListener('click',()=>{
+    document.querySelectorAll('#purpose [data-v]').forEach(x=>x.classList.remove('selected'));
+    b.classList.add('selected');
+    state.purpose = b.dataset.v;
+    document.getElementById('matchBtn').classList.remove('disabled');
+  });
+});
+
+function quickStart(p){
+  if(!state.mbti){ toast('먼저 프로필을 만들어주세요'); goto('setup'); showStep(1); return; }
+  state.purpose = p;
+  startMatching();
+}
+
+/* =================== Matching =================== */
+const MATCH_LOGS = [
+  'MBTI 호환성 계산 중...',
+  '혈액형 균형 점수 측정 중...',
+  '성향 태그 시너지 분석 중...',
+  '팀 다양성 인덱스 계산 중...',
+  '최적의 조합을 정렬하고 있어요...',
+];
+function startMatching(){
+  if(!state.purpose){toast('목적을 선택해주세요');return}
+  goto('matching');
+  let i=0;
+  document.getElementById('matchCore').textContent = state.mbti || '???';
+  const id = setInterval(()=>{
+    document.getElementById('matchLog').textContent = MATCH_LOGS[i % MATCH_LOGS.length];
+    i++;
+  }, 600);
+  setTimeout(()=>{
+    clearInterval(id);
+    buildResults();
+    goto('results');
+  }, 2400);
+}
+
+/* =================== Compatibility logic =================== */
+function letterScore(a,b,sameWeight,diffWeight){
+  return a===b ? sameWeight : diffWeight;
+}
+function pairScore(myMbti, otherMbti, purpose){
+  // each axis: E/I, S/N, T/F, J/P
+  let s = 0;
+  // EI: prefer mix
+  s += letterScore(myMbti[0], otherMbti[0], 6, 12);
+  // SN:
+  s += letterScore(myMbti[1], otherMbti[1], 10, 8);
+  // TF:
+  s += letterScore(myMbti[2], otherMbti[2], 10, 8);
+  // JP: mixed often complementary
+  s += letterScore(myMbti[3], otherMbti[3], 8, 11);
+
+  if(purpose==='work'){
+    if(['ENTJ','ESTJ','ENFJ'].includes(otherMbti)) s+=6;
+    if(['ISTJ','ISFJ'].includes(otherMbti)) s+=4;
+  } else if(purpose==='business'){
+    if(['ENTJ','ENTP','INTJ'].includes(otherMbti)) s+=6;
+    if(['ENFP','ENFJ'].includes(otherMbti)) s+=4;
+  } else if(purpose==='teamwork'){
+    if(['ENFJ','ENFP','ESFJ','INFJ'].includes(otherMbti)) s+=5;
+  } else if(purpose==='game'){
+    if(['ESTP','ESFP','ENTP','ENFP'].includes(otherMbti)) s+=6;
+  }
+  return Math.min(100, 50 + s);
+}
+function teamScore(members, purpose){
+  // diversity bonus
+  const groups = new Set(members.map(m=>groupOf(m.m)));
+  let div = groups.size * 5;
+  // gender balance
+  const males = members.filter(m=>m.g==='M').length;
+  const females = members.filter(m=>m.g==='F').length;
+  const bal = Math.abs(males-females)<=1 ? 5 : 0;
+  // pair average vs me
+  const myAvg = members.reduce((a,b)=>a+pairScore(state.mbti,b.m,purpose),0)/members.length;
+  return Math.min(99, Math.round(myAvg*0.7 + div*1.6 + bal*1.2));
+}
+
+const TEAM_BLUEPRINTS = {
+  work:[
+    {name:'미라클메이커', want:['ENTJ','INFJ','ISTJ']},
+    {name:'스피드러너',  want:['ESTJ','ENFP','ISTP']},
+    {name:'스트래티지스트',want:['INTJ','ENFJ','ISFJ']},
+    {name:'올라운더',    want:['ENTP','ISTJ','ESFJ']},
+  ],
+  business:[
+    {name:'유니콘 빌더', want:['ENTJ','INTJ','ENFP']},
+    {name:'벤처 트리오', want:['ENTP','INTP','ESTP']},
+    {name:'미션 드리븐', want:['ENFJ','INFJ','ENTJ']},
+    {name:'그로스 해커', want:['ENTP','ISTP','ESFJ']},
+  ],
+  teamwork:[
+    {name:'하모니',     want:['ENFJ','INFP','ISFJ']},
+    {name:'케미 패밀리',want:['ENFP','ESFJ','INFJ']},
+    {name:'벨런서',    want:['INFJ','ESFP','ISTJ']},
+    {name:'썸머 캠프', want:['ESFP','ENFJ','INTP']},
+  ],
+  game:[
+    {name:'코어 듀오',  want:['ESTP','ENTP','ENFP']},
+    {name:'서포터즈',  want:['ENFJ','ISFJ','ESFP']},
+    {name:'전략 길드',  want:['INTJ','INTP','ENTJ']},
+    {name:'올나잇 파티',want:['ESFP','ENFP','ESTP']},
+  ]
+};
+
+function pickByMbti(want){
+  const out = [];
+  const pool = [...PEOPLE];
+  want.forEach(target=>{
+    let best = null, bestIdx=-1, bestD=99;
+    pool.forEach((p,i)=>{
+      // hamming-ish distance
+      let d=0;
+      for(let k=0;k<4;k++) if(p.m[k]!==target[k]) d++;
+      if(d<bestD){bestD=d;best=p;bestIdx=i}
+    });
+    if(best){ out.push(best); pool.splice(bestIdx,1); }
+  });
+  return out;
+}
+
+function buildResults(){
+  const purpose = state.purpose;
+  const blueprints = TEAM_BLUEPRINTS[purpose];
+  const teams = blueprints.map(bp=>{
+    const members = pickByMbti(bp.want);
+    const score = teamScore(members, purpose);
+    return {name:bp.name, members, score};
+  }).sort((a,b)=>b.score-a.score);
+
+  // hero
+  document.getElementById('resultPurposeLabel').textContent = PURPOSE_LABEL[purpose];
+  document.getElementById('resultTitle').textContent = `${state.mbti}님을 위한 ${PURPOSE_LABEL[purpose]} 팀`;
+  document.getElementById('resultSub').textContent = `총 ${teams.length}개의 추천 팀을 찾았어요 · 평균 케미 ${Math.round(teams.reduce((a,b)=>a+b.score,0)/teams.length)}%`;
+
+  // list
+  const list = document.getElementById('teamList');
+  list.innerHTML = teams.map((t,i)=>`
+    <button class="team-card fade-up" style="animation-delay:${i*60}ms" onclick="openTeam(${i})">
+      <div class="row">
+        <span class="name">${t.name}</span>
+        <span class="score ${t.score>=85?'':(t.score>=70?'mid':'low')}"><span class="mat fill">spark</span>${t.score}%</span>
+      </div>
+      <div class="meta">${PURPOSE_LABEL[purpose]} · ${t.members.length}명 · ${[...new Set(t.members.map(m=>m.m))].slice(0,3).join(' · ')}</div>
+      <div class="avatars">
+        ${t.members.slice(0,4).map(m=>`<span class="av" style="background:${GROUP_COLOR[groupOf(m.m)]}">${m.n[0]}</span>`).join('')}
+        ${t.members.length>4?`<span class="av more">+${t.members.length-4}</span>`:''}
+      </div>
+      <div class="member-strip">
+        ${t.members.map(m=>`<span class="member-tag"><span class="dot" style="background:${GROUP_DOT[groupOf(m.m)]}"></span>${m.m} · ${m.n}</span>`).join('')}
+      </div>
+    </button>
+  `).join('');
+
+  state._teams = teams;
+}
+
+function openTeam(idx){
+  const t = state._teams[idx];
+  state.currentTeam = t;
+  document.getElementById('dTitle').textContent = `${PURPOSE_LABEL[state.purpose]} · ${t.name}`;
+  document.getElementById('dScore').innerHTML = `${t.score}<span class="pct">%</span>`;
+
+  const axes = [
+    {l:'리더십', v: Math.min(99, 60+t.members.filter(m=>['E','J'].every(c=>m.m.includes(c))).length*15)},
+    {l:'창의성', v: Math.min(99, 55+t.members.filter(m=>m.m.includes('N')).length*8)},
+    {l:'실행력', v: Math.min(99, 55+t.members.filter(m=>m.m.includes('S')&&m.m.includes('J')).length*12)},
+    {l:'공감력', v: Math.min(99, 55+t.members.filter(m=>m.m.includes('F')).length*8)},
+  ];
+  document.getElementById('dBars').innerHTML = axes.map(a=>`
+    <div class="synergy-bar">
+      <span class="name-l">${a.l}</span>
+      <span class="track"><span class="fill" style="width:${a.v}%"></span></span>
+      <span class="val">${a.v}</span>
+    </div>
+  `).join('');
+
+  const roleNames = ['리더','전략가','크리에이터','실행자','분위기메이커'];
+  document.getElementById('dMembers').innerHTML = t.members.map((m,i)=>`
+    <div class="member-card">
+      <div class="av" style="background:${GROUP_COLOR[groupOf(m.m)]}">${m.n[0]}</div>
+      <div class="info">
+        <div class="nm">${m.n} · ${m.m}</div>
+        <div class="sub">${m.b}형 · ${m.t.slice(0,2).join(' / ')}</div>
+      </div>
+      <span class="role">${roleNames[i] || '서포터'}</span>
+    </div>
+  `).join('');
+
+  // contextual insights
+  const purpose = state.purpose;
+  const strengthMap = {
+    work:'전략(N) + 실행(S)의 균형이 뛰어나, 빠른 의사결정과 안정적 추진이 동시에 가능한 팀이에요.',
+    business:'비전을 그리는 NT와 사람을 모으는 NF가 함께 있어, 0→1 단계에서 강한 추진력을 발휘해요.',
+    teamwork:'공감 능력이 높은 F 유형이 분위기를 만들고, 꼼꼼한 J 유형이 흐름을 잡아줘요.',
+    game:'에너지 높은 E 유형이 분위기를 띄우고, 분석적인 T 유형이 전략을 짜요. 호흡이 잘 맞는 조합이에요.',
+  };
+  const watchMap = {
+    work:'의사결정 속도가 다를 수 있으니, 매주 30분 동기화 미팅을 권장해요.',
+    business:'아이디어가 많을 수 있으니, 우선순위 정렬용 칸반을 도입하면 좋아요.',
+    teamwork:'갈등을 피하려 할 수 있으니, 솔직한 피드백 시간을 정해두는 게 좋아요.',
+    game:'승부욕이 강한 멤버가 있으니, 가벼운 룰 합의를 먼저 하면 즐거워요.',
+  };
+  const rolesMap = {
+    work:'리더는 ENTJ, 기획은 INFJ, 실행은 ISTJ, 분위기 메이커는 ENFP가 적합해요.',
+    business:'CEO는 ENTJ, CTO는 INTJ, CMO는 ENFP, COO는 ISTJ 조합을 추천해요.',
+    teamwork:'리딩은 ENFJ, 콘텐츠는 ENFP, 디테일은 ISFJ가 맡으면 시너지가 좋아요.',
+    game:'오더는 INTJ, 메인 딜러는 ESTP, 서포터는 ISFJ, 분위기 담당은 ESFP가 좋아요.',
+  };
+  document.getElementById('dStrength').textContent = strengthMap[purpose];
+  document.getElementById('dWatch').textContent = watchMap[purpose];
+  document.getElementById('dRoles').textContent = rolesMap[purpose];
+
+  goto('teamDetail');
+}
+
+/* Tab switching */
+document.getElementById('tabBar').addEventListener('click',(e)=>{
+  const t = e.target.closest('.tab'); if(!t) return;
+  document.querySelectorAll('#tabBar .tab').forEach(x=>x.classList.remove('active'));
+  t.classList.add('active');
+  state.tab = t.dataset.tab;
+  // re-sort teams a bit for fun
+  const list = document.getElementById('teamList');
+  let arr = [...state._teams];
+  if(state.tab==='balanced'){
+    arr.sort((a,b)=>{
+      const ga = new Set(a.members.map(m=>groupOf(m.m))).size;
+      const gb = new Set(b.members.map(m=>groupOf(m.m))).size;
+      return gb-ga;
+    });
+  } else if(state.tab==='creative'){
+    arr.sort((a,b)=>{
+      const na = a.members.filter(m=>m.m.includes('N')).length;
+      const nb = b.members.filter(m=>m.m.includes('N')).length;
+      return nb-na;
+    });
+  } else {
+    arr.sort((a,b)=>b.score-a.score);
+  }
+  // re-render with stable indices into original state._teams
+  list.innerHTML = arr.map((t)=>{
+    const idx = state._teams.indexOf(t);
+    return `
+    <button class="team-card fade-up" onclick="openTeam(${idx})">
+      <div class="row">
+        <span class="name">${t.name}</span>
+        <span class="score ${t.score>=85?'':(t.score>=70?'mid':'low')}"><span class="mat fill">spark</span>${t.score}%</span>
+      </div>
+      <div class="meta">${PURPOSE_LABEL[state.purpose]} · ${t.members.length}명 · ${[...new Set(t.members.map(m=>m.m))].slice(0,3).join(' · ')}</div>
+      <div class="avatars">
+        ${t.members.slice(0,4).map(m=>`<span class="av" style="background:${GROUP_COLOR[groupOf(m.m)]}">${m.n[0]}</span>`).join('')}
+        ${t.members.length>4?`<span class="av more">+${t.members.length-4}</span>`:''}
+      </div>
+      <div class="member-strip">
+        ${t.members.map(m=>`<span class="member-tag"><span class="dot" style="background:${GROUP_DOT[groupOf(m.m)]}"></span>${m.m} · ${m.n}</span>`).join('')}
+      </div>
+    </button>
+    `;
+  }).join('');
+});
+
+/* =================== Home / Profile refresh =================== */
+function refreshHome(){
+  if(!state.mbti) return;
+  const av = state.mbti.slice(0,2);
+  document.getElementById('homeAv').textContent = av;
+  document.getElementById('homeName').textContent = `오늘은 어떤 ${state.mbti}을 만나볼까요?`;
+  document.getElementById('homeProfileV').innerHTML = `${state.mbti} · ${state.blood||'?'}형 <small>${state.traits.join(' · ')}</small>`;
+  document.getElementById('homeAv').style.background = GROUP_COLOR[groupOf(state.mbti)];
+
+  document.getElementById('meAv').textContent = av;
+  document.getElementById('meAv').style.background = GROUP_COLOR[groupOf(state.mbti)];
+  document.getElementById('meNm').textContent = `${state.mbti} · ${MBTI_LIST.find(m=>m[0]===state.mbti)[1]}`;
+  document.getElementById('meSub').textContent = `${state.blood||'?'}형 · ${state.gender==='F'?'여성':state.gender==='M'?'남성':'선택 안함'}`;
+  document.getElementById('meTags').innerHTML = state.traits.map(t=>`
+    <span class="choice pastel c-lilac selected" style="height:38px;font-size:13px">${t}</span>
+  `).join('');
+}
+
+/* =================== Navigation =================== */
+function goto(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  if(id==='setup') showStep(state.step);
+  if(id==='home') refreshHome();
+  if(id==='me') refreshHome();
+}
+
+/* =================== Toast =================== */
+let toastTimer=null;
+function toast(msg){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(()=>t.classList.remove('show'), 1800);
+}
+
+/* =================== Clock =================== */
+function tickClock(){
+  const d = new Date();
+  const h = String(d.getHours()).padStart(2,'0');
+  const m = String(d.getMinutes()).padStart(2,'0');
+  document.getElementById('clock').textContent = `${h}:${m}`;
+}
+tickClock();
+setInterval(tickClock, 30000);
+
+/* init */
+showStep(1);
+</script>
+</body>
+</html>
