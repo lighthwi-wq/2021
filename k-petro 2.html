@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" crossorigin="anonymous">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{--bg:#07101F;--sf:#0D1829;--cd:#111F37;--cd2:#182647;--bd:rgba(255,255,255,0.07);--bd2:rgba(255,255,255,0.13);--gr:#6DB93F;--gr2:#8DD660;--pu:#7856FF;--pu2:#9D7FFF;--rd:#E53935;--or:#F5861A;--bl:#2C73FF;--cy:#0AABCF;--tx:#DCE9FF;--tx2:#7A90AA;--tx3:#3E5168;--rr:14px;--rs:10px}
+html,body{height:100vh;overflow:hidden}
+body{font-family:'Pretendard',-apple-system,sans-serif;background:var(--bg);color:var(--tx);font-size:17px;line-height:1.5}
+.wrap{display:flex;height:100vh;width:100vw;overflow:hidden;min-width:1100px}
+
+/* 사이드바 (LNB) 및 토글 애니메이션 */
+.sb{width:230px;min-width:230px;background:var(--sf);border-right:1px solid var(--bd);display:flex;flex-direction:column;overflow-y:auto;transition:width 0.3s cubic-bezier(0.4, 0, 0.2, 1);white-space:nowrap;overflow-x:hidden}
+.sb::-webkit-scrollbar{width:3px}.sb::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+.sb.collapsed{width:68px;min-width:68px}
+.sb.collapsed .logo-img.full{opacity:0;pointer-events:none;transform:translateX(-10px)}
+.sb.collapsed .logo-img.emblem{opacity:1;pointer-events:auto;transform:translateX(0)}
+.sb.collapsed .nl{opacity:0;height:0;margin:0;padding:0;overflow:hidden}
+.sb.collapsed .ni{justify-content:center;padding:11px 0}
+.sb.collapsed .ni-txt, .sb.collapsed .nb{display:none}
+.sb.collapsed .ld{opacity:0}
+
+.sb-top{padding:14px 14px 12px;border-bottom:1px solid var(--bd);height:71px;display:flex;align-items:center}
+/* 로고 교체를 위한 위치 및 속성 재설정 */
+.logo-wrap{position:relative;width:100%;height:42px;display:flex;align-items:center}
+.logo-img{position:absolute;left:0;transition:opacity 0.2s, transform 0.2s}
+.logo-img.full{width:auto;max-width:200px;height:100%;object-fit:contain;object-position:left center;opacity:1}
+.logo-img.emblem{width:34px;height:34px;left:3px;top:4px;object-fit:contain;opacity:0;pointer-events:none;transform:translateX(10px)}
+
+nav{padding:10px 10px;flex:1}
+.nl{font-size:13px;font-weight:700;color:var(--tx3);letter-spacing:.1em;text-transform:uppercase;padding:0 8px;margin:8px 0 5px;transition:opacity 0.2s}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:var(--rs);cursor:pointer;transition:all .15s;color:var(--tx2);font-size:17px;font-weight:500;margin-bottom:2px;border:1px solid transparent}
+.ni:hover{background:var(--cd);color:var(--tx)}.ni.on{background:linear-gradient(135deg,rgba(109,185,63,.12),rgba(120,86,255,.12));color:var(--tx);border-color:rgba(109,185,63,.2)}.ni.on svg{color:var(--gr)}
+.ni svg{width:18px;height:18px;flex-shrink:0;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ni-txt{flex:1;overflow:hidden;text-overflow:ellipsis}
+.nb{margin-left:auto;background:var(--rd);color:#fff;font-size:13px;font-weight:800;padding:1px 5px;border-radius:8px;min-width:16px;text-align:center}.nb.or{background:var(--or)}.nb.ok{background:var(--gr)}
+.sb-bot{padding:12px 14px;border-top:1px solid var(--bd);transition:opacity 0.2s}
+.ld{display:flex;align-items:center;gap:7px;font-size:15px;color:var(--tx2)}
+.dot{width:7px;height:7px;background:var(--gr);border-radius:50%;animation:pls 2s infinite;flex-shrink:0}
+@keyframes pls{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
+
+.mn{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.hd{height:50px;min-height:50px;background:var(--sf);border-bottom:1px solid var(--bd);display:flex;align-items:center;padding:0 20px;gap:12px;flex-shrink:0}
+.hamburger{display:flex;align-items:center;justify-content:center;width:32px;height:32px;border-radius:6px;cursor:pointer;transition:background 0.2s;color:var(--tx2)}
+.hamburger:hover{background:rgba(255,255,255,0.05);color:var(--tx)}
+.hd-t{font-size:18px;font-weight:700;flex:1}
+.hd-meta{display:flex;align-items:center;gap:12px;font-size:15px;color:var(--tx2)}
+.hd-badge{display:flex;align-items:center;gap:5px;background:rgba(109,185,63,.1);border:1px solid rgba(109,185,63,.2);border-radius:20px;padding:3px 10px;font-size:14px;font-weight:700;color:var(--gr2)}
+.hd-time{font-family:Menlo,monospace;font-size:15px;font-weight:600;color:var(--tx);background:var(--cd);padding:3px 9px;border-radius:6px;border:1px solid var(--bd2)}
+
+/* 꽉 차게 변경: pg 내부가 화면 높이를 가득 채우도록 flex 구성 */
+.pg{flex:1;overflow-y:auto;overflow-x:hidden;padding:16px 20px;display:none}
+@keyframes fi{from{opacity:0;transform:translateY(5px)}to{opacity:1;transform:translateY(0)}}
+.pg.on{display:flex;flex-direction:column;animation:fi .25s ease}
+.pg::-webkit-scrollbar{width:4px}.pg::-webkit-scrollbar-thumb{background:var(--bd2);border-radius:2px}
+
+.ab{background:rgba(229,57,53,.08);border:1px solid rgba(229,57,53,.22);border-radius:var(--rs);padding:8px 13px;margin-bottom:14px;display:flex;align-items:center;gap:9px;font-size:15.5px;color:#FFCDD2;overflow:hidden;flex-shrink:0}
+.ab-tag{background:var(--rd);color:#fff;font-size:13.5px;font-weight:800;padding:2px 7px;border-radius:4px;white-space:nowrap;flex-shrink:0}
+.kg{display:grid;grid-template-columns:repeat(5,1fr);gap:11px;margin-bottom:14px;flex-shrink:0}
+.kg3{display:grid;grid-template-columns:repeat(3,1fr);gap:11px;margin-bottom:14px;flex-shrink:0}
+.kc{background:var(--cd);border:1px solid var(--bd);border-radius:var(--rr);padding:15px;position:relative;overflow:hidden}
+.kc::before{content:'';position:absolute;top:0;left:0;right:0;height:2px}
+.kc.g::before{background:linear-gradient(90deg,var(--gr),var(--gr2))}.kc.r::before{background:linear-gradient(90deg,var(--rd),#FF7070)}.kc.o::before{background:linear-gradient(90deg,var(--or),#FFB86C)}.kc.p::before{background:linear-gradient(90deg,var(--pu),var(--pu2))}.kc.b::before{background:linear-gradient(90deg,var(--bl),var(--cy))}
+.kt{font-size:13.5px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px}
+.kv{font-size:25px;font-weight:800;letter-spacing:-.5px;line-height:1.1}.ku{font-size:17px;font-weight:600;margin-left:1px}
+.ks{font-size:14.5px;color:var(--tx2);margin:2px 0 8px}
+.ka{display:inline-flex;align-items:center;gap:3px;font-size:13.5px;font-weight:800;padding:2px 6px;border-radius:5px}
+.ka.r{background:rgba(229,57,53,.15);color:#FFCDD2;border:1px solid rgba(229,57,53,.25)}.ka.o{background:rgba(245,134,26,.15);color:#FFCC80;border:1px solid rgba(245,134,26,.25)}.ka.g{background:rgba(109,185,63,.15);color:var(--gr2);border:1px solid rgba(109,185,63,.25)}
+
+/* 카드가 세로 공간을 공유하도록 속성 변경 */
+.g2, .g3, .g4, .g32 { margin-bottom: 14px; }
+.pg > .g2, .pg > .g3, .pg > .g4, .pg > .g32 { display:grid; gap:11px; flex:1; min-height:200px }
+.pg > .g4 { flex: none; min-height: 0; } /* p6의 상단 가격 지표는 늘어나지 않도록 고정 */
+
+.g2{grid-template-columns:1fr 1fr}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.g32{grid-template-columns:3fr 2fr}
+
+.cd{background:var(--cd);border:1px solid var(--bd);border-radius:var(--rr);padding:15px;display:flex;flex-direction:column}
+.cd-t{font-size:14px;font-weight:700;color:var(--tx2);text-transform:uppercase;letter-spacing:.05em;margin-bottom:11px;display:flex;align-items:center;gap:6px}
+.cd-t::before{content:'';width:5px;height:5px;border-radius:50%;background:var(--gr);flex-shrink:0}
+
+/* 세로로 쌓이는 카드들이 부모 공간을 유연하게 채우도록 구성 */
+.col-stack { display:flex; flex-direction:column; gap:11px }
+.col-stack > .cd { flex:1; margin-bottom:0 !important }
+.col-stack > div:not(.cd) { margin-bottom:0 !important }
+
+/* 차트 컨테이너가 부모 카드의 잔여 높이를 가득 채움 (고정 높이 제거) */
+.chw{position:relative; flex:1; min-height:160px; width:100%}
+
+.pl{display:flex;flex-direction:column;gap:7px}
+.pi-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:3px}
+.pi-n{font-size:15.5px;font-weight:600;display:flex;align-items:center;gap:4px}
+.pi-v{font-size:15px;font-weight:700;color:var(--tx2)}
+.pb{height:6px;background:rgba(255,255,255,.05);border-radius:3px;overflow:hidden;position:relative}
+.pbf{height:100%;border-radius:3px;transition:width .8s ease}
+.pbf.g{background:linear-gradient(90deg,var(--gr),var(--gr2))}.pbf.r{background:linear-gradient(90deg,var(--rd),#FF7070)}.pbf.o{background:linear-gradient(90deg,var(--or),#FFB86C)}.pbf.p{background:linear-gradient(90deg,var(--pu),var(--pu2))}.pbf.b{background:linear-gradient(90deg,var(--bl),var(--cy))}
+.pm{position:absolute;top:-1px;width:2px;height:8px;background:rgba(255,255,255,.35)}
+
+.tg{font-size:12.5px;font-weight:700;padding:1px 4px;border-radius:3px;margin-right:2px}.tg.gov{background:rgba(44,115,255,.2);color:#93B8FF;border:1px solid rgba(44,115,255,.3)}.tg.prv{background:rgba(120,86,255,.2);color:var(--pu2);border:1px solid rgba(120,86,255,.3)}
+.al{display:flex;flex-direction:column;gap:5px}
+.ai{display:flex;align-items:center;gap:7px;padding:7px 10px;border-radius:var(--rs);background:rgba(255,255,255,.025);border:1px solid var(--bd);font-size:15.5px}
+.alv{font-size:13px;font-weight:800;padding:2px 5px;border-radius:3px;white-space:nowrap;flex-shrink:0}
+.alv.d{background:rgba(229,57,53,.2);color:#FFCDD2;border:1px solid rgba(229,57,53,.3)}.alv.w{background:rgba(245,134,26,.2);color:#FFCC80;border:1px solid rgba(245,134,26,.3)}
+.alc{color:var(--tx2);font-size:14px;flex-shrink:0;width:30px}.ald{flex:1}
+
+.vl{display:flex;flex-direction:column;gap:7px}
+.vi{background:rgba(255,255,255,.025);border:1px solid var(--bd);border-radius:var(--rs);padding:11px 13px;cursor:pointer;transition:all .15s}
+.vi:hover{background:var(--cd2);border-color:var(--bd2)}.vi.d{border-color:rgba(229,57,53,.35);background:rgba(229,57,53,.04)}.vi.w{border-color:rgba(245,134,26,.35);background:rgba(245,134,26,.04)}
+.vh{display:flex;align-items:center;gap:7px;margin-bottom:4px}.vn{font-size:17px;font-weight:800;flex:1}
+.vs{font-size:13.5px;font-weight:700;padding:2px 7px;border-radius:5px}
+.vs.d{background:rgba(229,57,53,.2);color:#FFCDD2;border:1px solid rgba(229,57,53,.3)}.vs.w{background:rgba(245,134,26,.2);color:#FFCC80;border:1px solid rgba(245,134,26,.3)}.vs.b{background:rgba(44,115,255,.2);color:#93B8FF;border:1px solid rgba(44,115,255,.3)}.vs.g{background:rgba(109,185,63,.2);color:var(--gr2);border:1px solid rgba(109,185,63,.3)}
+.vm{font-size:14.5px;color:var(--tx2);display:flex;gap:10px}
+
+.cli{display:grid;grid-template-columns:46px 1fr auto;align-items:center;gap:9px;padding:8px 11px;background:rgba(255,255,255,.025);border:1px solid var(--bd);border-radius:var(--rs);font-size:15.5px;margin-bottom:5px}
+.cli.hl{background:rgba(229,57,53,.04);border-color:rgba(229,57,53,.22)}
+.cld{font-size:16px;font-weight:800;color:var(--gr2)}.cld.r{color:var(--rd)}.cls{font-weight:700}.clp{font-size:14px;color:var(--tx2)}.clv{font-size:14px;color:var(--tx2);text-align:right;font-weight:600}
+
+.pr-g{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pri{padding:10px 12px;background:rgba(255,255,255,.025);border:1px solid var(--bd);border-radius:var(--rs)}
+.prn{font-size:14px;color:var(--tx2);font-weight:600;margin-bottom:2px}.prv{font-size:21px;font-weight:800}.prd{font-size:14px;margin-top:1px}
+
+.mi{display:flex;align-items:center;gap:9px;padding:9px 13px;background:rgba(255,255,255,.025);border:1px solid var(--bd);border-radius:var(--rs);font-size:15.5px;margin-bottom:7px}
+.mst{font-size:13px;font-weight:800;padding:2px 6px;border-radius:4px;white-space:nowrap}.mst.a{background:rgba(245,134,26,.2);color:#FFCC80;border:1px solid rgba(245,134,26,.3)}.mst.p{background:rgba(44,115,255,.2);color:#93B8FF;border:1px solid rgba(44,115,255,.3)}
+.mn2{font-weight:700;flex:1}.mdt{font-size:14px;color:var(--tx2)}.mim{font-size:14px;color:var(--rd);font-weight:700}
+
+.pb-lg{font-size:30px;font-weight:800;letter-spacing:-1px;line-height:1}
+.pc{font-size:15px;font-weight:600;margin-top:3px}.up{color:var(--rd)}.dn{color:var(--gr2)}
+.pc-lbl{font-size:13.5px;color:var(--tx2);font-weight:600;text-transform:uppercase;margin-bottom:2px}
+
+.txbar{display:flex;height:26px;border-radius:6px;overflow:hidden;margin-bottom:10px}
+.txseg{display:flex;align-items:center;justify-content:center;font-size:13.5px;font-weight:800;color:rgba(255,255,255,.92);white-space:nowrap;overflow:hidden}
+.txleg{display:flex;flex-wrap:wrap;gap:7px}
+.txli{display:flex;align-items:center;gap:4px;font-size:14.5px;color:var(--tx2)}.txd{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+
+.gs-item{display:flex;align-items:center;gap:8px;padding:8px 11px;border:1px solid var(--bd);border-radius:var(--rs);background:rgba(255,255,255,.02);margin-bottom:6px}
+.gs-nm{font-size:16px;font-weight:700;flex:1}.gs-loc{font-size:14px;color:var(--tx2)}.gs-pct{font-size:17px;font-weight:800;min-width:36px;text-align:right}
+.gs-pct.ok{color:var(--gr2)}.gs-pct.lo{color:var(--rd)}.gs-pct.md{color:var(--or)}.gs-tag{font-size:14px;color:var(--tx2);min-width:32px;text-align:right}
+
+.wb{background:rgba(229,57,53,.07);border:1px solid rgba(229,57,53,.22);border-radius:var(--rs);padding:12px 14px}
+.wb h4{font-size:15px;font-weight:700;color:#FFCDD2;margin-bottom:8px;display:flex;align-items:center;gap:5px}
+.wb li{font-size:14.5px;color:#FFCC80;padding:2px 0;list-style:none;display:flex;gap:5px}.wb li::before{content:'▪';color:var(--rd);flex-shrink:0}
+.ch-legend{display:flex;flex-wrap:wrap;gap:10px;margin-bottom:8px}
+.chl{display:flex;align-items:center;gap:5px;font-size:14.5px;color:var(--tx2)}.chld{width:22px;height:3px;border-radius:2px}
+</style>
+</head>
+<body>
+<div class="wrap">
+<aside class="sb">
+  <div class="sb-top">
+    <div class="logo-wrap">
+      <img class="logo-img full" src="k-petro-data-portal-logo.png" alt="K Petro Data PORTAL · 한국석유관리원 · 석유공급통합관제포털">
+      <img class="logo-img emblem" src="k_logo.png" alt="K Emblem">
+    </div>
+  </div>
+  <nav>
+    <div class="nl">관제 화면</div>
+    <div class="ni on" onclick="sp('p1',this)">
+      <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+      <span class="ni-txt">통합 관제 메인</span><span class="nb or">14</span>
+    </div>
+    <div class="ni" onclick="sp('p2',this)">
+      <svg viewBox="0 0 24 24"><path d="M2 20h20M6 20V10l6-7 6 7v10M10 20v-5h4v5"/></svg>
+      <span class="ni-txt">유조선 실시간 추적</span><span class="nb or">2</span>
+    </div>
+    <div class="ni" onclick="sp('p3',this)">
+      <svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V7l7-4 7 4v14M9 21v-4h6v4M9 12h6M9 16h6"/></svg>
+      <span class="ni-txt">정유·생산 현황</span><span class="nb">5</span>
+    </div>
+    <div class="ni" onclick="sp('p4',this)">
+      <svg viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+      <span class="ni-txt">석유재고 현황</span><span class="nb">4</span>
+    </div>
+    <div class="ni" onclick="sp('p5',this)">
+      <svg viewBox="0 0 24 24"><path d="M3 3v18h18"/><path d="M8 17l4-4 4-4 4 4"/></svg>
+      <span class="ni-txt">유통·판매 현황</span><span class="nb or">3</span>
+    </div>
+    <div class="ni" onclick="sp('p6',this)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M14.8 9A2 2 0 0 0 13 8h-2a2 2 0 0 0 0 4h2a2 2 0 0 1 0 4H9m3 1v-1m0-10v-1"/></svg>
+      <span class="ni-txt">가격 모니터링</span><span class="nb or">2</span>
+    </div>
+  </nav>
+  <div class="sb-bot">
+    <div class="ld"><div class="dot"></div><span>AIS · 정유 · 오피넷 연동</span></div>
+  </div>
+</aside>
+
+<div class="mn">
+<header class="hd">
+  <div class="hamburger" onclick="document.querySelector('.sb').classList.toggle('collapsed')">
+    <svg viewBox="0 0 24 24" width="22" height="22" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
+  </div>
+  <span class="hd-t" id="hd-t">통합 관제 대시보드</span>
+  <div class="hd-meta">
+    <div class="hd-badge"><div class="dot" style="width:6px;height:6px"></div>LIVE</div>
+    <span>AIS · 정유 · 오피넷 실시간 연동</span>
+    <span class="hd-time" id="clock">2026-01-15 09:42:00 KST</span>
+  </div>
+</header>
+
+<div class="pg on" id="p1">
+  <div class="ab"><span class="ab-tag">경보</span><span>위험 — 강릉 저유소 경유 1.8일 소진 · 여수2기지 87일 IEA 미달 · GS칼텍스 수율 편차 +3.9%p · PACIFIC CROWN AIS 5.3h 소실 | 주의 — GULF TRADER 18h 지연 · 거제기지 용량 초과 · 인천 판매량 +42%</span></div>
+  <div class="kg">
+    <div class="kc o"><div class="kt">해상 수송</div><div class="kv">24<span class="ku">척</span></div><div class="ks">이번주 입항 7척</div><span class="ka o">경보 2건</span></div>
+    <div class="kc r"><div class="kt">정유·가공</div><div class="kv">87.4<span class="ku">%</span></div><div class="ks">평균 가동률</div><span class="ka r">경보 5건</span></div>
+    <div class="kc r"><div class="kt">재고 현황</div><div class="kv">96.4<span class="ku">일</span></div><div class="ks">214.8M bbl / IEA 90일</div><span class="ka r">경보 4건</span></div>
+    <div class="kc o"><div class="kt">유통</div><div class="kv">74.2<span class="ku">%</span></div><div class="ks">저유소 평균 재고율</div><span class="ka o">경보 3건</span></div>
+    <div class="kc g"><div class="kt">주유소 판매</div><div class="kv">7.98M<span class="ku">L</span></div><div class="ks">11,842개소 / ▲+2.3%</div><span class="ka g">정상</span></div>
+  </div>
+  <div class="g32">
+    <div class="cd">
+      <div class="cd-t">국내 유입 원유 일별 물량 추이 (천 bbl)</div>
+      <div class="ch-legend"><span class="chl"><span class="chld" style="background:var(--gr)"></span>금일 유입</span><span class="chl"><span class="chld" style="background:var(--cy);height:2px;border-top:1px dashed var(--cy)"></span>추세선</span></div>
+      <div class="chw"><canvas id="crudeChart" role="img" aria-label="국내 유입 원유 추이"></canvas></div>
+      <div style="display:flex;justify-content:space-between;margin-top:9px;font-size:15px;color:var(--tx2)"><span>금일 유입: <strong style="color:var(--gr2)">3,240,000 bbl</strong> ▲+2.1%</span><span>이번주 예정 입항 7척 / 14.85M bbl</span></div>
+    </div>
+    <div class="cd"><div class="cd-t">실시간 경보</div><div class="al">
+      <div class="ai"><span class="alv d">위험</span><span class="alc">유통</span><span class="ald">강릉 저유소 경유 1.8일 소진</span></div>
+      <div class="ai"><span class="alv d">위험</span><span class="alc">재고</span><span class="ald">여수2기지 87일 IEA 미달</span></div>
+      <div class="ai"><span class="alv d">위험</span><span class="alc">정유</span><span class="ald">GS칼텍스 수율 편차 +3.9%p</span></div>
+      <div class="ai"><span class="alv d">위험</span><span class="alc">해상</span><span class="ald">PACIFIC CROWN AIS 5.3h 소실</span></div>
+      <div class="ai"><span class="alv w">주의</span><span class="alc">해상</span><span class="ald">GULF TRADER 입항 18h 지연</span></div>
+      <div class="ai"><span class="alv w">주의</span><span class="alc">재고</span><span class="ald">거제기지 용량 초과 예측</span></div>
+      <div class="ai"><span class="alv w">주의</span><span class="alc">유통</span><span class="ald">인천광역시 판매량 급증 +42%</span></div>
+    </div></div>
+  </div>
+  <div class="g2">
+    <div class="cd"><div class="cd-t">저장소별 재고량 게이지 (IEA 90일 기준)</div><div class="pl">
+      <div><div class="pi-h"><div class="pi-n"><span class="tg gov">국가</span>여수 제2저장소</div><div class="pi-v" style="color:var(--rd)">87일</div></div><div class="pb"><div class="pbf r" style="width:97%"></div><div class="pm" style="left:83%"></div></div></div>
+      <div><div class="pi-h"><div class="pi-n"><span class="tg prv">민간</span>울산 민간저장소</div><div class="pi-v" style="color:var(--or)">91일</div></div><div class="pb"><div class="pbf o" style="width:84%"></div><div class="pm" style="left:83%"></div></div></div>
+      <div><div class="pi-h"><div class="pi-n"><span class="tg gov">국가</span>울산 제1저장소</div><div class="pi-v">104일</div></div><div class="pb"><div class="pbf g" style="width:88%"></div><div class="pm" style="left:83%"></div></div></div>
+      <div><div class="pi-h"><div class="pi-n"><span class="tg gov">국가</span>거제 저장소</div><div class="pi-v">108일</div></div><div class="pb"><div class="pbf g" style="width:92%"></div><div class="pm" style="left:83%"></div></div></div>
+      <div><div class="pi-h"><div class="pi-n"><span class="tg gov">국가</span>서산 저장소</div><div class="pi-v">98일</div></div><div class="pb"><div class="pbf g" style="width:82%"></div><div class="pm" style="left:83%"></div></div></div>
+      <div><div class="pi-h"><div class="pi-n"><span class="tg prv">민간</span>평택 민간저장소</div><div class="pi-v">96일</div></div><div class="pb"><div class="pbf p" style="width:80%"></div><div class="pm" style="left:83%"></div></div></div>
+    </div><div style="font-size:14px;color:var(--tx3);margin-top:8px">▏= IEA 90일 의무선</div></div>
+    <div class="cd"><div class="cd-t">유종별 수급 밸런스 (천 bbl/일)</div>
+      <div style="font-size:15px;color:var(--rd);margin-bottom:9px;font-weight:600">경유 수요 초과 — 동절기 난방 수요 영향</div>
+      <div class="chw"><canvas id="balanceChart" role="img" aria-label="유종별 수급 밸런스"></canvas></div>
+      <div style="margin-top:13px;border-top:1px solid var(--bd);padding-top:12px"><div class="cd-t" style="margin-bottom:9px">가격 스냅샷</div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px">
+          <div><div class="pc-lbl">두바이유</div><div class="pb-lg">$76.42</div><div class="pc up">▲ +$1.28 (+1.7%)</div></div>
+          <div><div class="pc-lbl">전국 경유 평균</div><div class="pb-lg" style="font-size:24px">1,524원</div><div class="pc up">▲ 전주 +22원</div></div>
+          <div><div class="pc-lbl">전국 휘발유 평균</div><div class="pb-lg" style="font-size:24px">1,682원</div><div class="pc up">▲ 전주 +18원</div></div>
+          <div><div class="pc-lbl">지역 최대 편차</div><div class="pb-lg" style="font-size:24px">142원</div><div class="pc" style="color:var(--rd)">강원↔서울 임계 초과</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="pg" id="p2">
+  <div class="ab"><span class="ab-tag">경보</span><span>PACIFIC CROWN AIS 신호 소실 5.3h · GULF TRADER 입항 18h 지연</span></div>
+  <div class="kg3">
+    <div class="kc o"><div class="kt">추적 선박</div><div class="kv">24<span class="ku">척</span></div><div class="ks">전체 67.32M bbl</div><span class="ka o">경보 2건</span></div>
+    <div class="kc b"><div class="kt">이번주 입항 예정</div><div class="kv">7<span class="ku">척</span></div><div class="ks">01/16~01/22 / 14.85M bbl</div><span class="ka g">정상</span></div>
+    <div class="kc g"><div class="kt">금일 원유 유입</div><div class="kv">3,240,000<span class="ku" style="font-size:15px">bbl</span></div><div class="ks">▲ 전일 대비 +2.1%</div><span class="ka g">정상</span></div>
+  </div>
+  <div class="g2">
+    <div class="cd"><div class="cd-t">입항 예정 선박 목록</div><div class="vl">
+      <div class="vi d"><div class="vh"><span class="vn">PACIFIC CROWN</span><span class="vs d">AIS 소실</span></div><div class="vm"><span>현대글로비스 / 쿠웨이트</span><span>원유 (쿠웨이트)</span><span style="margin-left:auto;color:var(--or)">ETA 01/17 14:00</span></div></div>
+      <div class="vi w"><div class="vh"><span class="vn">GULF TRADER</span><span class="vs w">지연 경보</span></div><div class="vm"><span>GS글로벌 / 이란</span><span>원유 (이란 헤비)</span><span style="margin-left:auto;color:var(--or)">ETA 01/19 (지연)</span></div></div>
+      <div class="vi"><div class="vh"><span class="vn">KOREA PIONEER</span><span class="vs b">입항대기</span></div><div class="vm"><span>SK해운 / 사우디</span><span>원유 (아라비아 경질)</span><span style="margin-left:auto">ETA 01/16 06:00</span></div></div>
+      <div class="vi"><div class="vh"><span class="vn">BUSAN SPIRIT</span><span class="vs b">입항 대기</span></div><div class="vm"><span>대한해운 / 사우디</span><span>원유 (아라비아 경질)</span><span style="margin-left:auto">ETA 01/17 22:00</span></div></div>
+      <div class="vi"><div class="vh"><span class="vn">SEA EMERALD</span><span class="vs g">운항중</span></div><div class="vm"><span>에쓰오일 / UAE</span><span>원유 (무르반)</span><span style="margin-left:auto">ETA 01/21 18:00</span></div></div>
+      <div class="vi"><div class="vh"><span class="vn">STAR PERSEUS</span><span class="vs g">운항중</span></div><div class="vm"><span>팬오션 / 러시아</span><span>연료유</span><span style="margin-left:auto">ETA 01/22 11:00</span></div></div>
+    </div></div>
+    <div class="cd"><div class="cd-t">입항 예정 캘린더 (향후 30일)</div>
+      <div class="cli"><span class="cld">01/16</span><div><div class="cls">KOREA PIONEER</div><div class="clp">울산항</div></div><div class="clv">원유 (아라비아 경질)<br>2,100,000 bbl</div></div>
+      <div class="cli hl"><span class="cld r">01/17</span><div><div class="cls">PACIFIC CROWN</div><div class="clp">여수항</div></div><div class="clv">원유 (쿠웨이트)<br>1,850,000 bbl</div></div>
+      <div class="cli"><span class="cld">01/18</span><div><div class="cls">BUSAN SPIRIT</div><div class="clp">울산항</div></div><div class="clv">원유 (아라비아 경질)<br>900,000 bbl</div></div>
+      <div class="cli hl"><span class="cld r">01/19</span><div><div class="cls">GULF TRADER</div><div class="clp">울산항</div></div><div class="clv">원유 (이란 헤비)<br>3,200,000 bbl</div></div>
+      <div class="cli"><span class="cld">01/21</span><div><div class="cls">SEA EMERALD</div><div class="clp">인천항</div></div><div class="clv">원유 (무르반)<br>2,500,000 bbl</div></div>
+      <div class="cli"><span class="cld">01/22</span><div><div class="cls">STAR PERSEUS</div><div class="clp">울산항</div></div><div class="clv">연료유 / 680,000 bbl</div></div>
+      <div class="cli"><span class="cld">01/25</span><div><div class="cls">ORIENT GLORY</div><div class="clp">여수항</div></div><div class="clv">원유 (바스라 미디엄)<br>2,800,000 bbl</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="pg" id="p3">
+  <div class="ab"><span class="ab-tag">경보</span><span>GS칼텍스 수율 편차 +3.9%p 초과 · S-Oil 2공장 가동률 61% 급락 · 품질 기준 이탈 3건</span></div>
+  <div class="kg">
+    <div class="kc g"><div class="kt">금일 원유 투입량</div><div class="kv">3,240,000</div><div class="ks">bbl/일 ▲ 전일 +2.1%</div><span class="ka g">정상</span></div>
+    <div class="kc o"><div class="kt">평균 가동률</div><div class="kv">87.4<span class="ku">%</span></div><div class="ks">4개사 평균</div><span class="ka o" style="font-size:13px">S-Oil 2공장 61% 급락</span></div>
+    <div class="kc g"><div class="kt">제품 생산량</div><div class="kv">2,891,000</div><div class="ks">bbl/일 수율 89.2%</div><span class="ka g">정상</span></div>
+    <div class="kc r"><div class="kt">품질 이탈</div><div class="kv">3<span class="ku">건</span></div><div class="ks">기준 초과</div><span class="ka r">점검 필요</span></div>
+    <div class="kc o"><div class="kt">정기보수 진행</div><div class="kv">2<span class="ku">건</span></div><div class="ks">설비 보수 중</div><span class="ka o">진행중</span></div>
+  </div>
+  <div class="g2">
+    <div class="cd">
+      <div class="cd-t">정유사별 원유 처리량 (천 bbl/일)</div>
+      <div class="ch-legend"><span class="chl"><span class="chld" style="background:var(--gr)"></span>금일 투입</span><span class="chl"><span class="chld" style="background:var(--pu)"></span>설비 용량</span></div>
+      <div class="chw"><canvas id="refineryChart" role="img" aria-label="정유사별 원유 처리량"></canvas></div>
+    </div>
+    <div class="cd">
+      <div class="cd-t">유종별 수율 (원유 투입 대비 %)</div>
+      <div class="chw"><canvas id="yieldChart" role="img" aria-label="유종별 수율"></canvas></div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="cd"><div class="cd-t">제품별 생산량 (bbl/일)</div><div class="pr-g">
+      <div class="pri"><div class="prn">휘발유</div><div class="prv">781,440</div><div class="prd" style="color:var(--gr2)">▲ +3.2%</div></div>
+      <div class="pri"><div class="prn">경유</div><div class="prv">978,480</div><div class="prd" style="color:var(--gr2)">▲ +1.8%</div></div>
+      <div class="pri"><div class="prn">등유</div><div class="prv">317,520</div><div class="prd" style="color:var(--rd)">▼ -0.4%</div></div>
+      <div class="pri"><div class="prn">항공유</div><div class="prv">243,000</div><div class="prd" style="color:var(--gr2)">▲ +5.1%</div></div>
+      <div class="pri"><div class="prn">LPG</div><div class="prv">129,600</div><div class="prd" style="color:var(--gr2)">▲ +0.9%</div></div>
+      <div class="pri"><div class="prn">기타</div><div class="prv">440,960</div><div class="prd" style="color:var(--tx2)">— 유지</div></div>
+    </div></div>
+    <div class="col-stack">
+      <div class="cd"><div class="cd-t">정기보수 일정</div>
+        <div class="mi"><span class="mst a">진행중</span><span class="mn2">S-Oil CDU-2 상압증류탑</span><span class="mdt">01/08~01/28</span><span class="mim">-89천 bbl/일</span></div>
+        <div class="mi"><span class="mst a">진행중</span><span class="mn2">GS칼텍스 FCC 촉매재생기</span><span class="mdt">01/12~01/20</span><span class="mim">-30천 bbl/일</span></div>
+        <div class="mi" style="margin-bottom:0"><span class="mst p">예정</span><span class="mn2">SK이노베이션 CDU-3</span><span class="mdt">02/03~02/24</span><span class="mim">-150천 bbl/일</span></div>
+      </div>
+      <div class="cd"><div class="cd-t">정유사별 처리량 비율 (파이)</div><div class="chw"><canvas id="refineryPieChart" role="img" aria-label="정유사별 처리량 파이 차트"></canvas></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="pg" id="p4">
+  <div class="ab"><span class="ab-tag">경보</span><span>여수 제2 재고거점 재고일수 87일 (IEA 미달) · 울산 민간거점 경유 편준 71% · 거제거점 용량 초과 예측 · 경유 재고일수 81일 (IEA미달)</span></div>
+  <div class="kg">
+    <div class="kc g"><div class="kt">통합 재고량</div><div class="kv">214.8M</div><div class="ks">bbl (국가 141.2M + 민간 73.6M)</div><span class="ka g">정상</span></div>
+    <div class="kc g"><div class="kt">법정 재고일수</div><div class="kv">96.4<span class="ku">일</span></div><div class="ks">의무 90일 대비 ▲+6.4일 여유</div><span class="ka g">충족</span></div>
+    <div class="kc g"><div class="kt">재고능력 대비 비율</div><div class="kv">80.0<span class="ku">%</span></div><div class="ks">268.5M bbl 용량 / 여유 53.7M</div><span class="ka g">정상</span></div>
+    <div class="kc b"><div class="kt">이번달 입고 예정</div><div class="kv">18.4M</div><div class="ks">bbl / 5건 (출고 예정 9.2M bbl)</div><span class="ka g">정상</span></div>
+    <div class="kc r"><div class="kt">경보 저장소</div><div class="kv">2<span class="ku">개소</span></div><div class="ks">전체 11개소 / 주의 1개소</div><span class="ka r">점검 필요</span></div>
+  </div>
+  <div class="g2">
+    <div class="cd"><div class="cd-t">재고거점별 현황 (법정 재고일수 기준)</div><div class="pl">
+      <div><div class="pi-h"><div class="pi-n"><span class="tg gov">국가</span>여수 제2저장소</div><div class="pi-v" style="color:var(--rd)">87일</div></div><div class="pb"><div class="pbf r" style="width:97%"></div><div class="pm" style="left:83%"></div></div></div>
+      <div><div class="pi-h"><div class="pi-n"><span class="tg prv">민간</span>울산 민간저장소</div><div class="pi-v" style="color:var(--or)">91일</div></div><div class="pb"><div class="pbf o" style="width:84%"></div><div class="pm" style="left:83%"></div></div></div>
+      <div><div class="pi-h"><div class="pi-n"><span class="tg gov">국가</span>울산 제1저장소</div><div class="pi-v">104일</div></div><div class="pb"><div class="pbf g" style="width:88%"></div><div class="pm" style="left:83%"></div></div></div>
+      <div><div class="pi-h"><div class="pi-n"><span class="tg gov">국가</span>거제 저장소</div><div class="pi-v">108일</div></div><div class="pb"><div class="pbf g" style="width:92%"></div><div class="pm" style="left:83%"></div></div></div>
+      <div><div class="pi-h"><div class="pi-n"><span class="tg gov">국가</span>서산 저장소</div><div class="pi-v">98일</div></div><div class="pb"><div class="pbf g" style="width:82%"></div><div class="pm" style="left:83%"></div></div></div>
+      <div><div class="pi-h"><div class="pi-n"><span class="tg prv">민간</span>평택 저장소</div><div class="pi-v">96일</div></div><div class="pb"><div class="pbf p" style="width:80%"></div><div class="pm" style="left:83%"></div></div></div>
+      <div><div class="pi-h"><div class="pi-n"><span class="tg prv">민간</span>인천 저장소</div><div class="pi-v">100일</div></div><div class="pb"><div class="pbf p" style="width:85%"></div><div class="pm" style="left:83%"></div></div></div>
+    </div><div style="font-size:14px;color:var(--tx3);margin-top:8px">▏= IEA 90일 의무선</div></div>
+    <div class="col-stack">
+      <div class="cd"><div class="cd-t">재고 구성 비율 (도넛)</div><div class="chw"><canvas id="stockDonutChart" role="img" aria-label="재고 구성 비율 도넛 차트"></canvas></div></div>
+      <div class="cd"><div class="cd-t">통합 재고량 추이 (12개월)</div>
+        <div class="ch-legend"><span class="chl"><span class="chld" style="background:var(--bl)"></span>국가</span><span class="chl"><span class="chld" style="background:var(--pu)"></span>민간</span><span class="chl"><span class="chld" style="background:var(--gr)"></span>합계</span></div>
+        <div class="chw"><canvas id="stockTrendChart" role="img" aria-label="통합 재고량 추이"></canvas></div>
+      </div>
+    </div>
+  </div>
+  <div class="cd" style="flex:none"><div class="cd-t">유종별 재고일수 IEA 90일 기준 비교</div>
+    <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px">
+      <div><div class="pi-h"><div class="pi-n">원유</div><div class="pi-v">101일</div></div><div class="pb"><div class="pbf g" style="width:100%"></div><div class="pm" style="left:89%"></div></div></div>
+      <div><div class="pi-h"><div class="pi-n">휘발유</div><div class="pi-v">97일</div></div><div class="pb"><div class="pbf b" style="width:96%"></div><div class="pm" style="left:89%"></div></div></div>
+      <div><div class="pi-h"><div class="pi-n">등유</div><div class="pi-v">110일</div></div><div class="pb"><div class="pbf p" style="width:100%"></div><div class="pm" style="left:89%"></div></div></div>
+      <div><div class="pi-h"><div class="pi-n">경유</div><div class="pi-v" style="color:var(--rd)">81일</div></div><div class="pb"><div class="pbf r" style="width:80%"></div><div class="pm" style="left:89%"></div></div></div>
+      <div><div class="pi-h"><div class="pi-n">항공유</div><div class="pi-v">94일</div></div><div class="pb"><div class="pbf o" style="width:93%"></div><div class="pm" style="left:89%"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<div class="pg" id="p5">
+  <div class="ab"><span class="ab-tag">경보</span><span>강원 영동 경유 공급 부족 · 제주 휘발유 재고 소진 3일 예측 · 인천 북부 판매량 급변 +42%</span></div>
+  <div class="kg">
+    <div class="kc g"><div class="kt">금일 저유소 출하량</div><div class="kv">8.42M<span class="ku">L</span></div><div class="ks">전국 ▲ 전일 +1.8%</div><span class="ka g">정상</span></div>
+    <div class="kc g"><div class="kt">전국 주유소 판매량</div><div class="kv">7.98M<span class="ku">L</span></div><div class="ks">금일 ▲ 전주 +2.3%</div><span class="ka g">정상</span></div>
+    <div class="kc o"><div class="kt">저유소 평균 재고율</div><div class="kv">74.2<span class="ku">%</span></div><div class="ks">전국 (정상 60~85%)</div><span class="ka g">정상 범위</span></div>
+    <div class="kc b"><div class="kt">모니터링 주유소</div><div class="kv">11,842<span class="ku" style="font-size:15px">개소</span></div><div class="ks">재고경보 34개소</div><span class="ka o">일부 점검</span></div>
+    <div class="kc r"><div class="kt">공급 부족 지역</div><div class="kv">3<span class="ku" style="font-size:15px">광역시도</span></div><div class="ks">강원·제주·인천</div><span class="ka r">즉시 조치</span></div>
+  </div>
+  <div class="g3">
+    <div class="cd"><div class="cd-t">저유소별 출하량 및 재고</div>
+      <div class="gs-item" style="border-color:rgba(229,57,53,.4);background:rgba(229,57,53,.04)"><div style="flex:1"><div class="gs-nm">강릉 저유소</div><div class="gs-loc">강원 강릉시 / 출하 124,000L</div></div><span class="gs-pct lo">22%</span><span class="gs-tag" style="color:var(--rd)">1.8일</span></div>
+      <div class="gs-item" style="border-color:rgba(229,57,53,.4);background:rgba(229,57,53,.04)"><div style="flex:1"><div class="gs-nm">제주 저유소</div><div class="gs-loc">제주 제주시 / 출하 98,000L</div></div><span class="gs-pct lo">28%</span><span class="gs-tag" style="color:var(--rd)">3.1일</span></div>
+      <div class="gs-item" style="border-color:rgba(245,134,26,.4);background:rgba(245,134,26,.03)"><div style="flex:1"><div class="gs-nm">인천 북부 저유소</div><div class="gs-loc">인천 서구 / 출하 312,000L</div></div><span class="gs-pct md">41%</span><span class="gs-tag" style="color:var(--or)">+42%</span></div>
+      <div class="gs-item"><div style="flex:1"><div class="gs-nm">성남 저유소</div><div class="gs-loc">경기 성남시 / 출하 428,000L</div></div><span class="gs-pct ok">76%</span><span class="gs-tag">정상</span></div>
+      <div class="gs-item"><div style="flex:1"><div class="gs-nm">대전 저유소</div><div class="gs-loc">대전 대덕구 / 출하 356,000L</div></div><span class="gs-pct ok">69%</span><span class="gs-tag">정상</span></div>
+      <div class="gs-item"><div style="flex:1"><div class="gs-nm">부산 저유소</div><div class="gs-loc">부산 사하구 / 출하 512,000L</div></div><span class="gs-pct ok">82%</span><span class="gs-tag">정상</span></div>
+      <div class="gs-item"><div style="flex:1"><div class="gs-nm">광주 저유소</div><div class="gs-loc">광주 광산구 / 출하 278,000L</div></div><span class="gs-pct ok">71%</span><span class="gs-tag">정상</span></div>
+    </div>
+    <div class="cd"><div class="cd-t">브랜드별 판매량 비교 (천L)</div><div class="chw"><canvas id="brandChart" role="img" aria-label="브랜드별 판매량"></canvas></div>
+      <div style="margin-top:12px;border-top:1px solid var(--bd);padding-top:11px"><div class="cd-t" style="margin-bottom:9px">지역별 주유소 재고율 평균</div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <div><div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="font-size:15.5px;font-weight:600">강원</span><span style="font-size:15.5px;font-weight:700;color:var(--rd)">28%</span></div><div class="pb"><div class="pbf r" style="width:28%"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="font-size:15.5px;font-weight:600">제주</span><span style="font-size:15.5px;font-weight:700;color:var(--rd)">32%</span></div><div class="pb"><div class="pbf r" style="width:32%"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="font-size:15.5px;font-weight:600">인천</span><span style="font-size:15.5px;font-weight:700;color:var(--or)">48%</span></div><div class="pb"><div class="pbf o" style="width:48%"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="font-size:15.5px;font-weight:600">서울</span><span style="font-size:15.5px;font-weight:700;color:var(--gr2)">72%</span></div><div class="pb"><div class="pbf g" style="width:72%"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="font-size:15.5px;font-weight:600">경기</span><span style="font-size:15.5px;font-weight:700;color:var(--gr2)">75%</span></div><div class="pb"><div class="pbf g" style="width:75%"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;margin-bottom:2px"><span style="font-size:15.5px;font-weight:600">부산</span><span style="font-size:15.5px;font-weight:700;color:var(--gr2)">78%</span></div><div class="pb"><div class="pbf g" style="width:78%"></div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-stack">
+      <div class="cd"><div class="cd-t">일별 판매량 추이 (14일)</div>
+        <div class="ch-legend"><span class="chl"><span class="chld" style="background:var(--gr)"></span>합계</span><span class="chl"><span class="chld" style="background:var(--bl)"></span>휘발유</span><span class="chl"><span class="chld" style="background:var(--pu)"></span>경유</span></div>
+        <div class="chw"><canvas id="salesTrendChart" role="img" aria-label="일별 판매량 추이"></canvas></div>
+      </div>
+      <div class="wb"><h4>⚠ 재고 소진 예측 경보</h4><ul>
+        <li>강릉 저유소 — 현 추세 지속 시 1.8일 내 소진 예상</li>
+        <li>제주 저유소 — 현 추세 지속 시 3.1일 내 소진 예상</li>
+        <li>해상 운송 최소 2일 — 즉시 선적 필요</li>
+        <li>인천광역시 — 판매량 +42% 급변 조사 요망</li>
+      </ul></div>
+    </div>
+  </div>
+</div>
+
+<div class="pg" id="p6">
+  <div class="ab"><span class="ab-tag">경보</span><span>서울·경기 vs 강원 가격 편차 142원/L 임계치 초과 · 경유 국제가 대비 내수가 +8.2% 이탈</span></div>
+  <div class="kg">
+    <div class="kc o"><div class="kt">두바이유 (현재)</div><div class="kv">$76.42</div><div class="ks">USD/bbl ▲ 전일 +$1.28 (+1.7%)</div><span class="ka o">상승</span></div>
+    <div class="kc o"><div class="kt">전국 휘발유 평균</div><div class="kv">1,682<span class="ku" style="font-size:16px">원</span></div><div class="ks">원/리터 ▲ 전주 +18원</div><span class="ka o">상승 추세</span></div>
+    <div class="kc o"><div class="kt">전국 경유 평균</div><div class="kv">1,524<span class="ku" style="font-size:16px">원</span></div><div class="ks">원/리터 ▲ 전주 +22원</div><span class="ka o">상승 추세</span></div>
+    <div class="kc p"><div class="kt">정유사 공급가 (휘발유)</div><div class="kv">842<span class="ku" style="font-size:16px">원</span></div><div class="ks">원/리터 ▲ 전주 +11원</div><span class="ka o">상승</span></div>
+    <div class="kc r"><div class="kt">지역간 최대 가격 편차</div><div class="kv">142<span class="ku" style="font-size:16px">원</span></div><div class="ks">서울↔강원 (L당)</div><span class="ka r">임계 120원 초과</span></div>
+  </div>
+  <div class="g4">
+    <div class="cd"><div class="pc-lbl">두바이유 <span style="background:rgba(109,185,63,.15);color:var(--gr2);font-size:13px;padding:1px 5px;border-radius:3px;border:1px solid rgba(109,185,63,.3)">기준유종</span></div><div class="pb-lg">$76.42</div><div class="pc up">▲ +$1.28 (+1.70%)</div></div>
+    <div class="cd"><div class="pc-lbl">WTI</div><div class="pb-lg">$78.15</div><div class="pc up">▲ +$0.94 (+1.22%)</div></div>
+    <div class="cd"><div class="pc-lbl">브렌트유</div><div class="pb-lg">$80.38</div><div class="pc up">▲ +$1.05 (+1.32%)</div></div>
+    <div class="cd"><div class="pc-lbl">환율 (USD/KRW)</div><div class="pb-lg">1,362</div><div class="pc dn">▼ -4.2원 (-0.31%)</div></div>
+  </div>
+  <div class="g2">
+    <div class="cd"><div class="cd-t">국제 원유 가격 추이 (30일)</div>
+      <div class="ch-legend"><span class="chl"><span class="chld" style="background:var(--gr)"></span>두바이</span><span class="chl"><span class="chld" style="background:var(--bl);border-top:2px dashed var(--bl);height:0"></span>WTI</span><span class="chl"><span class="chld" style="background:var(--or)"></span>브렌트</span></div>
+      <div class="chw"><canvas id="oilPriceChart" role="img" aria-label="국제 원유 가격 추이"></canvas></div>
+    </div>
+    <div class="cd"><div class="cd-t">정유사 공급가 추이 (원/L)</div>
+      <div class="ch-legend"><span class="chl"><span class="chld" style="background:var(--gr)"></span>휘발유</span><span class="chl"><span class="chld" style="background:var(--cy)"></span>경유</span></div>
+      <div class="chw"><canvas id="supplyPriceChart" role="img" aria-label="정유사 공급가 추이"></canvas></div>
+    </div>
+  </div>
+  <div class="g2">
+    <div class="cd"><div class="cd-t">세금·마진 구조 분해 (휘발유 1L = 1,682원)</div>
+      <div class="txbar">
+        <div class="txseg" style="width:28.7%;background:#2C73FF">원가 482원</div>
+        <div class="txseg" style="width:21.4%;background:#7856FF">교통세 360원</div>
+        <div class="txseg" style="width:9.4%;background:#6DB93F">기타세</div>
+        <div class="txseg" style="width:9%;background:#E57320">부가세</div>
+        <div class="txseg" style="width:21.5%;background:#0AABCF">마진 362원</div>
+      </div>
+      <div class="txleg"><div class="txli"><div class="txd" style="background:#2C73FF"></div>원가 29%</div><div class="txli"><div class="txd" style="background:#7856FF"></div>교통세 21%</div><div class="txli"><div class="txd" style="background:#6DB93F"></div>기타세 9%</div><div class="txli"><div class="txd" style="background:#E57320"></div>부가세 9%</div><div class="txli"><div class="txd" style="background:#0AABCF"></div>마진 22%</div></div>
+      <div style="margin-top:13px;border-top:1px solid var(--bd);padding-top:11px"><div class="cd-t" style="margin-bottom:9px">유종별 세금 부담 비율</div>
+        <div class="pl">
+          <div><div class="pi-h"><div class="pi-n">휘발유</div><div class="pi-v">39.8%</div></div><div class="pb"><div class="pbf p" style="width:79.6%"></div></div></div>
+          <div><div class="pi-h"><div class="pi-n">경유</div><div class="pi-v">31.2%</div></div><div class="pb"><div class="pbf p" style="width:62.4%"></div></div></div>
+          <div><div class="pi-h"><div class="pi-n">등유</div><div class="pi-v">9.1%</div></div><div class="pb"><div class="pbf p" style="width:18.2%"></div></div></div>
+        </div>
+      </div>
+    </div>
+    <div class="cd"><div class="cd-t">유종별 세금 부담 비율 (차트)</div><div class="chw"><canvas id="taxChart" role="img" aria-label="유종별 세금 부담 비율"></canvas></div>
+      <div style="margin-top:11px;background:rgba(229,57,53,.08);border:1px solid rgba(229,57,53,.25);border-radius:var(--rs);padding:11px 13px">
+        <div style="font-size:15.5px;font-weight:800;color:#FFCDD2;margin-bottom:5px">경유 국제가 대비 내수가 괴리 +8.2%</div>
+        <div style="font-size:15px;color:#FFCC80">기준 ±5% 초과 경보 중 — 세금 구조 및 유통 마진 점검 필요</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script>
+const TITLES={p1:'통합 관제 대시보드',p2:'유조선 실시간 추적',p3:'정유·생산 현황',p4:'석유재고 현황',p5:'유통·판매 현황',p6:'가격 모니터링'};
+function sp(id,el){
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
+  document.getElementById(id).classList.add('on');
+  el.classList.add('on');
+  document.getElementById('hd-t').textContent=TITLES[id];
+  initChart(id);
+}
+function tick(){
+  const n=new Date(),p=v=>String(v).padStart(2,'0');
+  document.getElementById('clock').textContent=`${n.getFullYear()}-${p(n.getMonth()+1)}-${p(n.getDate())} ${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())} KST`;
+}
+tick();setInterval(tick,1000);
+
+const C={gr:'#6DB93F',gr2:'#8DD660',pu:'#7856FF',pu2:'#9D7FFF',rd:'#E53935',or:'#F5861A',bl:'#2C73FF',cy:'#0AABCF',tx2:'#7A90AA',bd:'rgba(255,255,255,0.07)'};
+Chart.defaults.font.family="'Pretendard',system-ui,sans-serif";
+Chart.defaults.font.size=15;
+Chart.defaults.color=C.tx2;
+
+const done={};
+function initChart(id){
+  if(done[id])return;done[id]=true;
+  const TO={responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#182647',titleColor:'#DCE9FF',bodyColor:C.tx2,borderColor:C.bd,borderWidth:1}}};
+  const scXY={x:{grid:{color:C.bd},ticks:{color:C.tx2,font:{size:14}}},y:{grid:{color:C.bd},ticks:{color:C.tx2,font:{size:14}}}};
+  const scY={y:{grid:{display:false},ticks:{color:C.tx2,font:{size:15}}}};
+
+  if(id==='p1'){
+    new Chart(document.getElementById('crudeChart'),{type:'bar',data:{labels:['12/17','12/20','12/23','12/26','12/29','1/1','1/4','1/7','1/10','1/13','오늘'],datasets:[{label:'원유 유입 (천 bbl)',data:[2800,3100,2900,2850,3000,2780,3050,3200,3000,3100,3240],backgroundColor:(c)=>c.dataIndex===10?C.gr:'rgba(109,185,63,0.5)',borderColor:(c)=>c.dataIndex===10?C.gr2:C.gr,borderWidth:1,borderRadius:4},{label:'추세선',data:[2840,2870,2900,2900,2930,2940,2970,3000,3020,3060,3100],type:'line',borderColor:C.cy,borderWidth:2,borderDash:[4,3],pointRadius:0,fill:false,tension:0.4}]},options:{...TO,scales:{...scXY,y:{...scXY.y,min:2500}}}});
+    new Chart(document.getElementById('balanceChart'),{type:'bar',data:{labels:['원유','휘발유','경유','등유','항공유'],datasets:[{label:'수급 밸런스 (천 bbl/일)',data:[22,33,-46,23,25],backgroundColor:[C.gr,C.gr,C.rd,C.gr,C.gr],borderWidth:0,borderRadius:4}]},options:{...TO,indexAxis:'y',scales:{x:{grid:{color:C.bd},ticks:{color:C.tx2,font:{size:14}}},y:{...scY.y}}}});
+  }
+  if(id==='p3'){
+    new Chart(document.getElementById('refineryChart'),{type:'bar',data:{labels:['SK이노베이션','GS칼텍스','S-Oil','HD현대'],datasets:[{label:'금일 투입',data:[1120,820,669,631],backgroundColor:C.gr,borderColor:C.gr2,borderWidth:1,borderRadius:4},{label:'설비 용량',data:[1200,900,780,700],backgroundColor:'rgba(120,86,255,0.35)',borderColor:C.pu,borderWidth:1,borderRadius:4}]},options:{...TO,scales:{...scXY}}});
+    new Chart(document.getElementById('yieldChart'),{type:'bar',data:{labels:['휘발유','경유','등유','항공유','기타'],datasets:[{label:'수율(%)',data:[24.1,30.2,9.8,7.5,5.8],backgroundColor:[C.bl,C.gr,C.pu,C.cy,C.tx2],borderWidth:0,borderRadius:4}]},options:{...TO,indexAxis:'y',plugins:{...TO.plugins,tooltip:{...TO.plugins.tooltip,callbacks:{label:c=>` ${c.raw}%`}}},scales:{x:{grid:{color:C.bd},ticks:{color:C.tx2,font:{size:14},callback:v=>v+'%'},max:36},y:{...scY.y}}}});
+    new Chart(document.getElementById('refineryPieChart'),{type:'doughnut',data:{labels:['SK이노베이션','GS칼텍스','S-Oil','HD현대'],datasets:[{data:[1120,820,669,631],backgroundColor:[C.gr,C.bl,C.pu,C.cy],borderColor:'#111F37',borderWidth:3,hoverOffset:6}]},options:{...TO,cutout:'65%',plugins:{...TO.plugins,tooltip:{...TO.plugins.tooltip,callbacks:{label:c=>`${c.label}: ${c.raw}천 bbl`}}}}});
+  }
+  if(id==='p4'){
+    new Chart(document.getElementById('stockDonutChart'),{type:'doughnut',data:{labels:['국가 재고','민간 재고','여유 용량'],datasets:[{data:[141.2,73.6,53.7],backgroundColor:[C.bl,C.pu,'rgba(255,255,255,0.06)'],borderColor:'#111F37',borderWidth:3,hoverOffset:6}]},options:{...TO,cutout:'68%',plugins:{...TO.plugins,tooltip:{...TO.plugins.tooltip,callbacks:{label:c=>`${c.label}: ${c.raw}M bbl`}}}}});
+    new Chart(document.getElementById('stockTrendChart'),{type:'line',data:{labels:['2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월','1월'],datasets:[{label:'국가',data:[131,134,133,135,138,140,139,142,141,143,142,141],borderColor:C.bl,backgroundColor:'rgba(44,115,255,0.06)',fill:true,tension:0.4,pointRadius:2,borderWidth:2},{label:'민간',data:[68,70,72,73,71,75,76,74,75,73,74,74],borderColor:C.pu,backgroundColor:'rgba(120,86,255,0.06)',fill:true,tension:0.4,pointRadius:2,borderWidth:2},{label:'합계',data:[199,204,205,208,209,215,215,216,216,216,216,215],borderColor:C.gr,backgroundColor:'rgba(109,185,63,0.04)',fill:true,tension:0.4,pointRadius:2,borderWidth:2}]},options:{...TO,scales:{...scXY,y:{...scXY.y,ticks:{...scXY.y.ticks,callback:v=>v+'M'},min:60}}}});
+  }
+  if(id==='p5'){
+    new Chart(document.getElementById('brandChart'),{type:'bar',data:{labels:['알뜰','오일뱅크','S-Oil','GS칼텍스','SK에너지'],datasets:[{label:'판매량(천L)',data:[159,1197,1596,2234,2792],backgroundColor:[C.tx2,C.pu,C.cy,C.gr,C.bl],borderWidth:0,borderRadius:4}]},options:{...TO,indexAxis:'y',scales:{x:{grid:{color:C.bd},ticks:{color:C.tx2,font:{size:14}},max:3200},y:{...scY.y}}}});
+    new Chart(document.getElementById('salesTrendChart'),{type:'line',data:{labels:['1/2','1/4','1/6','1/8','1/10','1/12','1/14','오늘'],datasets:[{label:'합계',data:[7.6,7.7,7.8,7.9,8.0,8.0,8.1,7.98],borderColor:C.gr,backgroundColor:'rgba(109,185,63,0.06)',fill:true,tension:0.4,pointRadius:3,borderWidth:2},{label:'휘발유',data:[3.1,3.2,3.0,3.3,3.2,3.1,3.4,3.35],borderColor:C.bl,backgroundColor:'transparent',tension:0.4,pointRadius:2,borderWidth:2},{label:'경유',data:[3.2,3.1,3.3,3.2,3.4,3.5,3.3,3.30],borderColor:C.pu,backgroundColor:'transparent',tension:0.4,pointRadius:2,borderWidth:2}]},options:{...TO,scales:{...scXY,y:{...scXY.y,ticks:{...scXY.y.ticks,callback:v=>v+'M'}}}}});
+  }
+  if(id==='p6'){
+    const lbl=['12/16','12/19','12/22','12/25','12/28','12/31','1/3','1/6','1/9','1/12','1/15'];
+    new Chart(document.getElementById('oilPriceChart'),{type:'line',data:{labels:lbl,datasets:[{label:'두바이',data:[71,72,72.5,72,73,74,75,74.5,75.5,76,76.42],borderColor:C.gr,backgroundColor:'transparent',tension:0.4,pointRadius:2,borderWidth:2},{label:'WTI',data:[73.5,74,74.5,74,75,76,76.5,76,77,78,78.15],borderColor:C.bl,borderDash:[4,3],backgroundColor:'transparent',tension:0.4,pointRadius:2,borderWidth:2},{label:'브렌트',data:[74.5,75,76,75.5,77,78,79,78.5,79.5,80,80.38],borderColor:C.or,borderDash:[2,2],backgroundColor:'transparent',tension:0.4,pointRadius:2,borderWidth:2}]},options:{...TO,scales:{...scXY,y:{...scXY.y,min:68,ticks:{...scXY.y.ticks,callback:v=>'$'+v}}}}});
+    new Chart(document.getElementById('supplyPriceChart'),{type:'line',data:{labels:lbl,datasets:[{label:'휘발유',data:[818,820,822,821,825,828,830,832,835,839,842],borderColor:C.gr,backgroundColor:'rgba(109,185,63,0.06)',fill:true,tension:0.4,pointRadius:2,borderWidth:2},{label:'경유',data:[745,748,750,749,752,754,756,757,759,760,762],borderColor:C.cy,backgroundColor:'rgba(10,171,207,0.04)',fill:true,tension:0.4,pointRadius:2,borderWidth:2}]},options:{...TO,scales:{...scXY,y:{...scXY.y,min:700,ticks:{...scXY.y.ticks,callback:v=>v+'원'}}}}});
+    new Chart(document.getElementById('taxChart'),{type:'bar',data:{labels:['등유','경유','휘발유'],datasets:[{label:'세금 부담(%)',data:[9.1,31.2,39.8],backgroundColor:[C.pu,C.bl,C.gr],borderWidth:0,borderRadius:5}]},options:{...TO,indexAxis:'y',plugins:{...TO.plugins,tooltip:{...TO.plugins.tooltip,callbacks:{label:c=>` ${c.raw}%`}}},scales:{x:{grid:{color:C.bd},ticks:{color:C.tx2,font:{size:14},callback:v=>v+'%'},max:50},y:{...scY.y}}}});
+  }
+}
+initChart('p1');
+</script>
+</body>
+</html>
