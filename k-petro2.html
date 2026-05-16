@@ -107,8 +107,9 @@ nav{padding:10px 10px;flex:1}
 
 /* ===== 그리드 레이아웃 ===== */
 .g2,.g3,.g4,.g32,.g23,.g221,.g41,.g14{margin-bottom:12px}
-.pg > .g2,.pg > .g3,.pg > .g4,.pg > .g32,.pg > .g23,.pg > .g221,.pg > .g41,.pg > .g14{display:grid;gap:10px;flex:1;min-height:200px}
-.pg > .g4.compact{flex:none;min-height:0}
+/* 그리드 행은 내용 높이로만 쌓음 — flex:1 분배가 카드 압축·겹침·하단 여백을 유발함 */
+.pg > .g2,.pg > .g3,.pg > .g4,.pg > .g32,.pg > .g23,.pg > .g221,.pg > .g41,.pg > .g14{display:grid;gap:10px;flex:0 0 auto;min-height:0;align-items:stretch}
+.pg > .g4.compact{flex:0 0 auto;min-height:0}
 .g2{grid-template-columns:1fr 1fr}
 .g3{grid-template-columns:repeat(3,1fr)}
 .g4{grid-template-columns:repeat(4,1fr)}
@@ -117,6 +118,7 @@ nav{padding:10px 10px;flex:1}
 .g221{grid-template-columns:2fr 2fr 1fr}
 .g41{grid-template-columns:4fr 1fr}
 .g14{grid-template-columns:1fr 4fr}
+.g2 > *,.g3 > *,.g4 > *,.g32 > *,.g23 > *,.g221 > *,.g41 > *,.g14 > *{min-width:0}
 
 /* ===== 카드 ===== */
 .cd{background:var(--cd);border:1px solid var(--bd);border-radius:var(--rr);padding:13px 14px;display:flex;flex-direction:column;position:relative;overflow:hidden}
@@ -127,10 +129,10 @@ nav{padding:10px 10px;flex:1}
 .cd-act .fc{padding:3px 7px;font-size:12.5px}
 
 .col-stack{display:flex;flex-direction:column;gap:10px}
-.col-stack > .cd{flex:1;margin-bottom:0 !important}
+.col-stack > .cd{flex:0 1 auto;min-height:0;margin-bottom:0 !important}
 .col-stack > div:not(.cd){margin-bottom:0 !important}
 
-.chw{position:relative;flex:1;min-height:140px;width:100%}
+.chw{position:relative;flex:1 1 auto;min-height:140px;width:100%;min-width:0}
 
 /* P6 가격 모니터링 · 도넛과 추이 병치 (카드 overflow 방지: 고정 높이·컴팩트 범례와 병행) */
 .donut-split{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(128px,0.9fr);gap:12px;align-items:start;min-height:0;margin-bottom:14px}
@@ -144,9 +146,9 @@ nav{padding:10px 10px;flex:1}
 .p6-supply-line,.chw.p6-supply-line{flex:1;min-width:0;min-height:200px;max-height:300px;height:256px}
 .p6-supply-donut,.chw.p6-supply-donut{width:min(168px,38%);min-width:136px;max-width:176px;flex:0 0 auto;flex-shrink:0;min-height:0;height:256px;max-height:300px;position:relative}
 @media(max-width:1280px){.p6-supply-split{flex-direction:column}.p6-supply-donut,.chw.p6-supply-donut{width:100%;max-width:280px;margin:0 auto;height:220px;max-height:260px}}
-/* P6: 주요 추이·구조 카드 — 행·카드 최소 높이 확보 (차트·범례·하단 요약 잘림 방지) */
-#p6 > .g2{flex:0 1 auto;min-height:clamp(440px,46vh,620px);align-items:stretch}
-#p6 .cd.p6-tall-card{min-height:clamp(420px,44vh,600px);align-self:stretch;overflow-x:hidden;overflow-y:auto}
+/* P6: 행은 전역과 동일 — 카드만 적당한 최소 높이(과도한 clamp 제거로 하단 공백 완화) */
+#p6 > .g2{align-items:stretch}
+#p6 .cd.p6-tall-card{min-height:min(420px,52vh);align-self:stretch;overflow-x:hidden;overflow-y:auto}
 #p6 .cd.p6-oil-card .chw{min-height:240px;flex:1 1 auto}
 #p6 .cd.p6-donut-card{overflow-x:hidden;overflow-y:auto}
 /* p6 그리드: 셀 높이 맞출 때 내용 잘림 방지 */
@@ -159,6 +161,18 @@ nav{padding:10px 10px;flex:1}
 #p6 .cd.p6-alarm-card .an-t{min-width:0;flex:1 1 160px;line-height:1.3}
 #p6 .cd.p6-alarm-card .an-meta{flex-wrap:wrap;row-gap:4px}
 .p6-tax-donut{min-height:140px;max-height:200px}
+
+/* P5: 히트맵 블록만 구역 구분(여백은 전역 g* margin과 동일 계열) */
+#p5 > .g3 + .g2{padding-top:14px;border-top:1px solid var(--bd)}
+#p5 > .g3 > .cd,#p5 > .g2 > .cd{display:flex;flex-direction:column;min-height:0;overflow-x:hidden;overflow-y:auto}
+#p5 > .g3 > .col-stack{min-height:0;align-self:stretch;width:100%}
+#p5 > .g3 > .col-stack > .wb{flex:0 0 auto}
+#p5 .p5-depot-list{flex:1 1 auto;min-height:200px;max-height:56vh;overflow-y:auto;padding-right:2px}
+#p5 .p5-hmap-block{flex:1 1 auto;display:flex;flex-direction:column;min-height:280px;gap:0}
+#p5 #hmapGrid{flex:1;min-height:200px;max-height:52vh;overflow-y:auto;padding-right:2px}
+#p5 .g2 > .cd .dtb-wrap{flex:1 1 auto;min-height:240px;max-height:52vh;overflow-y:auto}
+#p5 > .g3 > .cd:nth-child(2) .chw{min-height:180px;flex:0 1 auto}
+#p5 > .g3 > .col-stack .chw{min-height:180px;flex:0 1 auto}
 
 /* ===== Filter chips (탭/필터바) ===== */
 .fc-bar{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:9px;align-items:center}
@@ -403,7 +417,7 @@ nav{padding:10px 10px;flex:1}
 .eq-l{font-size:12.5px;color:var(--tx2);display:flex;justify-content:space-between;align-items:center}
 
 /* 도넛 가운데 라벨 (위에 겹쳐 표시할 때) */
-.donut-wrap{position:relative;flex:1;min-height:140px}
+.donut-wrap{position:relative;flex:1 1 auto;min-height:140px;min-width:0}
 .donut-ctr{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);text-align:center;pointer-events:none}
 .donut-ctr-v{font-size:24px;font-weight:800;letter-spacing:-.5px;line-height:1}
 .donut-ctr-l{font-size:12.5px;color:var(--tx2);margin-top:2px;text-transform:uppercase;letter-spacing:.04em}
@@ -1259,8 +1273,7 @@ nav{padding:10px 10px;flex:1}
     <div class="cd">
       <div class="cd-t">저유소별 출하량 · 재고</div>
       <div class="fc-bar"><button class="fc on" onclick="setFc(this)">전체</button><button class="fc" onclick="setFc(this)">위험 2</button><button class="fc" onclick="setFc(this)">주의 1</button></div>
-      <div style="flex:1;overflow-y:auto">
-        <div class="gs-item" style="border-color:rgba(229,57,53,.4);background:rgba(229,57,53,.04)" onclick="openDrawer('강릉 저유소')"><div style="flex:1"><div class="gs-nm">강릉 저유소</div><div class="gs-loc">강원 강릉시 · 출하 124,000L</div></div><span class="gs-pct lo">22%</span><span class="gs-tag" style="color:var(--rd2)">1.8일</span></div>
+      <div class="p5-depot-list" style="flex:1;overflow-y:auto">
         <div class="gs-item" style="border-color:rgba(229,57,53,.4);background:rgba(229,57,53,.04)" onclick="openDrawer('제주 저유소')"><div style="flex:1"><div class="gs-nm">제주 저유소</div><div class="gs-loc">제주 제주시 · 출하 98,000L</div></div><span class="gs-pct lo">28%</span><span class="gs-tag" style="color:var(--rd2)">3.1일</span></div>
         <div class="gs-item" style="border-color:rgba(245,134,26,.4);background:rgba(245,134,26,.03)" onclick="openDrawer('인천 북부 저유소')"><div style="flex:1"><div class="gs-nm">인천 북부 저유소</div><div class="gs-loc">인천 서구 · 출하 312,000L</div></div><span class="gs-pct md">41%</span><span class="gs-tag" style="color:var(--or2)">+42%</span></div>
         <div class="gs-item" onclick="openDrawer('성남 저유소')"><div style="flex:1"><div class="gs-nm">성남 저유소</div><div class="gs-loc">경기 성남시 · 출하 428,000L</div></div><span class="gs-pct ok">76%</span><span class="gs-tag">정상</span></div>
@@ -1306,12 +1319,12 @@ nav{padding:10px 10px;flex:1}
       <div class="cd-t b">지역별 주유소 판매량 히트맵 <span class="lbl" style="margin-left:auto">17개 시·도 × 6 시간대</span>
         <div class="cd-act"><div class="tg-mini"><button class="on" onclick="tgMini(this)">판매량</button><button onclick="tgMini(this)">재고율</button><button onclick="tgMini(this)">가격</button></div></div>
       </div>
-      <div style="flex:1;display:flex;flex-direction:column">
-        <div style="display:grid;grid-template-columns:60px repeat(6,1fr);gap:4px;margin-bottom:3px;font-size:11.5px;color:var(--tx2);font-weight:700">
+      <div class="p5-hmap-block">
+        <div style="display:grid;grid-template-columns:60px repeat(6,1fr);gap:4px;margin-bottom:3px;font-size:11.5px;color:var(--tx2);font-weight:700;flex-shrink:0">
           <div></div><div style="text-align:center">04~08</div><div style="text-align:center">08~12</div><div style="text-align:center">12~16</div><div style="text-align:center">16~20</div><div style="text-align:center">20~24</div><div style="text-align:center">24~04</div>
         </div>
-        <div id="hmapGrid" style="display:flex;flex-direction:column;gap:3px;flex:1"></div>
-        <div class="hmap-leg">
+        <div id="hmapGrid" style="display:flex;flex-direction:column;gap:3px;flex:1;min-height:240px"></div>
+        <div class="hmap-leg" style="flex-shrink:0;margin-top:6px">
           <span style="margin-right:auto;color:var(--tx2)">▲ 클릭하여 시·도 상세 보기</span>
           <span>낮음</span>
           <div class="hmap-bar" style="background:linear-gradient(90deg,rgba(44,115,255,.15),rgba(44,115,255,.4),rgba(109,185,63,.6),rgba(245,134,26,.7),rgba(229,57,53,.85))"></div>
@@ -1319,9 +1332,10 @@ nav{padding:10px 10px;flex:1}
         </div>
       </div>
     </div>
-    <div class="cd"><div class="cd-t">상위 주유소 모니터링 <span class="lbl" style="margin-left:auto">상위 12개소</span>
-      <div class="cd-act"><div class="tg-mini"><button class="on" onclick="tgMini(this)">판매</button><button onclick="tgMini(this)">재고</button></div></div>
-    </div>
+    <div class="cd p5-topstation-card">
+      <div class="cd-t">상위 주유소 모니터링 <span class="lbl" style="margin-left:auto">상위 12개소</span>
+        <div class="cd-act"><div class="tg-mini"><button class="on" onclick="tgMini(this)">판매</button><button onclick="tgMini(this)">재고</button></div></div>
+      </div>
       <div class="dtb-wrap" style="flex:1">
         <table class="dtb">
           <thead><tr><th>주유소</th><th>지역</th><th>브랜드</th><th style="text-align:right">판매(L)</th><th style="text-align:right">재고(%)</th><th>상태</th></tr></thead>
