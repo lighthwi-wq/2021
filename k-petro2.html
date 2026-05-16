@@ -155,6 +155,11 @@ nav{padding:10px 10px;flex:1}
 #p6 .g23 > .cd{min-height:0}
 #p6 .cd.p6-heatmap-card{display:flex;flex-direction:column;min-height:0;overflow:hidden}
 #p6 .p6-heatmap-grid{display:grid;grid-template-columns:1fr 1fr;gap:11px;flex:1;align-items:start;min-height:0;overflow-y:auto;overflow-x:hidden;padding-bottom:4px}
+#p6 .p6-hmap-dash{flex:0 0 auto;margin-top:4px;padding:12px 0 12px;border-top:1px solid var(--bd)}
+#p6 .p6-hmap-dash-hd{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;flex-wrap:wrap}
+#p6 .p6-hmap-dash .p6-hmap-cells{display:grid;grid-template-columns:repeat(9,1fr);gap:3px}
+#p6 .p6-hmap-dash .hmc{font-size:9.5px;font-weight:800;letter-spacing:-.02em}
+#p6 .p6-hmap-dash .ms-grid{margin-top:9px}
 #p6 .cd.p6-alarm-card{overflow-x:hidden;overflow-y:auto;align-items:stretch;gap:0;padding-bottom:14px}
 #p6 .cd.p6-alarm-card .an-c{margin-bottom:10px;overflow:visible;padding:11px 12px 12px 14px}
 #p6 .cd.p6-alarm-card .an-h{flex-wrap:wrap;row-gap:6px;margin-bottom:6px}
@@ -1515,6 +1520,44 @@ nav{padding:10px 10px;flex:1}
             <div class="cd-t" style="margin-bottom:7px">유종별 세금 부담 비율</div>
             <div class="chw p6-tax-donut"><canvas id="taxChart" role="img" aria-label="유종별 세금 부담 비율"></canvas></div>
           </div>
+        </div>
+      </div>
+      <div class="p6-hmap-dash">
+        <div class="p6-hmap-dash-hd">
+          <span style="font-size:13px;color:var(--tx2);font-weight:700">히트맵 대시보드</span>
+          <span class="lbl">17개 시·도 · 휘발유 평균가 강도</span>
+        </div>
+        <div class="p6-hmap-cells">
+          <div class="hmc" style="background:rgba(44,115,255,.42)" title="서울 · 1,650원/L" onclick="openDrawer('서울 평균가')">서울</div>
+          <div class="hmc" style="background:rgba(44,115,255,.52)" title="경기 · 1,658원/L" onclick="openDrawer('경기 평균가')">경기</div>
+          <div class="hmc" style="background:rgba(44,115,255,.55)" title="인천 · 1,662원/L" onclick="openDrawer('인천 평균가')">인천</div>
+          <div class="hmc" style="background:rgba(109,185,63,.55)" title="부산 · 1,665원/L" onclick="openDrawer('부산 평균가')">부산</div>
+          <div class="hmc" style="background:rgba(109,185,63,.58)" title="대구 · 1,660원/L" onclick="openDrawer('대구 평균가')">대구</div>
+          <div class="hmc" style="background:rgba(109,185,63,.60)" title="대전 · 1,656원/L" onclick="openDrawer('대전 평균가')">대전</div>
+          <div class="hmc" style="background:rgba(109,185,63,.56)" title="광주 · 1,664원/L" onclick="openDrawer('광주 평균가')">광주</div>
+          <div class="hmc" style="background:rgba(109,185,63,.57)" title="울산 · 1,666원/L" onclick="openDrawer('울산 평균가')">울산</div>
+          <div class="hmc" style="background:rgba(44,115,255,.50)" title="세종 · 1,654원/L" onclick="openDrawer('세종 평균가')">세종</div>
+          <div class="hmc" style="background:rgba(229,57,53,.88)" title="강원 · 1,792원/L" onclick="openDrawer('강원 평균가')">강원</div>
+          <div class="hmc" style="background:rgba(109,185,63,.63)" title="충북 · 1,684원/L" onclick="openDrawer('충북 평균가')">충북</div>
+          <div class="hmc" style="background:rgba(109,185,63,.59)" title="충남 · 1,672원/L" onclick="openDrawer('충남 평균가')">충남</div>
+          <div class="hmc" style="background:rgba(245,134,26,.76)" title="경북 · 1,712원/L" onclick="openDrawer('경북 평균가')">경북</div>
+          <div class="hmc" style="background:rgba(109,185,63,.60)" title="경남 · 1,678원/L" onclick="openDrawer('경남 평균가')">경남</div>
+          <div class="hmc" style="background:rgba(109,185,63,.61)" title="전북 · 1,678원/L" onclick="openDrawer('전북 평균가')">전북</div>
+          <div class="hmc" style="background:rgba(245,134,26,.72)" title="전남 · 1,698원/L" onclick="openDrawer('전남 평균가')">전남</div>
+          <div class="hmc" style="background:rgba(245,134,26,.82)" title="제주 · 1,768원/L" onclick="openDrawer('제주 평균가')">제주</div>
+          <div class="hmc empty"></div>
+        </div>
+        <div class="hmap-leg">
+          <span style="margin-right:auto;color:var(--tx2)">▲ 지역 셀 클릭 · 상세 보기</span>
+          <span>낮음</span>
+          <div class="hmap-bar" style="background:linear-gradient(90deg,rgba(44,115,255,.15),rgba(44,115,255,.4),rgba(109,185,63,.6),rgba(245,134,26,.7),rgba(229,57,53,.85))"></div>
+          <span>높음</span>
+        </div>
+        <div class="ms-grid">
+          <div class="ms-c" onclick="openDrawer('전국 분포')"><div class="ms-l">전국 평균</div><div class="ms-v">1,682<small>원/L</small></div></div>
+          <div class="ms-c" onclick="openDrawer('최고가 지역')"><div class="ms-l">최고가</div><div class="ms-v" style="color:var(--rd2)">강원<small>1,792</small></div></div>
+          <div class="ms-c" onclick="openDrawer('최저가 지역')"><div class="ms-l">최저가</div><div class="ms-v" style="color:var(--bl2)">서울<small>1,650</small></div></div>
+          <div class="ms-c" onclick="openDrawer('편차')"><div class="ms-l">17개 시·도 편차</div><div class="ms-v">142<small>원</small></div></div>
         </div>
       </div>
     </div>
