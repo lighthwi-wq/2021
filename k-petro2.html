@@ -611,13 +611,356 @@ nav{padding:10px 10px;flex:1}
 
 /* 작은 라벨용 */
 .lbl{font-size:11.5px;color:var(--tx3);font-weight:700;text-transform:uppercase;letter-spacing:.04em}
+
+/* =========================================================
+   로고 클릭 가능 - hover/focus 인터랙션
+   ========================================================= */
+.logo-wrap{cursor:pointer;border-radius:6px;outline:none;transition:filter .2s, transform .15s}
+.logo-wrap:hover{filter:brightness(1.15) drop-shadow(0 0 8px rgba(109,185,63,.35))}
+.logo-wrap:active{transform:scale(.97)}
+.logo-wrap:focus-visible{box-shadow:0 0 0 2px rgba(109,185,63,.55)}
+
+/* =========================================================
+   전역 투명 스크롤바 (Webkit + Firefox)
+   - 모든 스크롤 영역에 적용되도록 강력한 선택자 사용
+   - 트랙 완전 투명, 썸은 반투명 글래스 톤
+   - hover 시에만 자연스럽게 가시화 → 컨텐츠 우선 디자인
+   ========================================================= */
+*{scrollbar-width:thin;scrollbar-color:rgba(255,255,255,.18) transparent}
+*::-webkit-scrollbar{width:8px;height:8px;background:transparent}
+*::-webkit-scrollbar-track,
+*::-webkit-scrollbar-track-piece,
+*::-webkit-scrollbar-corner{background:transparent;border:0;box-shadow:none}
+*::-webkit-scrollbar-thumb{
+  background:rgba(255,255,255,.10);
+  border-radius:10px;
+  border:2px solid transparent;
+  background-clip:padding-box;
+  transition:background .2s
+}
+*::-webkit-scrollbar-thumb:hover{background:rgba(141,214,96,.45);background-clip:padding-box}
+*::-webkit-scrollbar-thumb:active{background:rgba(141,214,96,.65);background-clip:padding-box}
+*::-webkit-scrollbar-button{display:none;width:0;height:0}
+
+/* 컨테이너 hover 시에만 썸 표출 - 더 깔끔한 인터랙션 */
+.sb::-webkit-scrollbar-thumb,
+.pg::-webkit-scrollbar-thumb,
+.al::-webkit-scrollbar-thumb,
+.vl::-webkit-scrollbar-thumb,
+.feed::-webkit-scrollbar-thumb,
+.dtb-wrap::-webkit-scrollbar-thumb,
+#p4 .p4-depot-pl::-webkit-scrollbar-thumb{
+  background:rgba(255,255,255,.06);
+  background-clip:padding-box
+}
+.sb:hover::-webkit-scrollbar-thumb,
+.pg:hover::-webkit-scrollbar-thumb,
+.al:hover::-webkit-scrollbar-thumb,
+.vl:hover::-webkit-scrollbar-thumb,
+.feed:hover::-webkit-scrollbar-thumb,
+.dtb-wrap:hover::-webkit-scrollbar-thumb,
+#p4 .p4-depot-pl:hover::-webkit-scrollbar-thumb{
+  background:rgba(255,255,255,.18);
+  background-clip:padding-box
+}
+
+/* 좁은 사이드바/패널은 더 얇게 */
+.sb::-webkit-scrollbar,
+.al::-webkit-scrollbar,
+.vl::-webkit-scrollbar,
+.feed::-webkit-scrollbar{width:6px;height:6px}
+.pg::-webkit-scrollbar,
+.dtb-wrap::-webkit-scrollbar,
+#p4 .p4-depot-pl::-webkit-scrollbar{width:8px;height:8px}
+
+/* =========================================================
+   페이지 전환 · 모던 인터랙션 (2025 트렌드)
+   - Linear / Vercel / Apple HIG 스타일의 cubic-bezier 모션
+   - 페이지 entrance: blur-in + slide + scale (cinematic)
+   - 카드 children: staggered cascade (계단식 등장)
+   - 알림바: spring overshoot로 위에서 슬라이드 다운
+   - 헤더 타이틀: 텍스트 morph 전환
+   - prefers-reduced-motion 완전 대응
+   ========================================================= */
+
+/* 페이지 자체 - 기존 fi 애니메이션을 cinematic entrance로 격상 */
+.pg.on{animation:pageEnter .55s cubic-bezier(.22,1,.36,1) both}
+@keyframes pageEnter{
+  0%  {opacity:0;transform:translateY(10px) scale(.994);filter:blur(3px)}
+  55% {filter:blur(0)}
+  100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+
+/* 자식 카드들 - staggered cascade로 순차 등장 */
+.pg.on > *{animation:cardEnter .6s cubic-bezier(.22,1,.36,1) both;animation-delay:var(--d,40ms);will-change:transform,opacity}
+.pg.on > *:nth-child(1){--d:30ms}
+.pg.on > *:nth-child(2){--d:90ms}
+.pg.on > *:nth-child(3){--d:160ms}
+.pg.on > *:nth-child(4){--d:230ms}
+.pg.on > *:nth-child(5){--d:300ms}
+.pg.on > *:nth-child(6){--d:360ms}
+.pg.on > *:nth-child(n+7){--d:400ms}
+@keyframes cardEnter{
+  from{opacity:0;transform:translateY(16px) scale(.985)}
+  to  {opacity:1;transform:translateY(0) scale(1)}
+}
+/* 애니메이션 종료 후 will-change 해제 (GPU 절약) */
+.pg.on > *{animation-fill-mode:both}
+
+/* 알림바는 spring 톤으로 위에서 슬라이드 다운 - 차별화된 entrance */
+.pg.on > .ab{animation:alertSlideIn .65s cubic-bezier(.34,1.4,.64,1) both;animation-delay:0ms}
+@keyframes alertSlideIn{
+  0%  {opacity:0;transform:translateY(-14px) scale(.96)}
+  60% {opacity:1;transform:translateY(2px) scale(1.005)}
+  100%{opacity:1;transform:translateY(0) scale(1)}
+}
+
+/* 헤더 타이틀 morph - sp() 호출 시 .morph 클래스로 트리거 */
+.hd-t,.hd-crumbs{display:inline-block;will-change:transform,opacity}
+.hd-t.morph{animation:titleMorph .55s cubic-bezier(.22,1,.36,1) both}
+.hd-crumbs.morph{animation:crumbsMorph .5s cubic-bezier(.22,1,.36,1) .08s both}
+@keyframes titleMorph{
+  0%  {opacity:0;transform:translateY(-8px);letter-spacing:.04em;filter:blur(2px)}
+  55% {filter:blur(0)}
+  100%{opacity:1;transform:translateY(0);letter-spacing:normal;filter:blur(0)}
+}
+@keyframes crumbsMorph{
+  from{opacity:0;transform:translateY(-4px)}
+  to  {opacity:.85;transform:translateY(0)}
+}
+
+/* 사이드바 nav 아이템 - 인터랙션 정밀 튜닝 */
+.ni{transition:background .25s cubic-bezier(.4,0,.2,1),color .2s,border-color .25s,transform .18s cubic-bezier(.34,1.4,.64,1)}
+.ni:hover{transform:translateX(2px)}
+.ni:active{transform:translateX(2px) scale(.985)}
+.ni::before{transition:transform .4s cubic-bezier(.34,1.56,.64,1);transform-origin:center}
+.ni.on{box-shadow:0 0 0 1px rgba(109,185,63,.08),0 4px 16px -4px rgba(109,185,63,.18)}
+
+/* nav 아이콘 - active 시 살짝 스케일업 + 글로우 */
+.ni svg{transition:transform .35s cubic-bezier(.22,1,.36,1),filter .35s,color .2s}
+.ni.on svg{transform:scale(1.08);filter:drop-shadow(0 0 5px rgba(109,185,63,.55))}
+
+/* 페이지 전환 시 active 뱃지 펄스 */
+.ni.on .nb{animation:nbPulse .7s cubic-bezier(.22,1,.36,1) both}
+@keyframes nbPulse{
+  0%  {transform:scale(1)}
+  45% {transform:scale(1.15)}
+  100%{transform:scale(1)}
+}
+
+/* 헤더 버튼 - 마이크로 인터랙션 */
+.hd-btn{transition:transform .18s cubic-bezier(.34,1.56,.64,1),background .2s,border-color .2s,box-shadow .2s}
+.hd-btn:hover{box-shadow:0 4px 12px -2px rgba(109,185,63,.18)}
+.hd-btn:active{transform:scale(.94)}
+
+/* 햄버거 메뉴도 인터랙션 통일 */
+.hamburger{transition:transform .25s cubic-bezier(.34,1.56,.64,1),background .2s}
+.hamburger:hover{transform:rotate(90deg)}
+.hamburger:active{transform:rotate(90deg) scale(.92)}
+
+/* 카드 hover lift - 페이지 진입 후 미세한 인터랙션 */
+.cd{transition:transform .25s cubic-bezier(.22,1,.36,1),box-shadow .25s,border-color .25s}
+.cd:hover{border-color:var(--bd2)}
+/* 카드 상단 글로우 라인 - hover 시에만 표출 (subtle accent) */
+.cd::after{content:'';position:absolute;left:0;right:0;top:0;height:1px;background:linear-gradient(90deg,transparent,rgba(109,185,63,.45),rgba(120,86,255,.35),transparent);opacity:0;transition:opacity .35s ease;pointer-events:none;z-index:2}
+.cd:hover::after{opacity:1}
+
+/* 카드 제목 도트 - active 펄스 살짝 강화 */
+.cd-t::before{box-shadow:0 0 0 0 currentColor;animation:dotPulse 2.6s cubic-bezier(.22,1,.36,1) infinite}
+@keyframes dotPulse{
+  0%,100%{box-shadow:0 0 0 0 rgba(109,185,63,.0);transform:scale(1)}
+  50%    {box-shadow:0 0 0 4px rgba(109,185,63,.0);transform:scale(1.18)}
+}
+
+/* 헤더 LIVE 인디케이터 - 더 차분한 호흡 */
+.hd-badge .dot{position:relative}
+.hd-badge .dot::after{content:'';position:absolute;inset:-3px;border-radius:50%;border:1.5px solid rgba(109,185,63,.55);animation:liveRing 1.8s cubic-bezier(.22,1,.36,1) infinite;pointer-events:none}
+@keyframes liveRing{
+  0%  {transform:scale(.7);opacity:.9}
+  100%{transform:scale(2);opacity:0}
+}
+
+/* 사이드바 nav 아이템 - ripple용 컨테이너 */
+.ni{isolation:isolate}
+.ni .ripple{position:absolute;border-radius:50%;background:radial-gradient(circle,rgba(141,214,96,.55) 0%,rgba(141,214,96,0) 70%);transform:translate(-50%,-50%) scale(0);pointer-events:none;animation:ripple .65s cubic-bezier(.22,1,.36,1) forwards;z-index:0}
+@keyframes ripple{
+  0%  {transform:translate(-50%,-50%) scale(0);opacity:.7}
+  100%{transform:translate(-50%,-50%) scale(8);opacity:0}
+}
+.ni > *{position:relative;z-index:1}
+
+/* 테이블 행 - 부드러운 hover 강조 */
+.dtb tbody tr{transition:background .18s ease,box-shadow .18s ease}
+.dtb tbody tr:hover{background:rgba(141,214,96,.04);box-shadow:inset 3px 0 0 var(--gr)}
+
+/* 피드/로그 리스트 행 - hover 살짝 슬라이드 */
+.feed li,.vl li,.al li{transition:background .18s,transform .18s cubic-bezier(.22,1,.36,1),border-color .18s}
+.feed li:hover,.vl li:hover,.al li:hover{transform:translateX(2px)}
+
+/* 카드 내부 sub-stagger - opacity-only (차트 사이즈 안전) */
+.pg.on .cd > .cd-t,
+.pg.on .cd > .dtb-wrap,
+.pg.on .cd > .feed,
+.pg.on .cd > .vl,
+.pg.on .cd > .al{animation:fadeUp .55s cubic-bezier(.22,1,.36,1) both;animation-delay:calc(var(--d,40ms) + 220ms)}
+@keyframes fadeUp{
+  from{opacity:0;transform:translateY(6px)}
+  to  {opacity:1;transform:translateY(0)}
+}
+
+/* 차트 canvas - 진입 시 부드러운 페이드 (transform 없이) */
+.pg.on canvas{animation:chartFadeIn .7s cubic-bezier(.22,1,.36,1) both;animation-delay:calc(var(--d,40ms) + 280ms)}
+@keyframes chartFadeIn{
+  from{opacity:0}
+  to  {opacity:1}
+}
+
+/* SVG 지도/시각화도 동일 진입 */
+.pg.on .kr-map-svg{animation:chartFadeIn .8s cubic-bezier(.22,1,.36,1) both;animation-delay:calc(var(--d,40ms) + 320ms)}
+
+/* 알림바 텍스트 - subtle shimmer (warning 톤) */
+.ab{position:relative;overflow:hidden}
+.ab::before{content:'';position:absolute;inset:0;background:linear-gradient(110deg,transparent 30%,rgba(255,255,255,.06) 50%,transparent 70%);transform:translateX(-100%);animation:abShimmer 5.5s cubic-bezier(.22,1,.36,1) infinite;pointer-events:none;z-index:0}
+@keyframes abShimmer{
+  0%  {transform:translateX(-100%)}
+  60% {transform:translateX(120%)}
+  100%{transform:translateX(120%)}
+}
+
+/* 햄버거 아이콘 라인 - 토글 시 미세 모션 */
+.hamburger svg line{transition:transform .3s cubic-bezier(.22,1,.36,1)}
+.hamburger:hover svg line:nth-child(1){transform:translateY(-1px)}
+.hamburger:hover svg line:nth-child(3){transform:translateY(1px)}
+
+/* 페이지 진입 중 .pg-loading 상태 - 미세한 skeleton hint */
+.pg.pg-loading{pointer-events:none}
+
+/* =========================================================
+   v3 트렌드 업그레이드 - Signature 인터랙션
+   ① Direction-aware 페이지 전환 (Linear 스타일)
+   ② 슬라이딩 액티브 인디케이터 (Vercel 스타일)
+   ③ 3D perspective 카드 캐스케이드
+   ④ Page sheen sweep (글래스 빛 통과 효과)
+   ========================================================= */
+
+/* ① 방향성 페이지 전환 - dir-forward/backward 클래스로 분기 */
+.pg.on.dir-forward {animation:pageEnterFromBelow .6s cubic-bezier(.22,1,.36,1) both}
+.pg.on.dir-backward{animation:pageEnterFromAbove .6s cubic-bezier(.22,1,.36,1) both}
+@keyframes pageEnterFromBelow{
+  0%  {opacity:0;transform:translateY(22px) scale(.992);filter:blur(4px)}
+  50% {filter:blur(0)}
+  100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+@keyframes pageEnterFromAbove{
+  0%  {opacity:0;transform:translateY(-22px) scale(.992);filter:blur(4px)}
+  50% {filter:blur(0)}
+  100%{opacity:1;transform:translateY(0) scale(1);filter:blur(0)}
+}
+
+/* ③ 3D perspective 카드 캐스케이드 - 방향에 따라 tilt 각도 반전 */
+.pg.on.dir-forward > *{animation:cardEnterTiltUp .68s cubic-bezier(.22,1,.36,1) both;animation-delay:var(--d,40ms)}
+.pg.on.dir-backward > *{animation:cardEnterTiltDown .68s cubic-bezier(.22,1,.36,1) both;animation-delay:var(--d,40ms)}
+@keyframes cardEnterTiltUp{
+  from{opacity:0;transform:perspective(1000px) rotateX(4deg) translateY(20px) scale(.982)}
+  to  {opacity:1;transform:perspective(1000px) rotateX(0deg) translateY(0) scale(1)}
+}
+@keyframes cardEnterTiltDown{
+  from{opacity:0;transform:perspective(1000px) rotateX(-4deg) translateY(-20px) scale(.982)}
+  to  {opacity:1;transform:perspective(1000px) rotateX(0deg) translateY(0) scale(1)}
+}
+/* 카드 transform-origin: 방향에 따라 회전축 위치 변경 - 자연스러움 강화 */
+.pg.on.dir-forward > *{transform-origin:center bottom}
+.pg.on.dir-backward > *{transform-origin:center top}
+
+/* ④ Page sheen sweep - 진입 시 빛이 한 번 훑고 지나감 */
+.pg{position:relative}
+.pg.on::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(115deg,
+    transparent 35%,
+    rgba(141,214,96,.045) 48%,
+    rgba(120,86,255,.04) 52%,
+    transparent 65%);
+  pointer-events:none;z-index:100;
+  transform:translateX(-100%);
+  animation:pageSheen 1.1s cubic-bezier(.22,1,.36,1) .15s both;
+  mix-blend-mode:screen
+}
+@keyframes pageSheen{
+  0%  {transform:translateX(-100%);opacity:0}
+  20% {opacity:1}
+  100%{transform:translateX(100%);opacity:0}
+}
+
+/* ② 슬라이딩 액티브 인디케이터 - 단일 막대가 메뉴 사이를 미끄러져 이동 */
+.sb nav{position:relative}
+.ni::before{display:none} /* 기존 개별 ::before 막대 → 글로벌 인디케이터로 통합 */
+.nav-indicator{
+  position:absolute;
+  left:10px;top:0;width:3px;height:0;
+  background:linear-gradient(180deg,var(--gr2) 0%,var(--gr) 100%);
+  border-radius:3px;
+  box-shadow:
+    0 0 0 1px rgba(141,214,96,.15),
+    0 0 12px rgba(141,214,96,.55),
+    0 0 28px rgba(141,214,96,.25);
+  pointer-events:none;z-index:0;opacity:0;
+  transition:
+    transform .55s cubic-bezier(.34,1.4,.64,1),
+    height .55s cubic-bezier(.34,1.4,.64,1),
+    left .35s cubic-bezier(.22,1,.36,1),
+    opacity .25s ease;
+  will-change:transform,height
+}
+.nav-indicator.ready{opacity:1}
+.nav-indicator::after{
+  content:'';position:absolute;left:50%;top:50%;
+  width:24px;height:24px;border-radius:50%;
+  background:radial-gradient(circle,rgba(141,214,96,.45) 0%,transparent 70%);
+  transform:translate(-50%,-50%);
+  filter:blur(3px);
+  animation:indicatorGlow 2.4s cubic-bezier(.22,1,.36,1) infinite
+}
+@keyframes indicatorGlow{
+  0%,100%{opacity:.55;transform:translate(-50%,-50%) scale(1)}
+  50%    {opacity:.85;transform:translate(-50%,-50%) scale(1.15)}
+}
+/* collapsed 모드 - 인디케이터 위치 보정 */
+.sb.collapsed .nav-indicator{left:5px;width:3px}
+.sb.collapsed .nav-indicator::after{width:20px;height:20px}
+/* nav 아이템에 살짝 left padding (인디케이터 시각 여유) */
+.ni{padding-left:12px}
+.sb.collapsed .ni{padding-left:0}
+
+/* 접근성 - 신규 애니메이션도 prefers-reduced-motion 대응 */
+@media (prefers-reduced-motion: reduce){
+  .pg.on.dir-forward,.pg.on.dir-backward,
+  .pg.on.dir-forward > *,.pg.on.dir-backward > *,
+  .pg.on::before,.nav-indicator::after{animation:none !important}
+  .pg.on.dir-forward,.pg.on.dir-backward,
+  .pg.on.dir-forward > *,.pg.on.dir-backward > *{opacity:1 !important;transform:none !important;filter:none !important}
+  .nav-indicator{transition-duration:.01ms !important}
+}
+
+/* 접근성 - prefers-reduced-motion 완전 대응 */
+@media (prefers-reduced-motion: reduce){
+  .pg.on,.pg.on > *,.pg.on > .ab,
+  .pg.on .cd > .cd-t,.pg.on .cd > .dtb-wrap,
+  .pg.on .cd > .feed,.pg.on .cd > .vl,.pg.on .cd > .al,
+  .pg.on canvas,.pg.on .kr-map-svg,
+  .hd-t.morph,.hd-crumbs.morph,
+  .ni.on .nb,.hamburger,
+  .cd::after,.cd-t::before,.hd-badge .dot::after,
+  .ab::before,.ni .ripple{animation:none !important;transition-duration:.01ms !important}
+  .pg.on,.pg.on > *{opacity:1 !important;transform:none !important;filter:none !important}
+}
 </style>
 </head>
 <body>
 <div class="wrap">
 <aside class="sb collapsed">
   <div class="sb-top">
-    <div class="logo-wrap">
+    <div class="logo-wrap" onclick="goHome()" title="통합관제 대시보드로 이동" role="link" tabindex="0" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();goHome();}">
       <img class="logo-img full" src="k-petro-data-portal-logo.png" alt="K Petro Data PORTAL · 한국석유관리원 · 석유공급통합관제포털">
       <img class="logo-img emblem" src="k_logo.png" alt="K Emblem">
     </div>
@@ -1652,23 +1995,149 @@ nav{padding:10px 10px;flex:1}
    ========================================================= */
 const TITLES={p1:'통합 관제 대시보드',p2:'유조선 실시간 추적',p3:'정유·생산 현황',p4:'석유재고 현황',p5:'유통·판매 현황',p6:'가격 모니터링'};
 const CRUMBS={p1:'관제 · 실시간',p2:'AIS 추적 · 입항 관리',p3:'정유사 가동 · 수율',p4:'재고 · IEA 90일 관리',p5:'저유소 · 주유소 유통',p6:'국제유가 · 내수가 · AI 예측'};
+/* Direction-aware 페이지 전환을 위한 페이지 인덱스 추적 */
+const PAGE_ORDER=['p1','p2','p3','p4','p5','p6'];
+let _prevPageIdx=0;
 
 function sp(id,el){
-  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on'));
+  const pgEl=document.getElementById(id);
+  /* 방향 판정: 새 인덱스가 더 크면 forward(아래에서 진입), 작으면 backward(위에서 진입) */
+  const newIdx=PAGE_ORDER.indexOf(id);
+  const dir=newIdx>_prevPageIdx?'forward':(newIdx<_prevPageIdx?'backward':'forward');
+  _prevPageIdx=newIdx;
+  /* 이미 동일 페이지면 entrance만 재트리거 (사용자가 같은 메뉴 클릭한 경우) */
+  document.querySelectorAll('.pg').forEach(p=>p.classList.remove('on','dir-forward','dir-backward'));
   document.querySelectorAll('.ni').forEach(n=>n.classList.remove('on'));
-  document.getElementById(id).classList.add('on');
+  /* reflow로 .on 클래스 재부여 시 애니메이션 강제 재실행 */
+  void pgEl.offsetWidth;
+  pgEl.classList.add('on','dir-'+dir);
   el.classList.add('on');
-  document.getElementById('hd-t').textContent=TITLES[id];
-  document.getElementById('hd-crumbs').textContent=CRUMBS[id];
+  /* 사이드바 슬라이딩 인디케이터 이동 */
+  moveNavIndicator(el);
+  /* 사이드바 nav 클릭 ripple - 클릭 좌표 기준 */
+  spawnRipple(el, window.__lastNiEvent);
+  /* 헤더 타이틀/브레드크럼 morph 애니메이션 트리거 */
+  const hdT=document.getElementById('hd-t'),hdC=document.getElementById('hd-crumbs');
+  hdT.classList.remove('morph');hdC.classList.remove('morph');
+  void hdT.offsetWidth; /* reflow로 애니메이션 재시작 보장 */
+  hdT.textContent=TITLES[id];
+  hdC.textContent=CRUMBS[id];
+  hdT.classList.add('morph');hdC.classList.add('morph');
   initChart(id);
   initHeatmap(id);
-  setTimeout(()=>livePulseCharts(false),600);
+  /* entrance 애니메이션 종료 시점에 차트 리사이즈 트리거 (사이즈 동기화) */
+  setTimeout(()=>{
+    if(window.Chart && Chart.instances){
+      Object.values(Chart.instances).forEach(c=>{ try{c.resize()}catch(_){} });
+    }
+  },650);
+  setTimeout(()=>livePulseCharts(false),700);
   if(id==='p4'){
     setTimeout(syncP4DepotCardHeight,0);
     setTimeout(syncP4DepotCardHeight,120);
     setTimeout(syncP4DepotCardHeight,400);
+    setTimeout(syncP4DepotCardHeight,720); /* entrance 후 한 번 더 보정 */
   }
 }
+
+/* nav 아이템 클릭 시 ripple 생성 - Material-style, 클릭 좌표 기반 */
+function spawnRipple(el, ev){
+  if(!el) return;
+  /* prefers-reduced-motion 환경에서는 ripple 생략 */
+  if(window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const rect=el.getBoundingClientRect();
+  const x=ev?(ev.clientX-rect.left):rect.width/2;
+  const y=ev?(ev.clientY-rect.top):rect.height/2;
+  const r=document.createElement('span');
+  r.className='ripple';
+  r.style.left=x+'px';r.style.top=y+'px';
+  r.style.width=r.style.height=Math.max(rect.width,rect.height)*0.6+'px';
+  el.appendChild(r);
+  setTimeout(()=>r.remove(),700);
+}
+/* nav 클릭 이벤트 캡처 - sp() 호출 직전 좌표 보관 */
+document.addEventListener('click', e=>{
+  const ni=e.target.closest('.sb .ni');
+  if(ni) window.__lastNiEvent=e;
+}, true);
+
+/* 로고 클릭 → 메인페이지(통합관제 대시보드) 이동 */
+function goHome(){
+  const firstNav=document.querySelector('.sb nav .ni');
+  if(firstNav){ sp('p1', firstNav); }
+}
+
+/* =========================================================
+   슬라이딩 액티브 인디케이터 (Vercel/Linear 시그니처)
+   - nav 컨테이너 내부에 단일 막대를 두고 active 아이템 위치로 이동
+   - 사이드바 collapse/expand 시 자동 재배치
+   - 첫 진입 시는 transition 끄고 즉시 위치 (입장 애니메이션 후 부드럽게 표출)
+   ========================================================= */
+function ensureNavIndicator(){
+  const nav=document.querySelector('.sb nav');
+  if(!nav) return null;
+  let ind=nav.querySelector('.nav-indicator');
+  if(!ind){
+    ind=document.createElement('div');
+    ind.className='nav-indicator';
+    nav.prepend(ind);
+  }
+  return ind;
+}
+function moveNavIndicator(el,instant){
+  const ind=ensureNavIndicator();
+  if(!ind||!el) return;
+  /* instant 모드: 초기 위치 잡을 때 transition 없이 즉시 */
+  if(instant){
+    const prev=ind.style.transition;
+    ind.style.transition='none';
+    ind.style.transform=`translateY(${el.offsetTop}px)`;
+    ind.style.height=el.offsetHeight+'px';
+    void ind.offsetWidth;
+    ind.style.transition=prev||'';
+    /* 다음 프레임에 ready 표출 */
+    requestAnimationFrame(()=>requestAnimationFrame(()=>ind.classList.add('ready')));
+  }else{
+    ind.style.transform=`translateY(${el.offsetTop}px)`;
+    ind.style.height=el.offsetHeight+'px';
+    if(!ind.classList.contains('ready'))ind.classList.add('ready');
+  }
+}
+/* 사이드바 collapse 토글 시 인디케이터 재배치 (트랜지션 진행 중 + 종료 후) */
+function rebindNavIndicator(){
+  const active=document.querySelector('.sb nav .ni.on');
+  if(active)moveNavIndicator(active);
+}
+window.addEventListener('resize',rebindNavIndicator);
+
+/* 첫 로드 entrance 보장 - 페이지가 .on 상태로 시작해도 애니메이션이 명확히 보이도록 */
+window.addEventListener('DOMContentLoaded', ()=>{
+  const first=document.querySelector('.pg.on');
+  if(first){
+    first.classList.remove('on');
+    void first.offsetWidth;
+    first.classList.add('on','dir-forward');
+    /* 헤더 타이틀도 첫 진입 morph */
+    const hdT=document.getElementById('hd-t'),hdC=document.getElementById('hd-crumbs');
+    if(hdT){ hdT.classList.remove('morph'); void hdT.offsetWidth; hdT.classList.add('morph'); }
+    if(hdC){ hdC.classList.remove('morph'); void hdC.offsetWidth; hdC.classList.add('morph'); }
+  }
+  /* 슬라이딩 인디케이터 초기 위치 - 사이드바 transition 끝난 뒤 부드럽게 표출 */
+  const activeNi=document.querySelector('.sb nav .ni.on');
+  if(activeNi){
+    /* 사이드바가 처음 collapsed 상태로 시작하므로 약간 지연 후 측정 */
+    setTimeout(()=>moveNavIndicator(activeNi,true),50);
+  }
+  /* 햄버거 토글에 인디케이터 재배치 훅 (CSS transition 0.3s에 맞춰 두 번 호출) */
+  const hb=document.querySelector('.hamburger');
+  if(hb){
+    hb.addEventListener('click',()=>{
+      requestAnimationFrame(rebindNavIndicator);
+      setTimeout(rebindNavIndicator,160);
+      setTimeout(rebindNavIndicator,330);
+    });
+  }
+});
 function tick(){
   const n=new Date(),p=v=>String(v).padStart(2,'0');
   document.getElementById('clock').textContent=`${n.getFullYear()}-${p(n.getMonth()+1)}-${p(n.getDate())} ${p(n.getHours())}:${p(n.getMinutes())}:${p(n.getSeconds())} KST`;
