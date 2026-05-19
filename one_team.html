@@ -3,776 +3,599 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-<meta name="theme-color" content="#F4EFE6" id="meta-theme">
+<meta name="theme-color" content="#0a0a0a" id="meta-theme">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="One Team">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="description" content="팀의 화학을 설계하다. MBTI·성향·가족관계 기반 팀원 매칭 분석 앱.">
-<meta name="format-detection" content="telephone=no">
-<meta property="og:title" content="One Team — 팀원 매시업">
-<meta property="og:description" content="팀의 화학을 설계하다.">
-<meta property="og:type" content="website">
 <title>One Team — 팀원 매시업</title>
-
-<link rel="icon" type="image/svg+xml" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><rect width="64" height="64" rx="14" fill="%23FF4D1F"/><circle cx="24" cy="28" r="9" fill="%23F4EFE6"/><circle cx="40" cy="28" r="9" fill="%23F4EFE6" opacity="0.7"/><path d="M14 50c0-5.5 4.5-10 10-10s10 4.5 10 10M30 50c0-3.5 3-6.5 6.5-6.5S43 46.5 43 50" stroke="%23F4EFE6" stroke-width="3" fill="none" stroke-linecap="round"/></svg>'>
-<link rel="apple-touch-icon" href='data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 180"><rect width="180" height="180" rx="40" fill="%23FF4D1F"/><circle cx="68" cy="78" r="26" fill="%23F4EFE6"/><circle cx="112" cy="78" r="26" fill="%23F4EFE6" opacity="0.7"/><path d="M40 140c0-15 13-28 28-28s28 13 28 28M85 140c0-10 8.5-18 18.5-18S122 130 122 140" stroke="%23F4EFE6" stroke-width="9" fill="none" stroke-linecap="round"/></svg>'>
-
-<link rel="manifest" href='data:application/manifest+json;charset=utf-8,{"name":"One Team — 팀원 매시업","short_name":"One Team","description":"팀의 화학을 설계하다","start_url":".","display":"standalone","orientation":"portrait","background_color":"%23F4EFE6","theme_color":"%23FF4D1F","lang":"ko","categories":["productivity","lifestyle"],"icons":[{"src":"data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 512 512%22><rect width=%22512%22 height=%22512%22 rx=%22114%22 fill=%22%23FF4D1F%22/><circle cx=%22192%22 cy=%22220%22 r=%2272%22 fill=%22%23F4EFE6%22/><circle cx=%22320%22 cy=%22220%22 r=%2272%22 fill=%22%23F4EFE6%22 opacity=%220.7%22/><path d=%22M112 400c0-44 36-80 80-80s80 36 80 80M240 400c0-30 25-55 55-55s55 25 55 55%22 stroke=%22%23F4EFE6%22 stroke-width=%2226%22 fill=%22none%22 stroke-linecap=%22round%22/></svg>","sizes":"512x512","type":"image/svg+xml","purpose":"any maskable"}]}'>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
-  /* ============ TOKENS ============ */
+  /* ============ TOKENS & RESET ============ */
   :root{
     --ink:#0A0A0A; --ink-2:#1F1F1F; --paper:#F4EFE6; --paper-2:#EDE6D8; --paper-3:#E5DCC9;
     --line:#0a0a0a14; --line-2:#0a0a0a26; --muted:#6B6258; --muted-2:#9A9088;
     --accent:#FF4D1F; --accent-2:#1B3A7A; --accent-3:#E8C547;
     --good:#1F7A5A; --bad:#9B2D1F; --warn:#C76A1A; --card:#FFFFFF; --card-2:#FAF6EC;
     --overlay:rgba(10,10,10,.4); --sheet-bg:#FFFFFF;
-    --shadow-sm:0 2px 8px -2px rgba(10,10,10,.08); --shadow:0 12px 36px -12px rgba(10,10,10,.18); --shadow-lg:0 24px 60px -20px rgba(10,10,10,.28);
-    --radius-sm:10px; --radius:16px; --radius-lg:24px; --radius-xl:32px;
-    --tap:44px; --ease:cubic-bezier(.22,.61,.36,1); --ease-out:cubic-bezier(.16,1,.3,1); --ease-in:cubic-bezier(.4,0,1,1);
-    --dur-fast:160ms; --dur:220ms; --dur-slow:380ms;
+    --shadow-sm:0 2px 8px -2px rgba(10,10,10,.08); --shadow-lg:0 24px 60px -20px rgba(10,10,10,.28);
+    --radius-lg:24px; --dur-fast:160ms; --dur:220ms; --dur-slow:380ms; --ease:cubic-bezier(.22,.61,.36,1);
     --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px);
   }
   [data-theme="dark"]{
     --ink:#F4EFE6; --ink-2:#E5DCC9; --paper:#0F0E0C; --paper-2:#181614; --paper-3:#22201D;
     --line:#f4efe61c; --line-2:#f4efe636; --muted:#8A8074; --muted-2:#5F5750;
     --card:#1A1815; --card-2:#22201D; --overlay:rgba(0,0,0,.65); --sheet-bg:#1A1815;
-    --shadow-sm:0 2px 8px -2px rgba(0,0,0,.4); --shadow:0 12px 36px -12px rgba(0,0,0,.55); --shadow-lg:0 24px 60px -20px rgba(0,0,0,.7);
   }
-
-  /* ============ RESET & DEVICE FRAME ============ */
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  em, i, cite, address{font-style:normal}
-  html,body{height:100%;overflow:hidden}
-  body{
-    font-family:'Pretendard', system-ui, sans-serif;
-    color:var(--ink); background:#0a0a0a;
-    line-height:1.5; -webkit-font-smoothing:antialiased;
-    overscroll-behavior:none; touch-action:manipulation;
-  }
+  html,body{height:100%;overflow:hidden;background:#0a0a0a;font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);}
   button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
-  input,textarea,select{font:inherit;color:inherit}
-  a{color:inherit;text-decoration:none}
-  ::-webkit-scrollbar{width:0;height:0}
+  input{font:inherit;color:inherit}
+  ::-webkit-scrollbar{display:none;}
+
+  /* ============ DEVICE & LAYOUT ============ */
+  .device-wrap{height:100%;width:100%;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at top,#1c1816,#0a0a0a 70%);padding:24px;}
+  .device{width:100%;max-width:420px;height:100%;max-height:920px;background:var(--paper);border-radius:48px;overflow:hidden;position:relative;box-shadow:0 30px 80px -20px rgba(0,0,0,.6), 0 0 0 10px #000, 0 0 0 11px #2a2a2a;display:flex;flex-direction:column;}
+  @media (max-width:520px){ .device-wrap{padding:0;background:var(--paper)} .device{max-width:100%;max-height:100%;border-radius:0;box-shadow:none} }
   
-  .device-wrap{
-    height:100%;width:100%; display:flex;align-items:center;justify-content:center;
-    background:radial-gradient(ellipse at top,#1c1816,#0a0a0a 70%); padding:24px;
-  }
-  .device{
-    width:100%;max-width:420px;height:100%;max-height:920px;
-    background:var(--paper); border-radius:48px; overflow:hidden; position:relative;
-    box-shadow:0 30px 80px -20px rgba(0,0,0,.6), 0 0 0 10px #000, 0 0 0 11px #2a2a2a;
-    display:flex;flex-direction:column;
-  }
-  @media (max-width:520px){
-    .device-wrap{padding:0;background:var(--paper)}
-    .device{max-width:100%;max-height:100%;border-radius:0;box-shadow:none}
-  }
-
-  /* ============ STATUS BAR & LAYOUT ============ */
-  .status-bar{
-    height:44px;padding:0 22px 0 24px; display:flex;align-items:center;justify-content:space-between;
-    font-size:14px;font-weight:600;letter-spacing:-.01em; flex-shrink:0;color:var(--ink);
-    padding-top:var(--safe-top);
-  }
-  .status-bar .right{display:flex;align-items:center;gap:6px}
-  .status-icon{width:18px;height:11px;display:inline-block}
-  .status-icon svg{display:block;width:100%;height:100%;fill:var(--ink)}
-  .battery{
-    width:25px;height:12px;border:1.2px solid var(--ink);border-radius:3px;
-    position:relative;display:flex;align-items:center;padding:1.5px;
-  }
-  .battery::after{
-    content:"";position:absolute;right:-3px;top:3px;
-    width:2px;height:6px;background:var(--ink);border-radius:0 1px 1px 0;
-  }
-  .battery .fill{height:100%;width:80%;background:var(--ink);border-radius:1px}
-
-  .app{flex:1;display:flex;flex-direction:column;overflow:hidden;position:relative;background:var(--paper);}
+  .app{flex:1;display:flex;flex-direction:column;position:relative;background:var(--paper);overflow:hidden;}
   .stage{flex:1;position:relative;overflow:hidden}
-  .screen{
-    position:absolute;inset:0; display:flex;flex-direction:column; background:var(--paper); overflow:hidden;
-    transform:translateX(0); transition:transform var(--dur) var(--ease), opacity var(--dur) var(--ease);
-  }
+  .screen{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--paper);overflow:hidden;transform:translateX(0);transition:transform var(--dur) var(--ease), opacity var(--dur) var(--ease);}
   .screen.fade-in{animation:fadeIn var(--dur) var(--ease)}
-  .screen.slide-in{animation:slideIn var(--dur-slow) var(--ease-out)}
   @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-  @keyframes slideIn{from{transform:translateX(100%);opacity:.5}to{transform:translateX(0);opacity:1}}
-
-  .app-header{
-    flex-shrink:0;padding:10px 22px 10px; display:flex;align-items:center;justify-content:space-between;gap:12px;
-    background:var(--paper);min-height:52px;
-  }
-  .app-header .left{display:flex;align-items:center;gap:10px;min-width:0;flex:1}
-  .app-header .right{display:flex;align-items:center;gap:4px}
-  .h-back{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;margin-left:-8px;transition:background var(--dur-fast);}
-  .h-back:active{background:var(--line-2)}
-  .h-title{font-size:17px;font-weight:700;letter-spacing:-.02em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-  .h-action{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;color:var(--ink);transition:background var(--dur-fast);}
+  
+  .app-header{flex-shrink:0;padding:calc(10px + var(--safe-top)) 22px 10px;display:flex;align-items:center;justify-content:space-between;background:var(--paper);min-height:calc(52px + var(--safe-top));}
+  .app-header .left{display:flex;align-items:center;gap:10px;flex:1}
+  .h-title{font-size:17px;font-weight:700;letter-spacing:-.02em;}
+  .h-action{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .2s;}
   .h-action:active{background:var(--line-2)}
-
-  .scroll{
-    flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
-    padding-bottom:calc(96px + var(--safe-bottom));
-  }
-  .scroll.no-tab{padding-bottom:24px}
+  .scroll{flex:1;overflow-y:auto;padding-bottom:calc(96px + var(--safe-bottom));}
+  .scroll.no-tab{padding-bottom:30px}
 
   /* ============ BOTTOM NAV ============ */
   .tab-bar{
     position:absolute;left:0;right:0;bottom:0; height:calc(76px + var(--safe-bottom)); padding-bottom:var(--safe-bottom);
-    background:color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter:saturate(180%) blur(20px); -webkit-backdrop-filter:saturate(180%) blur(20px);
-    border-top:1px solid var(--line); display:flex;align-items:stretch; z-index:10;
-    transform:translateY(0); transition:transform var(--dur) var(--ease);
+    background:color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
+    border-top:1px solid var(--line); display:flex; z-index:10; transition:transform .3s;
   }
   .tab-bar.hidden{transform:translateY(110%)}
-  .tab{
-    flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center; gap:3px;color:var(--muted);transition:color var(--dur-fast);
-    padding-top:8px; font-size:10px;font-weight:600;letter-spacing:.02em; position:relative;
-  }
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:var(--muted);font-size:10px;font-weight:600;}
   .tab svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-  .tab.active{color:var(--ink)}
-  .tab.active svg{fill:var(--ink);stroke:var(--ink)}
-  .tab .fab{
-    width:52px;height:52px;border-radius:50%; background:var(--ink);color:var(--paper);
-    display:flex;align-items:center;justify-content:center; box-shadow:var(--shadow);
-    margin-bottom:6px;margin-top:-8px; transition:transform var(--dur) var(--ease), background var(--dur-fast);
-  }
-  .tab .fab svg{stroke:var(--paper);width:22px;height:22px}
+  .tab.active{color:var(--ink)} .tab.active svg{stroke:var(--ink)}
+  .tab .fab{width:52px;height:52px;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-items:center;margin-top:-14px;box-shadow:var(--shadow-lg);transition:transform .2s;}
   .tab:active .fab{transform:scale(.92);background:var(--accent)}
-  .tab.center{color:var(--ink);font-weight:700}
 
-  /* ============ TYPOGRAPHY & COMPONENTS ============ */
-  .eyebrow{font-size:11px;font-weight:600;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
-  .h1{font-size:34px;font-weight:800;letter-spacing:-.035em;line-height:1.1}
-  .h2{font-size:26px;font-weight:800;letter-spacing:-.025em;line-height:1.2}
-  .h3{font-size:20px;font-weight:700;letter-spacing:-.02em;line-height:1.25}
-  .body{font-size:15px;line-height:1.55;color:var(--ink)}
-  .small{font-size:13px;line-height:1.5;color:var(--muted)}
-  .meta{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--muted)}
-  
-  .btn{
-    display:inline-flex;align-items:center;justify-content:center;gap:8px;
-    height:52px;padding:0 22px;border-radius:99px; font-size:15px;font-weight:700;letter-spacing:-.01em;
-    transition:transform var(--dur-fast) var(--ease), background var(--dur-fast), opacity var(--dur-fast); min-width:0;
-  }
-  .btn:active{transform:scale(.97)}
-  .btn:disabled{opacity:.4;pointer-events:none}
-  .btn-primary{background:var(--ink);color:var(--paper)}
-  .btn-secondary{background:var(--line);color:var(--ink)}
-  .btn-accent{background:var(--accent);color:#fff}
-  .btn-ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line-2)}
-  .btn-danger{background:transparent;color:var(--bad)}
-  .btn-block{width:100%}
-  .btn-sm{height:38px;padding:0 16px;font-size:13px}
-
-  .field{margin-bottom:16px}
-  .field-label{display:block;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:8px;letter-spacing:.02em;}
-  .input{
-    width:100%;height:52px;padding:0 16px; background:var(--card);border:1.5px solid var(--line);
-    border-radius:14px;color:var(--ink);font-size:15px; transition:border-color var(--dur-fast), background var(--dur-fast);
-  }
-  .input:focus{outline:none;border-color:var(--ink);}
-  .input-error{border-color:var(--bad)!important}
-  .error-msg{color:var(--bad);font-size:12px;margin-top:6px;font-weight:500}
-
+  /* ============ COMPONENTS ============ */
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 22px;border-radius:99px;font-size:15px;font-weight:700;transition:transform .15s, opacity .15s;}
+  .btn:active{transform:scale(.97)} .btn-primary{background:var(--ink);color:var(--paper)} .btn-accent{background:var(--accent);color:#fff} .btn-block{width:100%} .btn-danger{background:#9B2D1F1f;color:var(--bad)}
   .card{background:var(--card);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-sm);}
-  .card-flat{background:var(--card-2);border-radius:var(--radius-lg);padding:20px}
-
-  .avatar{border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;flex-shrink:0;position:relative;}
-  .avatar-sm{width:36px;height:36px;font-size:15px;border-radius:11px}
-  .avatar-md{width:52px;height:52px;font-size:21px;border-radius:14px}
-  .avatar-lg{width:72px;height:72px;font-size:28px;border-radius:20px}
-  .avatar-xl{width:96px;height:96px;font-size:38px;border-radius:26px}
-  .avatar.has-photo{background-image:var(--photo);background-size:cover;background-position:center;color:transparent}
+  .avatar{border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;flex-shrink:0;}
+  .avatar-md{width:52px;height:52px;font-size:21px} .avatar-lg{width:72px;height:72px;font-size:28px}
+  .chip{display:inline-flex;align-items:center;padding:6px 12px;border-radius:99px;font-size:12px;font-weight:600;background:var(--line);color:var(--ink);}
+  .chip-good{background:#1F7A5A1f;color:var(--good)} .chip-warn{background:#C76A1A1f;color:var(--warn)}
+  .section{padding:0 22px;margin-bottom:24px} .section-h{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:12px;font-size:18px;font-weight:700}
   
-  .chip{
-    display:inline-flex;align-items:center;gap:6px; padding:6px 12px;border-radius:99px;
-    font-size:12px;font-weight:600; background:var(--line);color:var(--ink); white-space:nowrap;
-  }
-  .chip-outline{background:transparent;border:1px solid var(--line-2)}
-  .chip-good{background:#1F7A5A1f;color:var(--good)}
-  .chip-warn{background:#C76A1A1f;color:var(--warn)}
+  /* ============ TEAMS & MATCH ============ */
+  .team-card{background:var(--card);border-radius:18px;padding:16px;width:100%;text-align:left;box-shadow:var(--shadow-sm);margin-bottom:10px;transition:transform .15s;}
+  .team-card:active{transform:scale(.98)}
+  .team-card-name{font-size:16px;font-weight:700;margin-bottom:4px}
+  .team-card-meta{font-size:12px;color:var(--muted);font-weight:600}
+  .team-avatars{display:flex;margin-top:12px;}
+  .team-avatars .avatar{width:32px;height:32px;font-size:13px;border-radius:10px;border:2px solid var(--card);margin-left:-8px;}
+  .team-avatars .avatar:first-child{margin-left:0}
+  
+  .match{background:var(--card);border-radius:18px;padding:14px;display:flex;align-items:center;gap:12px;width:100%;text-align:left;box-shadow:var(--shadow-sm);margin-bottom:8px;}
+  .match-body{flex:1;min-width:0} .match-name{font-size:15px;font-weight:700} .match-meta{font-size:11px;color:var(--muted);font-weight:600}
+
+  /* ============ INSIGHTS (RADAR & RING) ============ */
+  .radar-wrap{position:relative;width:100%;max-width:280px;margin:0 auto;aspect-ratio:1}
+  .radar svg{width:100%;height:100%;overflow:visible}
+  .radar .grid{fill:none;stroke:var(--line-2);stroke-width:1}
+  .radar .axis{stroke:var(--line);stroke-width:1}
+  .radar .area{fill:var(--accent);fill-opacity:.2;stroke:var(--accent);stroke-width:2;stroke-linejoin:round}
+  .radar .point{fill:var(--accent);stroke:var(--card);stroke-width:2}
+  .radar .label{font-size:10px;font-weight:700;fill:var(--ink)}
+
+  .score-ring{width:140px;height:140px;margin:0 auto 16px;position:relative;}
+  .score-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
+  .score-ring .track{fill:none;stroke:var(--line);stroke-width:10}
+  .score-ring .fill{fill:none;stroke:var(--accent);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1s ease-out;}
+  .score-ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+  .score-ring-text .v{font-size:36px;font-weight:800;letter-spacing:-.03em;}
+
+  .balance-bar{display:flex;height:36px;border-radius:12px;overflow:hidden;background:var(--card-2);margin-top:8px;}
+  .balance-side{flex:1;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;transition:flex .4s ease-out;}
+  .balance-side.e{background:var(--accent-3);color:var(--ink)} .balance-side.i{background:var(--accent-2);color:#fff}
+
+  .insight-card{background:var(--card);border-radius:18px;padding:18px;margin-bottom:12px;box-shadow:var(--shadow-sm);}
+  .insight-title{font-size:15px;font-weight:700;margin-bottom:6px;display:flex;align-items:center;gap:6px;}
+  .insight-body{font-size:13px;color:var(--muted);line-height:1.5;}
+
+  /* ============ SETTINGS ============ */
+  .setting-row{width:100%;padding:16px 22px;display:flex;align-items:center;gap:12px;text-align:left;background:var(--card);border-bottom:1px solid var(--line);transition:background .15s;}
+  .setting-row:active{background:var(--card-2)}
+  .setting-icon{width:32px;height:32px;border-radius:10px;background:var(--paper-3);display:grid;place-items:center;}
+  .setting-icon svg{width:16px;height:16px;stroke:var(--ink);fill:none;stroke-width:2;}
+  .setting-body{flex:1} .setting-title{font-size:15px;font-weight:600} .setting-sub{font-size:12px;color:var(--muted)}
+  .theme-seg{display:flex;gap:6px;padding:16px 22px;background:var(--card);}
+  .theme-opt{flex:1;padding:12px;border-radius:12px;background:var(--card-2);font-size:12px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:6px;transition:background .2s;}
+  .theme-opt.active{background:var(--ink);color:var(--paper)}
 
   /* ============ OVERLAYS ============ */
-  .toast-area{
-    position:absolute;top:calc(44px + var(--safe-top) + 12px);left:16px;right:16px; z-index:200;pointer-events:none;
-    display:flex;flex-direction:column;gap:8px;align-items:center;
-  }
-  .toast{
-    background:var(--ink);color:var(--paper); padding:12px 18px;border-radius:14px; font-size:14px;font-weight:600;
-    box-shadow:var(--shadow-lg); animation:toastIn var(--dur-slow) var(--ease-out); pointer-events:auto;max-width:90%;
-  }
-  .toast.success{background:var(--good);color:#fff}
-  .toast.error{background:var(--bad);color:#fff}
-  .toast.out{animation:toastOut var(--dur) var(--ease-in) forwards}
-  @keyframes toastIn{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}
-  @keyframes toastOut{to{transform:translateY(-20px);opacity:0}}
-
-  .scrim{
-    position:absolute;inset:0;background:var(--overlay); z-index:100;opacity:0;pointer-events:none; transition:opacity var(--dur) var(--ease);
-  }
+  .scrim{position:absolute;inset:0;background:var(--overlay);z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;}
   .scrim.open{opacity:1;pointer-events:auto}
-  .sheet{
-    position:absolute;left:0;right:0;bottom:0; background:var(--sheet-bg); border-radius:28px 28px 0 0; z-index:110;max-height:88%;
-    transform:translateY(100%); transition:transform var(--dur-slow) var(--ease-out); display:flex;flex-direction:column; padding-bottom:var(--safe-bottom); box-shadow:var(--shadow-lg);
-  }
+  .sheet{position:absolute;left:0;right:0;bottom:0;background:var(--sheet-bg);border-radius:28px 28px 0 0;z-index:110;transform:translateY(100%);transition:transform .3s var(--ease);display:flex;flex-direction:column;padding-bottom:var(--safe-bottom);}
   .sheet.open{transform:translateY(0)}
-  .sheet-handle{width:36px;height:4px;background:var(--line-2);border-radius:99px;margin:10px auto 6px;flex-shrink:0;}
-  .sheet-head{padding:8px 22px 16px;flex-shrink:0;display:flex;align-items:center;justify-content:space-between;gap:12px;}
-  .sheet-title{font-size:18px;font-weight:700;letter-spacing:-.02em;flex:1}
-  .sheet-body{flex:1;overflow-y:auto;padding:0 22px 24px}
-
-  .dialog{
-    position:absolute;top:50%;left:50%;transform:translate(-50%,-46%) scale(.95); width:calc(100% - 48px);max-width:340px;
-    background:var(--sheet-bg);border-radius:24px; z-index:120;padding:24px; opacity:0;pointer-events:none;
-    transition:opacity var(--dur) var(--ease), transform var(--dur) var(--ease-out); text-align:center;box-shadow:var(--shadow-lg);
-  }
-  .dialog.open{opacity:1;pointer-events:auto;transform:translate(-50%,-50%) scale(1);}
-  .dialog h3{font-size:18px;font-weight:700;letter-spacing:-.02em;margin-bottom:8px}
-  .dialog p{font-size:14px;color:var(--muted);line-height:1.5;margin-bottom:20px}
-  .dialog .actions{display:flex;gap:8px}
-  .dialog .btn{flex:1;height:46px}
-
-  .loader{position:absolute;inset:0;background:var(--overlay);z-index:130;display:none;align-items:center;justify-content:center;backdrop-filter:blur(6px);}
-  .loader.open{display:flex}
-  .loader .spin{
-    width:42px;height:42px;border:3px solid transparent; border-top-color:var(--paper);border-right-color:var(--paper);
-    border-radius:50%;animation:spin .9s linear infinite;
-  }
-  @keyframes spin{to{transform:rotate(360deg)}}
-
-  /* ============ APP SPECIFIC STYLES ============ */
-  /* (Splash, Onboarding, Home, Wizard, Teams, Settings...) 
-     기존 제공된 모든 UI 요소의 CSS를 동일하게 유지합니다. 공간 상 핵심 요소 축약 없이 적용 */
-  
-  .splash{inset:0;background:var(--paper);display:flex;flex-direction:column;justify-content:space-between;padding:80px 32px 60px;}
-  .splash-logo{display:flex;align-items:center;gap:12px;font-size:12px;font-weight:600;letter-spacing:.18em;text-transform:uppercase;}
-  .splash-logo .glyph{width:32px;height:32px;border-radius:50%;background:var(--ink);position:relative;}
-  .splash-logo .glyph::after{content:"";position:absolute;width:16px;height:16px;border-radius:50%;background:var(--accent);top:8px;left:14px;mix-blend-mode:screen;}
-  .splash-title{font-size:60px;font-weight:800;line-height:1;letter-spacing:-.045em;animation:rise .8s var(--ease-out);}
-  .splash-title .line2{display:block;font-weight:900;color:var(--accent);margin-top:4px}
-  .app-icon-lg{width:96px;height:96px;border-radius:24px;background:var(--accent);display:grid;place-items:center;box-shadow:0 12px 36px -8px rgba(255,77,31,.45), inset 0 1px 0 rgba(255,255,255,.2);animation:icon-pop .8s var(--ease-out) backwards;}
-  @keyframes icon-pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.08)}100%{transform:scale(1);opacity:1}}
-  @keyframes rise{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-  
-  .hero-card{margin:0 22px 16px;border-radius:28px;background:var(--ink);color:var(--paper);padding:24px;position:relative;overflow:hidden;}
-  .hero-card::before{content:"";position:absolute;top:-40px;right:-40px;width:180px;height:180px;border-radius:50%;background:var(--accent);opacity:.4;filter:blur(20px);}
-  .hero-card > *{position:relative;z-index:1}
-  .hero-row{display:flex;align-items:center;gap:14px;margin-bottom:16px}
-  .hero-name{font-size:22px;font-weight:800;letter-spacing:-.02em;margin-bottom:2px}
-  .hero-sub{font-size:12px;font-weight:600;letter-spacing:.12em;color:#ffffffaa;text-transform:uppercase}
-  .hero-stat{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px;}
-  .hero-stat-item{background:#ffffff14;border-radius:14px;padding:10px;text-align:center}
-  .hero-stat-item .v{font-size:18px;font-weight:800;letter-spacing:-.02em}
-  .hero-stat-item .l{font-size:9px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;opacity:.7;margin-top:2px}
-
-  .quick-actions{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin:0 22px 24px}
-  .qa{background:var(--card);border-radius:18px;padding:16px;display:flex;flex-direction:column;align-items:flex-start;gap:8px;text-align:left;transition:transform var(--dur-fast);box-shadow:var(--shadow-sm);}
-  .qa:active{transform:scale(.97)}
-  .qa-icon{width:36px;height:36px;border-radius:11px;background:var(--paper-3);display:flex;align-items:center;justify-content:center;}
-  .qa-icon svg{width:18px;height:18px;stroke:var(--ink);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-  .qa-title{font-size:14px;font-weight:700}
-  .qa-sub{font-size:11px;color:var(--muted)}
-
-  .section{padding:0 22px;margin-bottom:24px}
-  .section-h{display:flex;align-items:end;justify-content:space-between;margin-bottom:12px}
-  .section-h .h3{font-size:18px;font-weight:700;letter-spacing:-.02em}
-  .section-h .link{font-size:13px;color:var(--muted);font-weight:600}
-
-  .match-list{display:flex;flex-direction:column;gap:8px}
-  .match{background:var(--card);border-radius:18px;padding:14px;display:flex;align-items:center;gap:12px;transition:transform var(--dur-fast), background var(--dur-fast);width:100%;text-align:left;box-shadow:var(--shadow-sm);}
-  .match:active{transform:scale(.98)}
-  .match-body{flex:1;min-width:0}
-  .match-name{font-size:15px;font-weight:700;margin-bottom:2px;letter-spacing:-.01em}
-  .match-meta{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.04em}
-  .match-reason{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:1;-webkit-box-orient:vertical;overflow:hidden}
-  .match-score{text-align:right;flex-shrink:0}
-  .match-score .v{font-size:22px;font-weight:800;letter-spacing:-.03em;line-height:1}
-  .match-score .l{font-size:9px;font-weight:600;color:var(--muted);letter-spacing:.1em;text-transform:uppercase;margin-top:2px}
-
-  .wiz-progress{height:3px;background:var(--line);margin:0 22px;border-radius:99px;overflow:hidden;}
-  .wiz-progress-fill{height:100%;background:var(--accent);border-radius:99px;transition:width var(--dur-slow) var(--ease-out);width:0}
-  .wiz-step{padding:24px 22px}
-  .wiz-step-num{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.16em;text-transform:uppercase;margin-bottom:10px}
-  .wiz-q{font-size:26px;font-weight:800;letter-spacing:-.025em;line-height:1.2;margin-bottom:8px}
-  .wiz-q em{color:var(--accent);font-weight:800}
-  .wiz-hint{font-size:13px;color:var(--muted);line-height:1.5;margin-bottom:24px}
-  .wiz-actions{padding:16px 22px calc(24px + var(--safe-bottom));display:flex;gap:10px;border-top:1px solid var(--line);background:var(--paper);}
-
-  .mbti-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
-  .mbti-chip{padding:14px 0;border:1.5px solid var(--line-2);background:transparent;border-radius:14px;font-size:13px;font-weight:700;letter-spacing:.04em;transition:all var(--dur-fast);}
-  .mbti-chip:active{transform:scale(.95)}
-  .mbti-chip.selected{background:var(--accent);color:#fff;border-color:var(--accent);}
-  
-  .tags{display:flex;flex-wrap:wrap;gap:8px}
-  .tag-btn{padding:10px 14px;border:1.5px solid var(--line-2);background:transparent;border-radius:99px;font-size:13px;font-weight:600;transition:all var(--dur-fast);}
-  .tag-btn.selected{background:var(--ink);color:var(--paper);border-color:var(--ink)}
-
-  .seg{display:flex;background:var(--card-2);border-radius:14px;padding:4px;gap:4px}
-  .seg-btn{flex:1;height:42px;border-radius:10px;font-size:13px;font-weight:600;color:var(--muted);transition:all var(--dur-fast);}
-  .seg-btn.active{background:var(--card);color:var(--ink);box-shadow:var(--shadow-sm)}
-
-  .team-card{background:var(--card);border-radius:18px;padding:16px;display:block;width:100%;text-align:left;transition:transform var(--dur-fast);box-shadow:var(--shadow-sm);}
-  .team-card:active{transform:scale(.98)}
-  .team-card-name{font-size:16px;font-weight:700;margin-bottom:6px;letter-spacing:-.01em}
-  .team-card-meta{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.04em;margin-bottom:12px}
-  .team-card-avatars{display:flex;align-items:center}
-  .team-card-avatars .avatar{width:30px;height:30px;font-size:13px;border-radius:9px;border:2px solid var(--card);margin-left:-8px;}
-  .team-card-avatars .avatar:first-child{margin-left:0}
-
-  .builder-search{padding:12px 22px;background:var(--paper);border-bottom:1px solid var(--line);display:flex;flex-direction:column;gap:10px;}
-  .search-input-wrap{position:relative;}
-  .search-input{width:100%;height:44px;padding:0 16px 0 42px;background:var(--card-2);border:0;border-radius:14px;font-size:14px;color:var(--ink);}
-  .search-icon{position:absolute;left:14px;top:50%;transform:translateY(-50%);width:18px;height:18px;stroke:var(--muted);fill:none;stroke-width:2;}
-  
-  .builder-row{background:transparent;border-bottom:1px solid var(--line);padding:14px 22px;display:flex;align-items:center;gap:12px;width:100%;transition:background var(--dur-fast);}
-  .builder-row.selected{background:#FF4D1F0d}
-  .builder-body{flex:1;min-width:0;text-align:left;}
-  .builder-name{font-size:15px;font-weight:700;margin-bottom:2px}
-  .builder-meta{font-size:11px;color:var(--muted);font-weight:600}
-  .builder-check{width:24px;height:24px;border-radius:50%;border:1.5px solid var(--line-2);flex-shrink:0;display:flex;align-items:center;justify-content:center;transition:all var(--dur-fast);}
-  .builder-check svg{width:14px;height:14px;stroke:#fff;fill:none;stroke-width:3;opacity:0;}
-  .builder-row.selected .builder-check{background:var(--accent);border-color:var(--accent)}
-  .builder-row.selected .builder-check svg{opacity:1}
-
-  .builder-bar{position:absolute;left:0;right:0;bottom:0;background:var(--ink);color:var(--paper);padding:16px 22px;padding-bottom:calc(16px + var(--safe-bottom));display:flex;align-items:center;gap:12px;transform:translateY(100%);transition:transform var(--dur) var(--ease-out);z-index:5;}
-  .builder-bar.show{transform:translateY(0)}
-
-  .stagger > *{opacity:0;transform:translateY(8px);animation:stag .4s var(--ease-out) forwards}
-  .stagger > *:nth-child(1){animation-delay:.04s}
-  .stagger > *:nth-child(2){animation-delay:.08s}
-  .stagger > *:nth-child(3){animation-delay:.12s}
-  @keyframes stag{to{opacity:1;transform:translateY(0)}}
-  
-  .row{display:flex;align-items:center;gap:10px}
-  .row-between{display:flex;align-items:center;justify-content:space-between;gap:10px}
-  .stack{display:flex;flex-direction:column;gap:10px}
-  .mt-8{margin-top:8px} .mt-12{margin-top:12px} .mt-16{margin-top:16px} .mb-16{margin-bottom:16px}
-  .text-center{text-align:center}
-  .truncate{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  
-  /* 알림 점 */
-  .badge-dot{position:absolute;top:6px;right:6px;width:8px;height:8px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 2px var(--paper);animation:pulse-dot 2s infinite;}
-  @keyframes pulse-dot{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.3);opacity:.7}}
+  .sheet-handle{width:36px;height:4px;background:var(--line-2);border-radius:99px;margin:12px auto 8px;}
+  .sheet-head{padding:8px 22px 16px;font-size:18px;font-weight:700;}
+  .sheet-body{padding:0 22px 24px;overflow-y:auto;max-height:60vh;}
+  .toast-area{position:absolute;top:calc(16px + var(--safe-top));left:16px;right:16px;z-index:200;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;}
+  .toast{background:var(--ink);color:var(--paper);padding:12px 18px;border-radius:14px;font-size:14px;font-weight:600;box-shadow:var(--shadow-lg);animation:toastIn .3s var(--ease);pointer-events:auto;}
+  .toast.success{background:var(--good);color:#fff} .toast.error{background:var(--bad);color:#fff}
+  @keyframes toastIn{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}
 </style>
 </head>
 <body>
 
 <div class="device-wrap">
   <div class="device">
-    <div class="status-bar">
-      <span id="clock">9:41</span>
-      <div class="right">
-        <span class="status-icon" aria-hidden="true"><svg viewBox="0 0 18 11"><path d="M1 7a8 8 0 0 1 16 0M3.5 9a5 5 0 0 1 11 0M6 11a2.5 2.5 0 0 1 6 0" stroke="currentColor" stroke-width="1.2" fill="none" stroke-linecap="round"/></svg></span>
-        <span class="status-icon" aria-hidden="true"><svg viewBox="0 0 18 11"><path d="M1 9V6m4 3V3m4 6V1m4 8V4m4 5V2" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></span>
-        <span class="battery"><span class="fill"></span></span>
-      </div>
-    </div>
-
     <div class="app">
       <div class="stage" id="stage"></div>
 
       <nav class="tab-bar hidden" id="tabBar">
-        <button class="tab" data-tab="home">
-          <svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a2 2 0 0 1-2 2h-4v-7H9v7H5a2 2 0 0 1-2-2z"/></svg><span>홈</span>
-        </button>
-        <button class="tab" data-tab="teams">
-          <svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c0-3 2.5-5 6-5s6 2 6 5M14 19c0-2 1.5-3.5 3.5-3.5S21 17 21 19"/></svg><span>팀</span>
-        </button>
-        <button class="tab center" data-tab="analyze">
-          <span class="fab"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></span>
-        </button>
-        <button class="tab" data-tab="insights">
-          <svg viewBox="0 0 24 24"><path d="M4 19V9m6 10V5m6 14v-7m6 7V11"/></svg><span>인사이트</span>
-        </button>
-        <button class="tab" data-tab="settings">
-          <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>설정</span>
-        </button>
+        <button class="tab" data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a2 2 0 0 1-2 2h-4v-7H9v7H5a2 2 0 0 1-2-2z"/></svg><span>홈</span></button>
+        <button class="tab" data-tab="teams"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c0-3 2.5-5 6-5s6 2 6 5M14 19c0-2 1.5-3.5 3.5-3.5S21 17 21 19"/></svg><span>팀</span></button>
+        <button class="tab center" data-tab="teamBuilder"><span class="fab"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" fill="none" stroke-width="2"/></svg></span></button>
+        <button class="tab" data-tab="insights"><svg viewBox="0 0 24 24"><path d="M4 19V9m6 10V5m6 14v-7m6 7V11"/></svg><span>인사이트</span></button>
+        <button class="tab" data-tab="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>설정</span></button>
       </nav>
     </div>
 
     <div class="toast-area" id="toastArea"></div>
     <div class="scrim" id="scrim"></div>
-    <div class="sheet" id="sheet">
-      <div class="sheet-handle"></div>
-      <div class="sheet-head" id="sheetHead"></div>
-      <div class="sheet-body" id="sheetBody"></div>
-    </div>
-    <div class="dialog" id="dialog">
-      <h3 id="dialogTitle"></h3>
-      <p id="dialogBody"></p>
-      <div class="actions">
-        <button class="btn btn-secondary" id="dialogCancel">취소</button>
-        <button class="btn btn-primary" id="dialogConfirm">확인</button>
-      </div>
-    </div>
-    <div class="loader" id="loader"><div class="spin"></div></div>
+    <div class="sheet" id="sheet"><div class="sheet-handle"></div><div class="sheet-head" id="sheetHead"></div><div class="sheet-body" id="sheetBody"></div></div>
+    <input type="file" id="importFile" accept="application/json" style="display:none"/>
   </div>
 </div>
 
 <script>
 /* ===================================================================
-   SERVICE WORKER (INLINE TRICK FOR OFFLINE SUPPORT)
-   =================================================================== */
-function registerInlineServiceWorker() {
-  if (!('serviceWorker' in navigator)) return;
-  // 단일 HTML 파일 유지를 위해 Blob 스크립트로 생성합니다.
-  const swCode = `
-    const CACHE_NAME = 'oneteam-cache-v1';
-    self.addEventListener('install', event => {
-      event.waitUntil(caches.open(CACHE_NAME).then(cache => {
-        // 단일 페이지이므로 기본 루트를 캐싱합니다.
-        return cache.addAll(['./']);
-      }));
-    });
-    self.addEventListener('fetch', event => {
-      event.respondWith(
-        caches.match(event.request).then(response => response || fetch(event.request))
-      );
-    });
-  `;
-  const blob = new Blob([swCode], { type: 'application/javascript' });
-  const swUrl = URL.createObjectURL(blob);
-  
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register(swUrl)
-      .then(reg => console.log('✅ 인라인 Service Worker 등록 완료 (오프라인 준비됨)'))
-      .catch(err => console.warn('Service Worker 등록 실패:', err));
-  });
-}
-
-/* ===================================================================
-   ONE TEAM — LOGIC
+   SYSTEM & UTILS
    =================================================================== */
 'use strict';
-
-const STORAGE_KEY = 'oneteam:v2';
-const APP_VERSION = '1.2.0'; // 고도화된 버전
-
-const MBTI_TYPES = ['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'];
-const MBTI_LABELS = { INTJ:'전략가', INTP:'논리술사', ENTJ:'통솔자', ENTP:'변론가', INFJ:'옹호자', INFP:'중재자', ENFJ:'선도자', ENFP:'활동가', ISTJ:'현실주의', ISFJ:'수호자', ESTJ:'경영자', ESFJ:'집정관', ISTP:'장인', ISFP:'모험가', ESTP:'사업가', ESFP:'연예인' };
-const TRAITS = ['리더십','꼼꼼함','창의성','분석력','공감','실행력','협업','독립적','신중함','추진력','유연성','책임감'];
-const BLOOD_TYPES = ['A','B','O','AB'];
-const FAMILY_ROLES = ['첫째','중간','막내','외동'];
-const AVATAR_PALETTE = ['#FF4D1F','#1B3A7A','#E8C547','#1F7A5A','#9B2D1F','#C76A1A','#5E4A8A','#2D6B7A'];
-
-// Data Utilities
-const $ = (sel, root=document) => root.querySelector(sel);
-const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
-const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
-const uid = (prefix='id') => `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2,7)}`;
-const hash = s => { let h=0; for(let i=0;i<s.length;i++){ h=((h<<5)-h)+s.charCodeAt(i); h|=0; } return Math.abs(h); };
-const pickColor = seed => AVATAR_PALETTE[hash(String(seed))%AVATAR_PALETTE.length];
-const initial = name => (name||'?').trim().charAt(0);
+const STORAGE_KEY = 'oneteam_db_v3';
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+const esc = s => String(s||'').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+const uid = (p='id') => `${p}_${Math.random().toString(36).slice(2,9)}`;
+const pickColor = id => ['#FF4D1F','#1B3A7A','#E8C547','#1F7A5A','#9B2D1F'][Math.abs([...String(id)].reduce((a,c)=>a+c.charCodeAt(0),0))%5];
+const initial = n => (n||'?').trim().charAt(0);
 const clamp = (n,min,max) => Math.max(min, Math.min(max, n));
 
-const DEFAULT_STATE = {
-  settings: { theme: 'system', firstLaunch: true },
-  profile: null,
-  customMembers: [],
-  teams: []
-};
-
-const Store = {
-  state: structuredClone(DEFAULT_STATE),
-  load(){
-    try{
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(raw) this.state = { ...structuredClone(DEFAULT_STATE), ...JSON.parse(raw) };
-    } catch(e){}
-  },
-  save(){ try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state)); }catch(e){} },
-  pool(){ return [...this.state.customMembers]; }, // For simplicity in this merged code, pool only contains custom and profile.
-  member(id){ return this.pool().find(m=>m.id===id) || (this.state.profile?.id === id ? this.state.profile : null); },
-  team(id){ return this.state.teams.find(t=>t.id===id); },
-};
-
-/* ---------- Haptic Feedback ---------- */
-const Haptic = {
-  light(){ this._do(8); },
-  medium(){ this._do(15); },
-  success(){ this._do([0,15,40,15]); },
-  _do(p){ try{ navigator.vibrate && navigator.vibrate(p); } catch(_){} }
-};
-
-/* ---------- Overlays ---------- */
 const Toast = {
-  show(message, kind='default', duration=2200){
-    const el = document.createElement('div');
-    el.className = `toast ${kind!=='default'?kind:''}`;
-    el.textContent = message;
+  show(msg, kind='default'){
+    const el = document.createElement('div'); el.className = `toast ${kind}`; el.textContent = msg;
     $('#toastArea').appendChild(el);
-    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 220); }, duration);
+    setTimeout(() => { el.style.opacity=0; setTimeout(()=>el.remove(),300); }, 2000);
   }
 };
-
 const Sheet = {
   open(title, bodyHTML, opts={}){
-    $('#sheetHead').innerHTML = `<span class="sheet-title">${esc(title)}</span>`;
-    $('#sheetBody').innerHTML = bodyHTML;
-    $('#sheet').classList.add('open');
-    $('#scrim').classList.add('open');
+    $('#sheetHead').innerHTML = esc(title); $('#sheetBody').innerHTML = bodyHTML;
+    $('#sheet').classList.add('open'); $('#scrim').classList.add('open');
     if(opts.mount) opts.mount();
   },
   close(){ $('#sheet').classList.remove('open'); $('#scrim').classList.remove('open'); }
 };
 
-const Dialog = {
-  open({title, body, confirmText='확인', cancelText='취소', danger=false, onConfirm}){
-    $('#dialogTitle').textContent = title;
-    $('#dialogBody').textContent = body || '';
-    const confirmBtn = $('#dialogConfirm');
-    confirmBtn.textContent = confirmText;
-    confirmBtn.className = `btn ${danger?'btn-accent':'btn-primary'}`;
-    confirmBtn.onclick = () => { this.close(); if(onConfirm) onConfirm(); };
-    $('#dialogCancel').onclick = () => this.close();
-    $('#dialog').classList.add('open'); $('#scrim').classList.add('open');
-  },
-  close(){ $('#dialog').classList.remove('open'); if(!$('#sheet').classList.contains('open')) $('#scrim').classList.remove('open'); }
+/* ===================================================================
+   STATE MANAGEMENT (Store)
+   =================================================================== */
+const DEFAULT_STATE = {
+  settings: { theme: 'system' },
+  profile: { id:'p_me', name:'오석휘', mbti:'INFJ', traits:['리더십','통찰력','공감'], age:50 }, // User Profile 기반 기본 세팅
+  customMembers: [
+    { id:'c1', name:'정광용', mbti:'ENTJ', traits:['리더십','추진력'], age:48 },
+    { id:'c2', name:'조인선', mbti:'ESFP', traits:['유연성','공감'], age:47 },
+    { id:'c3', name:'최순철', mbti:'ENTP', traits:['창의성','분석력'], age:42 }
+  ],
+  teams: [
+    { id:'t1', name:'데이터 거버넌스 코어', memberIds:['p_me', 'c1', 'c3'], createdAt: Date.now() }
+  ]
 };
 
-const Loader = { show(){ $('#loader').classList.add('open'); }, hide(){ $('#loader').classList.remove('open'); } };
-
-/* ---------- Routing ---------- */
-const Router = {
-  current: null,
-  render(){
-    const route = this.current;
-    if(!route) return;
-    const view = Views[route.name];
-    const html = view(route.params || {});
-    $('#stage').innerHTML = `<div class="screen fade-in">${html}</div>`;
-    if(view.mount) view.mount(route.params || {});
-    
-    // Bottom Tab Handling
-    const showTabs = ['home','teams','insights','settings'].includes(route.name);
-    $('#tabBar').classList.toggle('hidden', !showTabs);
-    $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === route.name));
-  },
-  go(name, params={}){ this.current = { name, params }; this.render(); }
+const Store = {
+  state: structuredClone(DEFAULT_STATE),
+  load(){ const raw = localStorage.getItem(STORAGE_KEY); if(raw) this.state = {...DEFAULT_STATE, ...JSON.parse(raw)}; },
+  save(){ localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state)); },
+  member(id){ return [this.state.profile, ...this.state.customMembers].find(m => m && m.id === id); }
 };
-
-const avatarHTML = (m, size='md') => `<div class="avatar avatar-${size}" style="background:${pickColor(m.id||m.name)}">${esc(initial(m.name))}</div>`;
 
 /* ===================================================================
-   VIEWS (Screens)
+   CHEMISTRY ANALYTICS ENGINE
    =================================================================== */
+function analyzeTeam(memberIds){
+  const members = memberIds.map(id => Store.member(id)).filter(Boolean);
+  if(!members.length) return { scores:{leadership:0, execution:0, creativity:0, analysis:0, empathy:0}, overall:0, eiBalance:{e:50,i:50}, strengths:[], gaps:[], count:0 };
+
+  let s = { leadership:0, execution:0, creativity:0, analysis:0, empathy:0 };
+  const traitMap = { '리더십':'leadership', '추진력':'leadership', '실행력':'execution', '꼼꼼함':'execution', '창의성':'creativity', '분석력':'analysis', '통찰력':'analysis', '공감':'empathy', '협업':'empathy' };
+  
+  let eCount = 0;
+  members.forEach(m => {
+    // 성향(Traits) 가중치
+    (m.traits||[]).forEach(t => { if(traitMap[t]) s[traitMap[t]] += 20; });
+    
+    // MBTI 알파벳 가중치
+    if(m.mbti){
+      if(m.mbti[0]==='E') { s.leadership+=10; eCount++; }
+      if(m.mbti[1]==='S') { s.execution+=15; }
+      if(m.mbti[1]==='N') { s.creativity+=15; }
+      if(m.mbti[2]==='T') { s.analysis+=15; }
+      if(m.mbti[2]==='F') { s.empathy+=15; }
+      if(m.mbti[3]==='J') { s.execution+=10; s.leadership+=5; }
+    }
+  });
+
+  // 점수 정규화 (100점 만점 기준 보정)
+  const maxPer = Math.max(members.length * 25, 100);
+  Object.keys(s).forEach(k => s[k] = clamp(Math.round((s[k]/maxPer)*100), 20, 100));
+
+  const strengths = [], gaps = [];
+  const axisLabel = { leadership:'리더십', execution:'실행력', creativity:'창의성', analysis:'분석력', empathy:'공감조율' };
+  Object.entries(s).forEach(([k,v]) => { if(v>=75) strengths.push(axisLabel[k]); else if(v<45) gaps.push(axisLabel[k]); });
+  
+  const overall = Math.round((s.leadership + s.execution + s.creativity + s.analysis + s.empathy) / 5);
+  const ePer = Math.round((eCount / members.length) * 100);
+
+  return { scores:s, overall, eiBalance:{ e:ePer, i:100-ePer }, strengths, gaps, count:members.length };
+}
+
+// 5각 레이더 차트 SVG 생성 함수
+function renderRadarChart(data){
+  const size = 240, cx = size/2, cy = size/2, r = 85;
+  const angleAt = i => -Math.PI/2 + (i * 2*Math.PI/5);
+  const pt = (i, val) => [cx + r*(val/100)*Math.cos(angleAt(i)), cy + r*(val/100)*Math.sin(angleAt(i))];
+  
+  const rings = [0.2, 0.4, 0.6, 0.8, 1].map(k => `<polygon class="grid" points="${[0,1,2,3,4].map(i => `${cx + r*k*Math.cos(angleAt(i))},${cy + r*k*Math.sin(angleAt(i))}`).join(' ')}"/>`).join('');
+  const axes = [0,1,2,3,4].map(i => `<line class="axis" x1="${cx}" y1="${cy}" x2="${pt(i,100)[0]}" y2="${pt(i,100)[1]}"/>`).join('');
+  
+  const dataPts = data.map((d,i) => pt(i, d.value).join(',')).join(' ');
+  const points = data.map((d,i) => `<circle class="point" cx="${pt(i, d.value)[0]}" cy="${pt(i, d.value)[1]}" r="4"/>`).join('');
+  
+  const labels = data.map((d,i) => {
+    const [x,y] = [cx + (r+22)*Math.cos(angleAt(i)), cy + (r+22)*Math.sin(angleAt(i))];
+    const anchor = Math.abs(x-cx)<10 ? 'middle' : x>cx ? 'start' : 'end';
+    return `<text class="label" x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle">${d.label} ${d.value}</text>`;
+  }).join('');
+
+  return `<div class="radar-wrap"><div class="radar"><svg viewBox="0 0 ${size} ${size}">${rings}${axes}<polygon class="area" points="${dataPts}"/>${points}${labels}</svg></div></div>`;
+}
+
+/* ===================================================================
+   ROUTING & VIEWS
+   =================================================================== */
+const Router = {
+  current: null,
+  go(name, params={}){
+    this.current = { name, params };
+    $('#stage').innerHTML = `<div class="screen fade-in">${Views[name](params)}</div>`;
+    if(Views[name].mount) Views[name].mount(params);
+    const showTabs = ['home','teams','insights','settings'].includes(name);
+    $('#tabBar').classList.toggle('hidden', !showTabs);
+    $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  }
+};
+
+const avatarHTML = m => `<div class="avatar avatar-md" style="background:${pickColor(m.id)}">${esc(initial(m.name))}</div>`;
+
 const Views = {};
 
-Views.splash = () => `
-  <div class="splash">
-    <div class="splash-logo"><span class="glyph"></span><span>One Team</span></div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:28px">
-      <div class="app-icon-lg"><svg viewBox="0 0 64 64" fill="none"><circle cx="24" cy="28" r="9" fill="#F4EFE6"/><circle cx="40" cy="28" r="9" fill="#F4EFE6" opacity="0.7"/><path d="M14 50c0-5.5 4.5-10 10-10s10 4.5 10 10M30 50c0-3.5 3-6.5 6.5-6.5S43 46.5 43 50" stroke="#F4EFE6" stroke-width="3" stroke-linecap="round"/></svg></div>
-      <div class="splash-title" style="text-align:center">팀의 화학을<span class="line2">설계하다.</span></div>
+/* --- HOME --- */
+Views.home = () => `
+  <div class="app-header"><div class="left"><span class="h-title">One Team</span></div></div>
+  <div class="scroll">
+    <div class="card" style="margin:0 22px 24px; background:var(--ink); color:var(--paper)">
+      <div style="font-size:24px;font-weight:800;margin-bottom:8px">팀의 화학을 설계하다</div>
+      <div style="font-size:14px;opacity:0.8">MBTI와 업무 성향을 바탕으로<br>최적의 팀 조합을 찾아보세요.</div>
+    </div>
+    <div class="section">
+      <div class="section-h"><span class="h3">내 프로필</span></div>
+      <div class="match">
+        ${avatarHTML(Store.state.profile)}
+        <div class="match-body"><div class="match-name">${Store.state.profile.name}</div><div class="match-meta">${Store.state.profile.mbti}</div></div>
+      </div>
     </div>
   </div>
 `;
-Views.splash.mount = () => { setTimeout(() => Router.go(Store.state.profile ? 'home' : 'analyze'), 1500); };
 
-Views.home = () => {
-  const p = Store.state.profile;
-  const hero = p ? `
-    <div class="hero-card">
-      <div class="hero-row">
-        ${avatarHTML(p, 'lg')}
-        <div style="min-width:0;flex:1"><div class="hero-name truncate">${esc(p.name)}</div><div class="hero-sub">${esc(p.mbti)} · ${MBTI_LABELS[p.mbti]}</div></div>
-      </div>
-    </div>
-  ` : '';
+/* --- TEAMS (팀 목록) --- */
+Views.teams = () => `
+  <div class="app-header">
+    <div class="left"><span class="h-title">팀 관리</span></div>
+    <div class="right"><button class="h-action" onclick="Router.go('teamBuilder')"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button></div>
+  </div>
+  <div class="scroll">
+    <div class="section" id="teamListContainer"></div>
+  </div>
+`;
+Views.teams.mount = () => {
+  const container = $('#teamListContainer');
+  if(!Store.state.teams.length){ container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">생성된 팀이 없습니다.</div>'; return; }
   
-  return `
-    <div class="app-header"><div class="left"><div class="splash-logo"><span class="glyph" style="width:24px;height:24px"></span><span style="letter-spacing:.16em;font-size:11px">One Team</span></div></div></div>
-    <div class="scroll">
-      ${hero}
-      <div class="quick-actions">
-        <button class="qa" data-go="analyze"><div class="qa-icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" fill="none" stroke-width="2"/></svg></div><div class="qa-title">프로필 분석</div><div class="qa-sub">나의 성향 재설정</div></button>
-        <button class="qa" data-go="teamBuilder"><div class="qa-icon"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3" stroke="currentColor" fill="none" stroke-width="2"/><circle cx="17" cy="9" r="2.5" stroke="currentColor" fill="none" stroke-width="2"/><path d="M3 19c0-3 2.5-5 6-5s6 2 6 5" stroke="currentColor" fill="none" stroke-width="2"/></svg></div><div class="qa-title">팀 만들기</div><div class="qa-sub">팀원 조합 및 분석</div></button>
-      </div>
-      <div class="section">
-        <div class="section-h"><span class="h3">최근 팀 목록</span><button class="link" data-tab="teams">전체 보기 →</button></div>
-        <div class="stack stagger">
-          ${Store.state.teams.slice(0,3).map(t => `<button class="team-card" data-team="${t.id}"><div class="team-card-name">${esc(t.name)}</div><div class="team-card-meta">${t.memberIds.length}명 팀원</div></button>`).join('') || '<div class="small" style="text-align:center;padding:20px;color:var(--muted)">저장된 팀이 없습니다.</div>'}
-        </div>
-      </div>
-    </div>
-  `;
-};
-Views.home.mount = () => {
-  $$('[data-go]').forEach(b => b.addEventListener('click', () => { Haptic.light(); Router.go(b.dataset.go); }));
-  $$('[data-tab]').forEach(b => b.addEventListener('click', () => { Haptic.light(); Router.go(b.dataset.tab); }));
-  $$('[data-team]').forEach(b => b.addEventListener('click', () => { Haptic.light(); Toast.show('팀 메뉴 진입', 'success'); }));
-};
-
-/* ---------- WIZARD (Analyze) ---------- */
-const WizState = { step: 0, data: {} };
-Views.analyze = () => {
-  WizState.data = Store.state.profile || { name:'', mbti:'' };
-  return `
-    <div class="app-header">
-      <div class="left"><button class="h-back" data-back><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button><span class="h-title">간편 프로필 생성</span></div>
-    </div>
-    <div class="scroll no-tab" style="padding:24px 22px">
-      <h2 class="wiz-q">당신의 <em>이름</em>과 <em>MBTI</em>를 알려주세요.</h2>
-      <div class="stack mt-16">
-        <div class="field"><label class="field-label">이름</label><input class="input" id="wizName" value="${esc(WizState.data.name)}" placeholder="홍길동"/></div>
-        <div class="field"><label class="field-label">MBTI</label>
-          <div class="mbti-grid">
-            ${MBTI_TYPES.map(t => `<button type="button" class="mbti-chip ${WizState.data.mbti===t?'selected':''}" data-mbti="${t}">${t}</button>`).join('')}
-          </div>
-        </div>
-      </div>
-    </div>
-    <div class="wiz-actions">
-      <button class="btn btn-primary btn-block" id="wizSave">저장하기</button>
-    </div>
-  `;
-};
-Views.analyze.mount = () => {
-  $('[data-back]').addEventListener('click', () => Router.go('home'));
-  $$('[data-mbti]').forEach(b => b.addEventListener('click', () => {
-    WizState.data.mbti = b.dataset.mbti;
-    $$('[data-mbti]').forEach(x => x.classList.toggle('selected', x===b));
-  }));
-  $('#wizSave').addEventListener('click', () => {
-    const name = $('#wizName').value.trim();
-    if(!name || !WizState.data.mbti) { Toast.show('이름과 MBTI를 모두 입력해주세요.', 'error'); return; }
-    Store.state.profile = { id: 'p_me', name, mbti: WizState.data.mbti, traits:['열정','협업'], age:30, blood:'A', familyRole:'첫째' };
-    Store.save(); Haptic.success(); Toast.show('프로필이 저장되었습니다.', 'success');
-    Router.go('home');
-  });
-};
-
-/* ---------- TEAM BUILDER + CONTACT PICKER ---------- */
-const BuilderState = { selected: new Set() };
-Views.teamBuilder = () => {
-  BuilderState.selected = new Set(Store.state.profile ? [Store.state.profile.id] : []);
-  return `
-    <div class="app-header">
-      <div class="left"><button class="h-back" data-back><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button><span class="h-title">팀 만들기</span></div>
-      <div class="right"><button class="h-action" id="builderAdd"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button></div>
-    </div>
-    <div class="scroll" id="builderList" style="padding-bottom:120px"></div>
-    <div class="builder-bar show" id="builderBar">
-      <div class="builder-bar-info"><div class="builder-bar-count" id="builderCount">0명 선택</div></div>
-      <button class="btn btn-accent" id="builderSave">팀 저장 →</button>
-    </div>
-  `;
-};
-Views.teamBuilder.mount = () => {
-  $('[data-back]').addEventListener('click', () => Router.go('home'));
-  $('#builderAdd').addEventListener('click', openAddMemberSheet);
-  $('#builderSave').addEventListener('click', () => {
-    if(BuilderState.selected.size < 2) { Toast.show('최소 2명을 선택하세요.', 'error'); return; }
-    const teamName = `새 팀 (${BuilderState.selected.size}명)`;
-    Store.state.teams.push({ id: uid('t'), name: teamName, memberIds: Array.from(BuilderState.selected), createdAt: Date.now() });
-    Store.save(); Haptic.success(); Toast.show('팀이 생성되었습니다.', 'success'); Router.go('home');
-  });
-  renderBuilderList();
-};
-
-function renderBuilderList() {
-  const pool = [Store.state.profile, ...Store.state.customMembers].filter(Boolean);
-  if(!pool.length) { $('#builderList').innerHTML = `<div class="empty">멤버가 없습니다.<br>우측 상단 + 로 추가하세요.</div>`; return; }
-  
-  $('#builderList').innerHTML = pool.map(m => {
-    const sel = BuilderState.selected.has(m.id);
+  container.innerHTML = Store.state.teams.map(t => {
+    const analysis = analyzeTeam(t.memberIds);
+    const avatars = t.memberIds.slice(0,5).map(id => {
+      const m = Store.member(id); return m ? `<div class="avatar" style="background:${pickColor(id)}">${esc(initial(m.name))}</div>` : '';
+    }).join('');
     return `
-      <button class="builder-row ${sel?'selected':''}" data-pick="${m.id}">
-        ${avatarHTML(m,'md')}
-        <div class="builder-body"><div class="builder-name">${esc(m.name)}</div><div class="builder-meta">${esc(m.mbti)}</div></div>
-        <div class="builder-check"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7" stroke-width="3" stroke="currentColor" fill="none"/></svg></div>
+      <button class="team-card" data-team="${t.id}">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start">
+          <div><div class="team-card-name">${esc(t.name)}</div><div class="team-card-meta">멤버 ${t.memberIds.length}명 · 종합 ${analysis.overall}점</div></div>
+          <div style="font-size:22px;font-weight:800;color:var(--accent)">${analysis.overall}</div>
+        </div>
+        <div class="team-avatars">${avatars}${t.memberIds.length>5?`<div class="avatar" style="background:var(--card-2);color:var(--muted)">+</div>`:''}</div>
       </button>
     `;
   }).join('');
-  
-  $$('[data-pick]').forEach(b => b.addEventListener('click', () => {
-    Haptic.light();
-    const id = b.dataset.pick;
-    BuilderState.selected.has(id) ? BuilderState.selected.delete(id) : BuilderState.selected.add(id);
-    renderBuilderList();
-  }));
-  $('#builderCount').textContent = `${BuilderState.selected.size}명 선택`;
-}
 
-/* ===================================================================
-   CONTACT PICKER API INTEGRATION (모바일 앱 경험 극대화)
-   =================================================================== */
-function openAddMemberSheet(){
-  Sheet.open('새 멤버 추가', `
-    <div class="stack">
-      <button class="btn btn-secondary btn-block mb-16" id="cmImportContact" style="display:flex; justify-content:center; align-items:center;">
-        <svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2" style="margin-right:8px"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-        기기 주소록에서 불러오기
-      </button>
-      
-      <div class="field"><label class="field-label">이름</label><input class="input" id="cmName" placeholder="홍길동"/></div>
-      <div class="field"><label class="field-label">MBTI</label>
-        <div class="mbti-grid" id="cmMbti">
-          ${['ENFP','ENTJ','INFP','INTJ','ESFJ','ESTP','ISFJ','ISTP'].map(t => `<button type="button" class="mbti-chip" data-m="${t}">${t}</button>`).join('')}
+  $$('[data-team]').forEach(b => b.addEventListener('click', () => Router.go('teamDetail', {id: b.dataset.team})));
+};
+
+/* --- TEAM DETAIL (팀 상세 분석 - 실제 앱 기능 핵심) --- */
+Views.teamDetail = ({id}) => {
+  const team = Store.team(id);
+  if(!team) return `<div class="app-header"><button class="h-back" onclick="Router.go('teams')"><svg viewBox="0 0 24 24" width="20" stroke="currentColor" fill="none"><path d="M15 18l-6-6 6-6"/></svg></button></div><div class="scroll"><div style="padding:40px;text-align:center">팀을 찾을 수 없습니다.</div></div>`;
+  
+  const analysis = analyzeTeam(team.memberIds);
+  const radarData = [
+    { label:'리더십', value:analysis.scores.leadership }, { label:'실행력', value:analysis.scores.execution },
+    { label:'창의성', value:analysis.scores.creativity }, { label:'분석력', value:analysis.scores.analysis },
+    { label:'공감조율', value:analysis.scores.empathy }
+  ];
+
+  return `
+    <div class="app-header">
+      <div class="left"><button class="h-back" onclick="Router.go('teams')"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button><span class="h-title">${esc(team.name)}</span></div>
+      <div class="right"><button class="h-action" id="btnDeleteTeam" style="color:var(--bad)"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>
+    </div>
+    <div class="scroll no-tab">
+      <div class="section"><div class="card">${renderRadarChart(radarData)}</div></div>
+      <div class="section">
+        <div class="section-h"><span class="h3">팀 밸런스</span></div>
+        <div class="card">
+          <div style="font-size:14px;font-weight:600;margin-bottom:8px">E/I 에너지 방향</div>
+          <div class="balance-bar">
+            <div class="balance-side e" style="flex:${analysis.eiBalance.e}">E ${analysis.eiBalance.e}%</div>
+            <div class="balance-side i" style="flex:${analysis.eiBalance.i}">I ${analysis.eiBalance.i}%</div>
+          </div>
         </div>
       </div>
-      <button class="btn btn-primary btn-block mt-8" id="cmSave">팀에 추가</button>
+      <div class="section">
+        <div class="section-h"><span class="h3">멤버 구성 (${team.memberIds.length}명)</span></div>
+        ${team.memberIds.map(mid => {
+          const m = Store.member(mid);
+          return m ? `<div class="match">${avatarHTML(m)}<div class="match-body"><div class="match-name">${esc(m.name)}</div><div class="match-meta">${esc(m.mbti)} · ${m.traits.join(', ')}</div></div></div>` : '';
+        }).join('')}
+      </div>
     </div>
-  `, {
-    mount: () => {
-      let selectedMbti = '';
-      $$('[data-m]').forEach(b => b.addEventListener('click', () => {
-        selectedMbti = b.dataset.m;
-        $$('[data-m]').forEach(x => x.classList.toggle('selected', x===b));
-      }));
-      
-      // 주소록 API 이벤트 바인딩
-      $('#cmImportContact').addEventListener('click', async () => {
-        Haptic.medium();
-        const supported = ('contacts' in navigator && 'ContactsManager' in window);
-        if (!supported) {
-          Toast.show('주소록 연동을 지원하지 않는 환경입니다.', 'error');
-          return;
-        }
-        try {
-          const contacts = await navigator.contacts.select(['name'], { multiple: false });
-          if (contacts.length > 0 && contacts[0].name.length > 0) {
-            $('#cmName').value = contacts[0].name[0];
-            Toast.show(`${contacts[0].name[0]}님을 불러왔습니다.`, 'success');
-          }
-        } catch (err) {
-          console.warn('주소록 접근 에러/취소', err);
-        }
-      });
-
-      $('#cmSave').addEventListener('click', () => {
-        const name = $('#cmName').value.trim();
-        if(!name || !selectedMbti) { Toast.show('모두 입력해주세요.', 'error'); return; }
-        const newId = uid('cm');
-        Store.state.customMembers.push({ id: newId, name, mbti: selectedMbti });
-        Store.save(); Sheet.close(); Toast.show('추가 완료', 'success');
-        BuilderState.selected.add(newId);
-        renderBuilderList();
-      });
-    }
+  `;
+};
+Views.teamDetail.mount = ({id}) => {
+  $('#btnDeleteTeam').addEventListener('click', () => {
+    Store.state.teams = Store.state.teams.filter(t => t.id !== id);
+    Store.save(); Toast.show('팀이 삭제되었습니다.', 'success'); Router.go('teams');
   });
-}
+};
 
-/* ---------- Global Initialization ---------- */
-function bindGlobalEvents() {
-  $$('.tab').forEach(t => t.addEventListener('click', () => { Haptic.light(); Router.go(t.dataset.tab); }));
-  $('#scrim').addEventListener('click', () => { if($('#sheet').classList.contains('open')) Sheet.close(); else Dialog.close(); });
+/* --- INSIGHTS (인사이트 리포트) --- */
+Views.insights = () => {
+  const teams = Store.state.teams;
+  if(!teams.length) return `<div class="app-header"><div class="left"><span class="h-title">인사이트</span></div></div><div class="scroll"><div style="padding:40px;text-align:center;color:var(--muted)">분석할 팀이 없습니다.</div></div>`;
   
-  const updateClock = () => {
-    const d = new Date(), h = d.getHours(), m = d.getMinutes();
-    $('#clock').textContent = `${h}:${String(m).padStart(2,'0')}`;
+  // 가장 최근 팀 기준 분석
+  const team = teams[teams.length-1];
+  const analysis = analyzeTeam(team.memberIds);
+  
+  // 도넛 차트 계산
+  const c = 2*Math.PI*60;
+  const offset = c * (1 - analysis.overall/100);
+  
+  // 인사이트 추천 로직
+  let recs = [];
+  if(analysis.gaps.includes('실행력')) recs.push({ t:'실행력 보완 필요', d:'아이디어를 구체화하고 끝맺을 S(감각) 및 J(판단) 성향의 멤버 배치가 시급합니다.', icon:'⚠️' });
+  if(analysis.eiBalance.e > 75) recs.push({ t:'에너지 분산 주의', d:'외향(E) 비율이 너무 높습니다. 회의가 길어질 수 있으니 명확한 타임키퍼 역할이 필요합니다.', icon:'⏱' });
+  if(analysis.strengths.length >= 3) recs.push({ t:'강력한 시너지 기대', d:`${analysis.strengths.join(', ')} 역량이 매우 뛰어난 드림팀입니다.`, icon:'🔥' });
+  if(recs.length===0) recs.push({ t:'균형 잡힌 스쿼드', d:'전반적인 능력치 밸런스가 좋은 안정적인 팀입니다.', icon:'✅' });
+
+  return `
+    <div class="app-header"><div class="left"><span class="h-title">AI 팀 리포트</span></div></div>
+    <div class="scroll">
+      <div class="section">
+        <div class="card" style="text-align:center">
+          <div style="font-size:14px;font-weight:700;color:var(--muted);margin-bottom:16px">${esc(team.name)} 종합 점수</div>
+          <div class="score-ring">
+            <svg viewBox="0 0 140 140">
+              <circle class="track" cx="70" cy="70" r="60"/>
+              <circle class="fill" cx="70" cy="70" r="60" stroke-dasharray="${c}" stroke-dashoffset="${c}"/>
+            </svg>
+            <div class="score-ring-text"><div class="v">${analysis.overall}</div></div>
+          </div>
+          <div style="display:flex;justify-content:center;gap:6px;flex-wrap:wrap">
+            ${analysis.strengths.map(s => `<span class="chip chip-good">${s} 강점</span>`).join('')}
+            ${analysis.gaps.map(g => `<span class="chip chip-warn">${g} 부족</span>`).join('')}
+          </div>
+        </div>
+      </div>
+      <div class="section">
+        <div class="section-h"><span class="h3">전략 제안</span></div>
+        ${recs.map(r => `
+          <div class="insight-card">
+            <div class="insight-title"><span>${r.icon}</span> ${r.t}</div>
+            <div class="insight-body">${r.d}</div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+};
+Views.insights.mount = () => {
+  // 도넛 차트 애니메이션 트리거
+  setTimeout(() => {
+    const fill = $('.score-ring .fill');
+    if(fill) {
+      const teams = Store.state.teams;
+      if(teams.length){
+        const a = analyzeTeam(teams[teams.length-1].memberIds);
+        const c = 2*Math.PI*60;
+        fill.style.strokeDashoffset = c * (1 - a.overall/100);
+      }
+    }
+  }, 100);
+};
+
+/* --- TEAM BUILDER (임시 생략 방지용 기본 UI) --- */
+const BuilderState = { selected: new Set() };
+Views.teamBuilder = () => {
+  BuilderState.selected = new Set(['p_me']); // 자신은 기본 포함
+  return `
+    <div class="app-header">
+      <div class="left"><button class="h-back" onclick="Router.go('teams')"><svg viewBox="0 0 24 24" width="20" stroke="currentColor" fill="none"><path d="M15 18l-6-6 6-6"/></svg></button><span class="h-title">팀 빌딩</span></div>
+      <div class="right"><button class="h-action" id="btnSaveBuilder"><svg viewBox="0 0 24 24" width="20" stroke="var(--accent)" fill="none" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg></button></div>
+    </div>
+    <div class="scroll" id="builderList"></div>
+  `;
+};
+Views.teamBuilder.mount = () => {
+  const render = () => {
+    const pool = [Store.state.profile, ...Store.state.customMembers];
+    $('#builderList').innerHTML = pool.map(m => {
+      const sel = BuilderState.selected.has(m.id);
+      return `<div class="setting-row" style="background:${sel?'var(--card-2)':'var(--card)'}" data-pick="${m.id}">
+        ${avatarHTML(m)}
+        <div class="setting-body" style="margin-left:12px"><div class="setting-title">${m.name}</div><div class="setting-sub">${m.mbti}</div></div>
+        ${sel ? `<svg width="24" height="24" stroke="var(--accent)" fill="none" stroke-width="2"><path d="M5 13l4 4L19 7"/></svg>` : `<div style="width:24px;height:24px;border:2px solid var(--line-2);border-radius:50%"></div>`}
+      </div>`;
+    }).join('');
+    $$('[data-pick]').forEach(el => el.addEventListener('click', () => {
+      const id = el.dataset.pick;
+      BuilderState.selected.has(id) ? BuilderState.selected.delete(id) : BuilderState.selected.add(id);
+      render();
+    }));
   };
-  updateClock(); setInterval(updateClock, 30000);
+  render();
+
+  $('#btnSaveBuilder').addEventListener('click', () => {
+    if(BuilderState.selected.size < 2) return Toast.show('2명 이상 선택해주세요.', 'error');
+    Store.state.teams.push({ id: uid('t'), name: `새 프로젝트 팀 (${BuilderState.selected.size}명)`, memberIds: Array.from(BuilderState.selected), createdAt: Date.now() });
+    Store.save(); Toast.show('팀이 생성되었습니다.', 'success'); Router.go('teams');
+  });
+};
+
+
+/* --- SETTINGS (실제 모바일 앱 기능: 백업/복원, 테마) --- */
+Views.settings = () => `
+  <div class="app-header"><div class="left"><span class="h-title">설정</span></div></div>
+  <div class="scroll">
+    <div class="section">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin:0 0 8px 16px">화면 설정</div>
+      <div class="theme-seg">
+        <button class="theme-opt ${Store.state.settings.theme==='light'?'active':''}" data-theme="light"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg><span>라이트</span></button>
+        <button class="theme-opt ${Store.state.settings.theme==='dark'?'active':''}" data-theme="dark"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg><span>다크</span></button>
+        <button class="theme-opt ${Store.state.settings.theme==='system'?'active':''}" data-theme="system"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span>시스템 동기화</span></button>
+      </div>
+    </div>
+    
+    <div class="section">
+      <div style="font-size:12px;font-weight:700;color:var(--muted);margin:0 0 8px 16px">데이터 관리</div>
+      <div style="border-radius:16px;overflow:hidden;box-shadow:var(--shadow-sm)">
+        <button class="setting-row" id="btnExport">
+          <div class="setting-icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></div>
+          <div class="setting-body"><div class="setting-title">데이터 백업 (내보내기)</div><div class="setting-sub">로컬 기기에 .json 파일 저장</div></div>
+        </button>
+        <button class="setting-row" id="btnImport">
+          <div class="setting-icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 14l5-5 5 5M12 9v12"/></svg></div>
+          <div class="setting-body"><div class="setting-title">데이터 복원 (가져오기)</div><div class="setting-sub">백업 파일 불러오기</div></div>
+        </button>
+        <button class="setting-row" id="btnReset" style="border-bottom:none">
+          <div class="setting-icon" style="background:#9B2D1F1f"><svg viewBox="0 0 24 24" stroke="var(--bad)"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M5 6l1 14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-14"/></svg></div>
+          <div class="setting-body"><div class="setting-title" style="color:var(--bad)">모든 데이터 초기화</div><div class="setting-sub">앱을 처음 상태로 되돌립니다.</div></div>
+        </button>
+      </div>
+    </div>
+  </div>
+`;
+Views.settings.mount = () => {
+  // Theme 처리
+  $$('[data-theme]').forEach(b => b.addEventListener('click', () => {
+    Store.state.settings.theme = b.dataset.theme; Store.save();
+    applyTheme();
+    $$('[data-theme]').forEach(x => x.classList.toggle('active', x===b));
+  }));
+
+  // Export (로컬 파일 시스템 다운로드)
+  $('#btnExport').addEventListener('click', () => {
+    const blob = new Blob([JSON.stringify(Store.state, null, 2)], { type:'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `OneTeam_Backup_${new Date().toISOString().slice(0,10)}.json`;
+    a.click(); URL.revokeObjectURL(url);
+    Toast.show('백업 파일이 저장되었습니다.', 'success');
+  });
+
+  // Import (input type="file" 트리거)
+  $('#btnImport').addEventListener('click', () => $('#importFile').click());
+  $('#importFile').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = ev => {
+      try {
+        const data = JSON.parse(ev.target.result);
+        if(!data.teams) throw new Error();
+        Store.state = data; Store.save(); applyTheme();
+        Toast.show('데이터가 성공적으로 복원되었습니다.', 'success');
+        Router.go('home');
+      } catch(err) { Toast.show('잘못된 백업 파일입니다.', 'error'); }
+      e.target.value = ''; // Reset input
+    };
+    reader.readAsText(file);
+  });
+
+  // Reset
+  $('#btnReset').addEventListener('click', () => {
+    Dialog.open({
+      title:'정말 초기화 하시겠습니까?', body:'저장된 팀과 프로필이 모두 삭제됩니다.', danger:true, confirmText:'초기화',
+      onConfirm: () => {
+        Store.state = structuredClone(DEFAULT_STATE); Store.save(); applyTheme();
+        Toast.show('초기화 완료', 'success'); Router.go('home');
+      }
+    });
+  });
+};
+
+/* ===================================================================
+   SYSTEM BOOTSTRAP
+   =================================================================== */
+function applyTheme() {
+  let t = Store.state.settings.theme;
+  if(t === 'system') t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', t);
+  $('#meta-theme').setAttribute('content', t === 'dark' ? '#0F0E0C' : '#0a0a0a');
 }
 
-function boot() {
-  registerInlineServiceWorker(); // 오프라인 PWA 구동
+function boot(){
   Store.load();
-  bindGlobalEvents();
+  applyTheme();
+  
+  // 시스템 테마 변경 감지
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if(Store.state.settings.theme === 'system') applyTheme();
+  });
+
+  // Scrim 닫기 이벤트
+  $('#scrim').addEventListener('click', () => { if($('#sheet').classList.contains('open')) Sheet.close(); else Dialog.close(); });
+
   Router.go('splash');
 }
 
