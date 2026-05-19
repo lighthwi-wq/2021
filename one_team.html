@@ -11,221 +11,184 @@
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
-  /* ============ TOKENS & RESET ============ */
+  /* ============ TOKENS & RESET (MZ VIBE) ============ */
   :root{
-    --ink:#0A0A0A; --ink-2:#1F1F1F; --paper:#F4EFE6; --paper-2:#EDE6D8; --paper-3:#E5DCC9;
+    --ink:#0A0A0A; --ink-2:#1F1F1F; --paper:#F7F5F0; --paper-2:#EFEBE1; --paper-3:#E5DCC9;
     --line:#0a0a0a14; --line-2:#0a0a0a26; --muted:#6B6258; --muted-2:#9A9088;
-    --accent:#FF4D1F; --accent-2:#1B3A7A; --accent-3:#E8C547;
-    --good:#1F7A5A; --bad:#9B2D1F; --warn:#C76A1A; --card:#FFFFFF; --card-2:#FAF6EC;
-    --ai-grad: linear-gradient(135deg, #FF4D1F 0%, #E8C547 100%);
-    --overlay:rgba(10,10,10,.5); --sheet-bg:#FFFFFF;
-    --shadow-sm:0 2px 8px -2px rgba(10,10,10,.08); --shadow-lg:0 24px 60px -20px rgba(10,10,10,.28);
-    --radius-lg:24px; --dur-fast:160ms; --dur:220ms; --dur-slow:380ms; --ease:cubic-bezier(.22,.61,.36,1);
+    --accent:#FF3300; --accent-2:#4A154B; --accent-3:#DFFF00;
+    --good:#00C853; --bad:#FF1744; --warn:#FF9100; --card:#FFFFFF; --card-2:#FAF6EC;
+    --ai-grad: linear-gradient(135deg, #FF3300 0%, #FF007F 50%, #7000FF 100%);
+    --mesh-bg: radial-gradient(at 0% 0%, hsla(13,100%,60%,0.15) 0px, transparent 50%),
+               radial-gradient(at 100% 100%, hsla(271,100%,60%,0.15) 0px, transparent 50%);
+    --overlay:rgba(10,10,10,.6); --sheet-bg:rgba(255,255,255,0.85);
+    --shadow-sm:0 4px 16px -4px rgba(10,10,10,.08); --shadow-lg:0 32px 64px -16px rgba(10,10,10,.25);
+    --radius-lg:28px; --dur-fast:160ms; --dur:280ms; --dur-slow:480ms; 
+    --ease-spring: cubic-bezier(0.175, 0.885, 0.32, 1.15); /* 쫀득한 텐션 */
+    --ease: cubic-bezier(0.25, 1, 0.5, 1);
     --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px);
   }
   [data-theme="dark"]{
-    --ink:#F4EFE6; --ink-2:#E5DCC9; --paper:#0F0E0C; --paper-2:#181614; --paper-3:#22201D;
-    --line:#f4efe61c; --line-2:#f4efe636; --muted:#8A8074; --muted-2:#5F5750;
-    --card:#1A1815; --card-2:#22201D; --overlay:rgba(0,0,0,.75); --sheet-bg:#1A1815;
-    --ai-grad: linear-gradient(135deg, #FF6B45 0%, #F0D570 100%);
+    --ink:#FFFFFF; --ink-2:#E5DCC9; --paper:#09090B; --paper-2:#18181B; --paper-3:#27272A;
+    --line:#ffffff1c; --line-2:#ffffff36; --muted:#A1A1AA; --muted-2:#71717A;
+    --card:#18181B; --card-2:#27272A; --overlay:rgba(0,0,0,.8); --sheet-bg:rgba(24,24,27,0.85);
+    --mesh-bg: radial-gradient(at 0% 0%, hsla(13,100%,50%,0.2) 0px, transparent 50%),
+               radial-gradient(at 100% 100%, hsla(271,100%,50%,0.2) 0px, transparent 50%);
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-  html,body{height:100%;overflow:hidden;background:#0a0a0a;font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);}
+  html,body{height:100%;overflow:hidden;background:#0a0a0a;font-family:'Pretendard',system-ui,sans-serif;color:var(--ink); letter-spacing:-0.01em;}
   button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;outline:none;}
   input, select{font:inherit;color:inherit;outline:none;}
   ::-webkit-scrollbar{display:none;}
 
   /* ============ DEVICE & LAYOUT ============ */
   .device-wrap{height:100%;width:100%;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at top,#1c1816,#0a0a0a 70%);padding:24px;}
-  .device{width:100%;max-width:420px;height:100%;max-height:920px;background:var(--paper);border-radius:48px;overflow:hidden;position:relative;box-shadow:0 30px 80px -20px rgba(0,0,0,.6), 0 0 0 10px #000, 0 0 0 11px #2a2a2a;display:flex;flex-direction:column;}
+  .device{width:100%;max-width:420px;height:100%;max-height:920px;background:var(--paper);border-radius:48px;overflow:hidden;position:relative;box-shadow:0 40px 100px -20px rgba(0,0,0,.8), 0 0 0 8px #000, 0 0 0 10px #2a2a2a;display:flex;flex-direction:column;}
   @media (max-width:520px){ .device-wrap{padding:0;background:var(--paper)} .device{max-width:100%;max-height:100%;border-radius:0;box-shadow:none} }
   
-  .app{flex:1;display:flex;flex-direction:column;position:relative;background:var(--paper);overflow:hidden;}
+  .app{flex:1;display:flex;flex-direction:column;position:relative;background:var(--paper);background-image:var(--mesh-bg);overflow:hidden;}
   .stage{flex:1;position:relative;overflow:hidden}
-  .screen{position:absolute;inset:0;display:flex;flex-direction:column;background:var(--paper);overflow:hidden;transform:translateX(0);transition:transform var(--dur) var(--ease), opacity var(--dur) var(--ease);}
-  .screen.fade-in{animation:fadeIn var(--dur) var(--ease)}
-  @keyframes fadeIn{from{opacity:0; transform:translateY(10px)}to{opacity:1; transform:translateY(0)}}
+  .screen{position:absolute;inset:0;display:flex;flex-direction:column;background:transparent;overflow:hidden;transform:translateX(0);transition:transform var(--dur) var(--ease), opacity var(--dur) var(--ease);}
+  .screen.fade-in{animation:springIn var(--dur-slow) var(--ease-spring)}
+  @keyframes springIn{from{opacity:0; transform:translateY(20px) scale(0.98)}to{opacity:1; transform:translateY(0) scale(1)}}
   
-  .app-header{flex-shrink:0;padding:calc(10px + var(--safe-top)) 22px 10px;display:flex;align-items:center;justify-content:space-between;background:var(--paper);min-height:calc(52px + var(--safe-top)); z-index:10;}
-  .app-header .left{display:flex;align-items:center;gap:10px;flex:1}
-  .h-title{font-size:17px;font-weight:700;letter-spacing:-.02em;}
-  .h-action, .h-back{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .2s; margin-left:-8px;}
-  .h-action:active, .h-back:active{background:var(--line-2)}
+  .app-header{flex-shrink:0;padding:calc(10px + var(--safe-top)) 22px 10px;display:flex;align-items:center;justify-content:space-between;min-height:calc(56px + var(--safe-top)); z-index:10; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);}
+  .app-header .left{display:flex;align-items:center;gap:12px;flex:1}
+  .h-title{font-size:18px;font-weight:800;letter-spacing:-.03em;}
+  .h-action, .h-back{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform .2s, background .2s; margin-left:-8px; background:var(--card); box-shadow:var(--shadow-sm);}
+  .h-action:active, .h-back:active{transform:scale(0.9);}
   .scroll{flex:1;overflow-y:auto;padding-bottom:calc(96px + var(--safe-bottom));}
   .scroll.no-tab{padding-bottom:calc(30px + var(--safe-bottom))}
 
-  /* ============ BOTTOM NAV ============ */
+  /* ============ GLASS BOTTOM NAV ============ */
   .tab-bar{
-    position:absolute;left:0;right:0;bottom:0; height:calc(76px + var(--safe-bottom)); padding-bottom:var(--safe-bottom);
-    background:color-mix(in srgb, var(--paper) 92%, transparent); backdrop-filter:blur(20px); -webkit-backdrop-filter:blur(20px);
-    border-top:1px solid var(--line); display:flex; z-index:10; transition:transform .3s;
+    position:absolute;left:16px;right:16px;bottom:calc(16px + var(--safe-bottom)); height:68px;
+    background:color-mix(in srgb, var(--card) 80%, transparent); backdrop-filter:blur(24px) saturate(180%); -webkit-backdrop-filter:blur(24px) saturate(180%);
+    border-radius:34px; box-shadow:0 8px 32px rgba(0,0,0,0.1); border:1px solid var(--line);
+    display:flex; z-index:10; transition:transform .4s var(--ease-spring);
   }
-  .tab-bar.hidden{transform:translateY(110%)}
-  .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--muted);font-size:10px;font-weight:600;}
-  .tab svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-  .tab.active{color:var(--ink)} .tab.active svg{stroke:var(--ink)}
-  .tab .fab{width:52px;height:52px;border-radius:50%;background:var(--ink);color:var(--paper);display:grid;place-items:center;margin-top:-14px;box-shadow:var(--shadow-lg);transition:transform .2s;}
-  .tab:active .fab{transform:scale(.92);background:var(--accent)}
+  .tab-bar.hidden{transform:translateY(150%)}
+  .tab{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;color:var(--muted);font-size:11px;font-weight:700; transition:color .2s;}
+  .tab svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round; transition:transform .2s var(--ease-spring);}
+  .tab.active{color:var(--ink)} .tab.active svg{transform:translateY(-2px)}
+  .tab .fab{width:56px;height:56px;border-radius:50%;background:var(--ai-grad);color:#fff;display:grid;place-items:center;margin-top:-28px;box-shadow:0 8px 24px rgba(255,51,0,0.4);transition:transform .2s var(--ease-spring);}
+  .tab:active .fab{transform:scale(.9) rotate(15deg);}
 
   /* ============ UTILITIES & COMPONENTS ============ */
-  .stack { display:flex; flex-direction:column; gap:12px; }
-  .mt-8 { margin-top:8px; } .mt-16 { margin-top:16px; }
-  .h3 { font-size:18px; font-weight:700; }
-  .link { font-size:14px; font-weight:600; color:var(--muted); text-decoration:underline; }
+  .stack { display:flex; flex-direction:column; gap:16px; }
+  .mt-8 { margin-top:8px; } .mt-16 { margin-top:16px; } .mb-24 { margin-bottom:24px; }
+  .h3 { font-size:20px; font-weight:800; letter-spacing:-0.03em;}
+  .link { font-size:14px; font-weight:700; color:var(--muted); text-decoration:none; display:inline-flex; align-items:center; gap:4px;}
   .truncate { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-  .small { font-size:13px; }
 
-  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:52px;padding:0 24px;border-radius:16px;font-size:15px;font-weight:700;transition:transform .15s, opacity .15s;}
-  .btn:active{transform:scale(.96)} 
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:56px;padding:0 28px;border-radius:20px;font-size:16px;font-weight:800;transition:transform .2s var(--ease-spring), opacity .2s; cursor:pointer;}
+  .btn:active{transform:scale(.94)} 
   .btn-primary{background:var(--ink);color:var(--paper)} 
   .btn-secondary{background:var(--line);color:var(--ink)}
-  .btn-accent{background:var(--accent);color:#fff} 
-  .btn-ai{background:var(--ai-grad);color:#fff; box-shadow: 0 4px 14px rgba(255, 77, 31, 0.3);}
+  .btn-ai{background:var(--ai-grad);color:#fff; box-shadow: 0 8px 24px rgba(255, 51, 0, 0.3); position:relative; overflow:hidden;}
+  .btn-ai::after { content:''; position:absolute; inset:0; background:linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent); transform:translateX(-100%); animation:shimmer 2s infinite; }
   .btn-block{width:100%} 
-  .btn-danger{background:#9B2D1F1f;color:var(--bad)}
+  @keyframes shimmer { 100% { transform:translateX(100%); } }
   
-  .card{background:var(--card);border-radius:var(--radius-lg);padding:20px;box-shadow:var(--shadow-sm);}
-  .avatar{border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;flex-shrink:0;}
-  .avatar-md{width:52px;height:52px;font-size:21px} .avatar-lg{width:72px;height:72px;font-size:28px}
-  .chip{display:inline-flex;align-items:center;padding:6px 12px;border-radius:99px;font-size:12px;font-weight:600;background:var(--line);color:var(--ink);}
-  .chip-good{background:#1F7A5A1f;color:var(--good)} .chip-warn{background:#C76A1A1f;color:var(--warn)} .chip-ai{background:var(--ai-grad);color:#fff;border:none;}
-  .section{padding:0 22px;margin-bottom:28px} .section-h{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;}
-
-  /* ============ SPLASH ============ */
-  .splash{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000000;color:#FFFFFF;z-index:1000;}
-  .splash-logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;position:absolute;top:calc(20px + var(--safe-top)); color:#FFFFFF;}
-  .glyph{display:inline-block;width:14px;height:14px;background:var(--accent);border-radius:50%;}
-  .app-icon-lg{width:120px;height:120px;margin-bottom:24px; animation: logoFloat 2.5s ease-in-out infinite;}
-  .splash-title{font-size:26px;font-weight:800;line-height:1.3;text-align:center; color:#FFFFFF;}
-  .line2{display:block;color:rgba(255,255,255,0.6); font-weight:500;}
-
-  @keyframes logoFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
-
-  /* ============ HOME ============ */
-  .hero-card{padding:12px 22px 24px;}
-  .hero-row{display:flex;align-items:center;gap:16px;}
-  .hero-name{font-size:24px;font-weight:800;}
-  .hero-sub{font-size:14px;color:var(--muted);margin-top:6px;font-weight:600;line-height:1.4;}
+  .card{background:var(--card);border-radius:var(--radius-lg);padding:24px;box-shadow:var(--shadow-sm); border:1px solid var(--line); position:relative; overflow:hidden;}
+  .avatar{border-radius:18px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;flex-shrink:0; font-family:system-ui;}
+  .avatar-md{width:56px;height:56px;font-size:24px; box-shadow:inset 0 -2px 0 rgba(0,0,0,0.2);} 
+  .chip{display:inline-flex;align-items:center;padding:6px 14px;border-radius:99px;font-size:13px;font-weight:700;background:var(--line);color:var(--ink);}
+  .chip-good{background:#00C8531f;color:var(--good)} .chip-warn{background:#FF91001f;color:var(--warn)} 
+  .chip-ai{background:var(--ai-grad);color:#fff;border:none; animation: pulseGlow 2s infinite;}
+  @keyframes pulseGlow { 0%,100%{box-shadow:0 0 0 0 rgba(255,51,0,0.4)} 50%{box-shadow:0 0 0 6px rgba(255,51,0,0)} }
   
-  .quick-actions{display:flex;gap:12px;padding:0 22px 32px;}
-  .qa{flex:1;background:var(--card);padding:18px;border-radius:20px;text-align:left;box-shadow:var(--shadow-sm);transition:transform .15s;}
-  .qa:active{transform:scale(.95)}
-  .qa-icon{width:40px;height:40px;border-radius:12px;background:var(--ink);color:var(--paper);display:flex;align-items:center;justify-content:center;margin-bottom:12px;}
-  .qa-icon svg{width:20px;height:20px;}
-  .qa-title{font-size:15px;font-weight:700;margin-bottom:4px;}
-  .qa-sub{font-size:12px;color:var(--muted);font-weight:600;}
+  .section{padding:0 22px;margin-bottom:32px} .section-h{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
 
-  /* ============ FORMS (WIZARD & SHEET) ============ */
-  .wiz-q{font-size:24px;font-weight:700;line-height:1.4;}
+  /* ============ WIZARD & FORMS ============ */
+  .wiz-q{font-size:28px;font-weight:800;line-height:1.3; letter-spacing:-0.04em;}
   .wiz-q em{font-style:normal;background:var(--ai-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-  .wiz-actions{position:absolute;bottom:0;left:0;right:0;padding:16px 22px calc(16px + var(--safe-bottom));background:var(--paper);border-top:1px solid var(--line);}
+  .wiz-actions{position:absolute;bottom:0;left:0;right:0;padding:16px 22px calc(16px + var(--safe-bottom));background:linear-gradient(transparent, var(--paper) 30%);}
   
-  .field{display:flex;flex-direction:column;gap:8px;}
-  .field-label{font-size:13px;font-weight:700;color:var(--muted);}
-  .input{height:52px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:0 16px;font-size:16px;font-weight:600;transition:border-color .2s;color:var(--ink);width:100%;}
-  .input:focus{border-color:var(--ink);}
+  .field{display:flex;flex-direction:column;gap:10px;}
+  .field-label{font-size:14px;font-weight:800;color:var(--muted);}
+  .input{height:56px;background:var(--card);border:2px solid transparent;border-radius:18px;padding:0 20px;font-size:16px;font-weight:700;transition:all .2s;color:var(--ink);width:100%; box-shadow:var(--shadow-sm);}
+  .input:focus{border-color:var(--accent); background:var(--card); transform:translateY(-2px); box-shadow:var(--shadow-lg);}
   
-  .mbti-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
-  .mbti-chip{height:44px;display:flex;align-items:center;justify-content:center;background:var(--card);border:1px solid var(--line);border-radius:12px;font-size:14px;font-weight:700;transition:all .2s;}
-  .mbti-chip.selected{background:var(--ink);color:var(--paper);border-color:var(--ink);}
+  .mbti-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+  .mbti-chip{height:48px;display:flex;align-items:center;justify-content:center;background:var(--card);border:2px solid transparent;border-radius:16px;font-size:15px;font-weight:800;transition:all .2s var(--ease-spring); box-shadow:var(--shadow-sm); color:var(--muted-2);}
+  .mbti-chip.selected{background:var(--ink);color:var(--paper); transform:scale(1.05); box-shadow:0 8px 16px rgba(0,0,0,0.2);}
 
   /* ============ TEAMS & MATCH ============ */
-  .team-card{background:var(--card);border-radius:18px;padding:18px;width:100%;text-align:left;box-shadow:var(--shadow-sm);margin-bottom:12px;transition:transform .15s;}
-  .team-card:active{transform:scale(.97)}
-  .team-card-name{font-size:16px;font-weight:700;margin-bottom:6px}
-  .team-card-meta{font-size:13px;color:var(--muted);font-weight:600}
-  .team-avatars{display:flex;margin-top:16px;}
-  .team-avatars .avatar{width:34px;height:34px;font-size:13px;border-radius:10px;border:2px solid var(--card);margin-left:-8px;}
-  .team-avatars .avatar:first-child{margin-left:0}
+  .team-card{background:var(--card);border-radius:24px;padding:22px;width:100%;text-align:left;box-shadow:var(--shadow-sm);margin-bottom:16px;transition:transform .2s var(--ease-spring), box-shadow .2s; border:1px solid var(--line);}
+  .team-card:active{transform:scale(.96); box-shadow:none;}
+  .team-card-name{font-size:18px;font-weight:800;margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;}
+  .team-card-meta{font-size:14px;color:var(--muted);font-weight:600}
   
-  .match{background:var(--card);border-radius:18px;padding:14px 16px;display:flex;align-items:center;gap:14px;width:100%;text-align:left;box-shadow:var(--shadow-sm);margin-bottom:10px;}
-  .match-body{flex:1;min-width:0} .match-name{font-size:15px;font-weight:700} .match-meta{font-size:12px;color:var(--muted);font-weight:600;margin-top:4px;line-height:1.4;}
+  .team-avatars{display:flex;margin-top:20px; padding-left:8px;}
+  .team-avatars .avatar{width:40px;height:40px;font-size:16px;border-radius:14px;border:3px solid var(--card);margin-left:-12px; transition:transform .2s;}
+  .team-card:hover .team-avatars .avatar{transform:translateX(4px);}
 
   /* ============ TEAM BUILDER ============ */
-  .builder-row{display:flex;align-items:center;gap:14px;padding:14px 22px;width:100%;text-align:left;background:transparent;transition:background .15s;}
-  .builder-row:active{background:var(--line);}
+  .builder-row{display:flex;align-items:center;gap:16px;padding:16px 22px;width:100%;text-align:left;background:transparent;transition:background .2s, transform .2s;}
+  .builder-row:active{background:var(--line); transform:scale(0.98);}
   .builder-body{flex:1;}
-  .builder-name{font-size:16px;font-weight:700;}
-  .builder-meta{font-size:13px;color:var(--muted);font-weight:600;margin-top:4px;}
-  .builder-check{width:26px;height:26px;border-radius:50%;border:2px solid var(--line-2);display:flex;align-items:center;justify-content:center;color:transparent;transition:all .2s;}
-  .builder-row.selected .builder-check{background:var(--ink);border-color:var(--ink);color:var(--paper);}
-  .builder-row.ai-recommended .builder-name::after { content: 'AI 추천'; font-size: 10px; background: var(--ai-grad); color: white; padding: 2px 6px; border-radius: 8px; margin-left: 6px; vertical-align: middle; }
-  .builder-check svg{width:14px;height:14px;}
+  .builder-name{font-size:17px;font-weight:800;}
+  .builder-meta{font-size:14px;color:var(--muted);font-weight:600;margin-top:4px;}
   
-  .builder-bar{position:absolute;bottom:0;left:0;right:0;padding:16px 22px calc(16px + var(--safe-bottom));background:var(--card);box-shadow:0 -4px 20px rgba(0,0,0,0.05);display:flex;justify-content:space-between;align-items:center;transform:translateY(100%);transition:transform .3s var(--ease);z-index:20;}
+  .check-ring{width:28px;height:28px;border-radius:50%;border:2px solid var(--line-2);display:flex;align-items:center;justify-content:center;color:transparent;transition:all .3s var(--ease-spring);}
+  .builder-row.selected .check-ring{background:var(--ink);border-color:var(--ink);color:var(--paper); transform:scale(1.1);}
+  .builder-row.ai-recommended .builder-name::after { content: '✨ AI 픽'; font-size: 11px; background: var(--ai-grad); color: white; padding: 3px 8px; border-radius: 12px; margin-left: 8px; vertical-align: middle; box-shadow:0 2px 8px rgba(255,51,0,0.3);}
+  
+  .builder-bar{position:absolute;bottom:0;left:0;right:0;padding:20px 22px calc(20px + var(--safe-bottom));background:var(--sheet-bg); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-top:1px solid var(--line); display:flex;justify-content:space-between;align-items:center;transform:translateY(100%);transition:transform .4s var(--ease-spring);z-index:20;}
   .builder-bar.show{transform:translateY(0);}
-  .builder-bar-count{font-size:16px;font-weight:800;}
 
-  /* ============ INSIGHTS (RADAR & RING) ============ */
-  .radar-wrap{position:relative;width:100%;max-width:280px;margin:0 auto;aspect-ratio:1}
+  /* ============ INSIGHTS (HOLO CARD & RADAR) ============ */
+  .holo-card{ background:var(--ink); color:white; border-radius:32px; padding:32px 24px; position:relative; overflow:hidden; box-shadow:0 20px 40px rgba(0,0,0,0.4); text-align:center;}
+  .holo-card::before{ content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background:conic-gradient(from 0deg, transparent, var(--accent), var(--accent-2), transparent); animation:spinHolo 4s linear infinite; opacity:0.15; pointer-events:none;}
+  @keyframes spinHolo{ 100%{transform:rotate(360deg)} }
+
+  .radar-wrap{position:relative;width:100%;max-width:260px;margin:24px auto;aspect-ratio:1; filter:drop-shadow(0 10px 20px rgba(255,51,0,0.2));}
   .radar svg{width:100%;height:100%;overflow:visible}
-  .radar .grid{fill:none;stroke:var(--line-2);stroke-width:1}
-  .radar .axis{stroke:var(--line);stroke-width:1}
-  .radar .area{fill:var(--accent);fill-opacity:.2;stroke:var(--accent);stroke-width:2;stroke-linejoin:round}
-  .radar .point{fill:var(--accent);stroke:var(--card);stroke-width:2}
-  .radar .label{font-size:11px;font-weight:700;fill:var(--ink)}
+  .radar .grid{fill:none;stroke:rgba(255,255,255,0.1);stroke-width:1}
+  .radar .axis{stroke:rgba(255,255,255,0.1);stroke-width:1}
+  .radar .area{fill:url(#radarGrad); fill-opacity:0.6; stroke:#FF3300; stroke-width:3; stroke-linejoin:round; filter:drop-shadow(0 0 10px #FF3300);}
+  .radar .point{fill:#fff;stroke:#FF3300;stroke-width:3}
+  .radar .label{font-size:12px;font-weight:800;fill:rgba(255,255,255,0.8)}
 
-  .score-ring{width:140px;height:140px;margin:0 auto 20px;position:relative;}
-  .score-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
-  .score-ring .track{fill:none;stroke:var(--line);stroke-width:10}
-  .score-ring .fill{fill:none;stroke:url(#grad);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);}
-  .score-ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-  .score-ring-text .v{font-size:38px;font-weight:800;letter-spacing:-.03em;}
+  .insight-list { display:flex; flex-direction:column; gap:16px; margin-top:24px; }
+  .insight-item { background:var(--card); border-radius:20px; padding:20px; box-shadow:var(--shadow-sm); display:flex; gap:16px; border:1px solid var(--line);}
+  .insight-icon { width:48px; height:48px; border-radius:16px; background:var(--paper-2); display:flex; align-items:center; justify-content:center; font-size:24px; flex-shrink:0;}
+  .insight-text { flex:1; }
+  .insight-title { font-size:16px; font-weight:800; margin-bottom:6px; color:var(--ink);}
+  .insight-desc { font-size:14px; color:var(--muted); line-height:1.5; word-break:keep-all;}
+  .insight-item.ai-focus { border:2px solid transparent; background:linear-gradient(var(--card),var(--card)) padding-box, var(--ai-grad) border-box; }
+  .insight-item.ai-focus .insight-icon { background:var(--ai-grad); color:white; }
 
-  .balance-bar{display:flex;height:40px;border-radius:12px;overflow:hidden;background:var(--card-2);margin-top:12px;}
-  .balance-side{flex:1;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;transition:flex .4s ease-out;}
-  .balance-side.e{background:var(--accent-3);color:var(--ink)} .balance-side.i{background:var(--accent-2);color:#fff}
-
-  .insight-card{background:var(--card);border-radius:18px;padding:20px;margin-bottom:12px;box-shadow:var(--shadow-sm); border-left: 4px solid var(--accent);}
-  .insight-card.ai-insight { border-left: 4px solid transparent; background-image: linear-gradient(var(--card), var(--card)), var(--ai-grad); background-origin: border-box; background-clip: padding-box, border-box; }
-  .insight-title{font-size:15px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
-  .insight-body{font-size:14px;color:var(--muted);line-height:1.6; word-break: keep-all;}
-
-  /* ============ SETTINGS & OVERLAYS ============ */
-  .setting-row{width:100%;padding:18px 22px;display:flex;align-items:center;gap:14px;text-align:left;background:var(--card);border-bottom:1px solid var(--line);transition:background .15s;}
-  .setting-row:active{background:var(--card-2)}
-  .setting-icon{width:36px;height:36px;border-radius:12px;background:var(--paper-3);display:grid;place-items:center;}
-  .setting-icon svg{width:18px;height:18px;stroke:var(--ink);fill:none;stroke-width:2;}
-  .setting-body{flex:1} .setting-title{font-size:15px;font-weight:600} .setting-sub{font-size:13px;color:var(--muted);margin-top:2px;}
-  .theme-seg{display:flex;gap:8px;padding:16px 22px;background:var(--card);}
-  .theme-opt{flex:1;padding:14px;border-radius:14px;background:var(--card-2);font-size:13px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:8px;transition:background .2s;}
-  .theme-opt.active{background:var(--ink);color:var(--paper)}
-
-  .scrim{position:absolute;inset:0;background:var(--overlay);z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;}
+  /* ============ OVERLAYS & ANIMATIONS ============ */
+  .scrim{position:absolute;inset:0;background:var(--overlay); backdrop-filter:blur(4px); z-index:100;opacity:0;pointer-events:none;transition:opacity .3s;}
   .scrim.open{opacity:1;pointer-events:auto}
   
-  .sheet{position:absolute;left:0;right:0;bottom:0;background:var(--sheet-bg);border-radius:28px 28px 0 0;z-index:110;transform:translateY(100%);transition:transform .3s var(--ease);display:flex;flex-direction:column;padding-bottom:var(--safe-bottom);}
+  .sheet{position:absolute;left:8px;right:8px;bottom:calc(8px + var(--safe-bottom));background:var(--sheet-bg); backdrop-filter:blur(30px) saturate(200%); -webkit-backdrop-filter:blur(30px) saturate(200%); border-radius:32px;z-index:110;transform:translateY(120%);transition:transform .4s var(--ease-spring);display:flex;flex-direction:column; box-shadow:var(--shadow-lg); border:1px solid var(--line);}
   .sheet.open{transform:translateY(0)}
-  .sheet-handle{width:40px;height:5px;background:var(--line-2);border-radius:99px;margin:12px auto 8px;}
-  .sheet-head{padding:12px 22px 16px;font-size:18px;font-weight:700;}
-  .sheet-body{padding:0 22px 24px;overflow-y:auto;max-height:65vh;}
+  .sheet-handle{width:48px;height:6px;background:var(--line-2);border-radius:99px;margin:16px auto 12px;}
+  .sheet-head{padding:0 24px 16px;font-size:20px;font-weight:800; text-align:center;}
+  .sheet-body{padding:0 24px 24px;overflow-y:auto;max-height:70vh;}
   
-  .dialog{position:absolute;top:50%;left:50%;transform:translate(-50%, -45%) scale(0.95);opacity:0;width:calc(100% - 48px);max-width:320px;background:var(--card);border-radius:24px;padding:24px;z-index:120;pointer-events:none;transition:all .2s var(--ease);box-shadow:var(--shadow-lg);text-align:center;}
-  .dialog.open{opacity:1;transform:translate(-50%, -50%) scale(1);pointer-events:auto;}
-  .dialog-title{font-size:18px;font-weight:800;margin-bottom:8px;}
-  .dialog-body{font-size:14px;color:var(--muted);margin-bottom:24px;line-height:1.5;}
-  .dialog-actions{display:flex;gap:12px;}
-  .dialog-actions button{flex:1;height:48px;}
-
   .toast-area{position:absolute;top:calc(16px + var(--safe-top));left:16px;right:16px;z-index:200;display:flex;flex-direction:column;align-items:center;gap:8px;pointer-events:none;}
-  .toast{background:var(--ink);color:var(--paper);padding:14px 20px;border-radius:14px;font-size:14px;font-weight:600;box-shadow:var(--shadow-lg);animation:toastIn .3s var(--ease);pointer-events:auto;}
+  .toast{background:var(--ink);color:var(--paper);padding:16px 24px;border-radius:99px;font-size:15px;font-weight:800;box-shadow:0 12px 24px rgba(0,0,0,0.2);animation:toastIn .4s var(--ease-spring);pointer-events:auto; display:flex; align-items:center; gap:8px;}
   .toast.success{background:var(--good);color:#fff} .toast.error{background:var(--bad);color:#fff}
-  .toast.out{animation:toastOut .2s forwards;}
-  @keyframes toastIn{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}
+  .toast.out{animation:toastOut .3s forwards;}
+  @keyframes toastIn{from{transform:translateY(-40px) scale(0.9);opacity:0}to{transform:translateY(0) scale(1);opacity:1}}
   @keyframes toastOut{from{transform:translateY(0);opacity:1}to{transform:translateY(-20px);opacity:0}}
   
-  /* AI Loading */
-  .ai-loader { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,0.3); border-radius:50%; border-top-color:#fff; animation:spin 1s ease-in-out infinite; margin-right:8px; vertical-align:middle; }
-  @keyframes spin { to { transform: rotate(360deg); } }
+  .typing-effect { display:inline-block; overflow:hidden; white-space:nowrap; border-right:2px solid var(--accent); animation: typing 1.5s steps(20, end), blink-caret .75s step-end infinite; }
+  @keyframes typing { from { width: 0 } to { width: 100% } }
+  @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: var(--accent); } }
+
 </style>
 </head>
 <body>
 
 <svg style="width:0;height:0;position:absolute;" aria-hidden="true">
   <defs>
-    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
-      <stop offset="0%" stop-color="#FF4D1F" />
-      <stop offset="100%" stop-color="#E8C547" />
+    <linearGradient id="radarGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF3300" />
+      <stop offset="100%" stop-color="#7000FF" />
     </linearGradient>
   </defs>
 </svg>
@@ -236,27 +199,24 @@
       <div class="stage" id="stage"></div>
       <nav class="tab-bar hidden" id="tabBar">
         <button class="tab" data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a2 2 0 0 1-2 2h-4v-7H9v7H5a2 2 0 0 1-2-2z"/></svg><span>홈</span></button>
-        <button class="tab" data-tab="teams"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c0-3 2.5-5 6-5s6 2 6 5M14 19c0-2 1.5-3.5 3.5-3.5S21 17 21 19"/></svg><span>팀</span></button>
-        <button class="tab center" data-tab="teamBuilder"><span class="fab"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" fill="none" stroke-width="2"/></svg></span></button>
-        <button class="tab" data-tab="insights"><svg viewBox="0 0 24 24"><path d="M4 19V9m6 10V5m6 14v-7m6 7V11"/></svg><span>인사이트</span></button>
-        <button class="tab" data-tab="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>설정</span></button>
+        <button class="tab" data-tab="teams"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c0-3 2.5-5 6-5s6 2 6 5M14 19c0-2 1.5-3.5 3.5-3.5S21 17 21 19"/></svg><span>스쿼드</span></button>
+        <button class="tab center" data-tab="teamBuilder"><span class="fab"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" fill="none" stroke-width="2.5"/></svg></span></button>
+        <button class="tab" data-tab="settings"><svg viewBox="0 0 24 24"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg><span>실험실</span></button>
       </nav>
     </div>
     <div class="toast-area" id="toastArea"></div>
     <div class="scrim" id="scrim"></div>
     <div class="sheet" id="sheet"><div class="sheet-handle"></div><div class="sheet-head" id="sheetHead"></div><div class="sheet-body" id="sheetBody"></div></div>
-    <div class="dialog" id="dialog"><div class="dialog-title" id="dialogTitle"></div><div class="dialog-body" id="dialogBody"></div><div class="dialog-actions"><button class="btn btn-secondary" id="dialogCancel">취소</button><button class="btn" id="dialogConfirm">확인</button></div></div>
-    <input type="file" id="importFile" accept="application/json" style="display:none"/>
   </div>
 </div>
 
 <script>
 'use strict';
 
-const STORAGE_KEY = 'oneteam_db_v6';
+const STORAGE_KEY = 'oneteam_db_mz_v1';
 const MBTI_TYPES = ['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'];
-const MBTI_LABELS = { INTJ:'전략가', INTP:'논리술사', ENTJ:'통솔자', ENTP:'변론가', INFJ:'옹호자', INFP:'중재자', ENFJ:'선도자', ENFP:'활동가', ISTJ:'현실주의', ISFJ:'수호자', ESTJ:'경영자', ESFJ:'집정관', ISTP:'장인', ISFP:'모험가', ESTP:'사업가', ESFP:'연예인' };
-const AVATAR_PALETTE = ['#FF4D1F','#1B3A7A','#E8C547','#1F7A5A','#9B2D1F','#C76A1A','#5E4A8A','#2D6B7A'];
+const MBTI_LABELS = { INTJ:'갓벽주의 전략가', INTP:'방구석 아인슈타인', ENTJ:'도파민 폭주 기관차', ENTP:'팩폭 장인', INFJ:'겉바속촉 예언자', INFP:'망상 풀가동 요정', ENFJ:'인간 리트리버', ENFP:'인싸 중의 인싸', ISTJ:'엑셀 인간화', ISFJ:'프로수발러', ESTJ:'효율 집착 광공', ESFJ:'핵인싸 총무', ISTP:'효율 낭만파', ISFP:'누워있는 예술가', ESTP:'브레이크 고장', ESFP:'인간 핫식스' };
+const AVATAR_PALETTE = ['#FF3300','#4A154B','#00C853','#FF007F','#7000FF','#FF9100','#00B0FF','#1A1A1A'];
 
 const $ = (sel, root=document) => root.querySelector(sel);
 const $$ = (sel, root=document) => Array.from(root.querySelectorAll(sel));
@@ -267,45 +227,47 @@ const pickColor = seed => AVATAR_PALETTE[hash(String(seed))%AVATAR_PALETTE.lengt
 const initial = name => (name||'?').trim().charAt(0);
 const clamp = (n,min,max) => Math.max(min, Math.min(max, n));
 
-const DEFAULT_STATE = { settings: { theme: 'system', firstLaunch: true }, profile: null, customMembers: [], teams: [] };
+const DEFAULT_STATE = { settings: { theme: 'system' }, profile: null, customMembers: [], teams: [] };
 const deepClone = obj => JSON.parse(JSON.stringify(obj));
 
 const Store = {
   state: deepClone(DEFAULT_STATE),
-  load(){
-    try { const raw = localStorage.getItem(STORAGE_KEY); if(raw) { this.state = { ...deepClone(DEFAULT_STATE), ...JSON.parse(raw) }; } } catch(e){}
-  },
+  load(){ try { const raw = localStorage.getItem(STORAGE_KEY); if(raw) this.state = { ...deepClone(DEFAULT_STATE), ...JSON.parse(raw) }; } catch(e){} },
   save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state)); } catch(e){} },
   pool(){ return [...(this.state.customMembers || [])]; },
   member(id){ if(this.state.profile && this.state.profile.id === id) return this.state.profile; return this.pool().find(m => m && m.id === id); },
   team(id){ return (this.state.teams || []).find(t => t.id === id); },
 };
 
-const Haptic = { light(){ this._do(8); }, medium(){ this._do(15); }, success(){ this._do([0,15,40,15]); }, _do(p){ try{ navigator.vibrate && navigator.vibrate(p); } catch(_){} } };
+const Haptic = { 
+  light(){ this._do(10); }, 
+  success(){ this._do([10,30,50]); }, 
+  heavy(){ this._do(40); },
+  _do(p){ try{ navigator.vibrate && navigator.vibrate(p); } catch(_){} } 
+};
 
 const Toast = {
-  show(msg, kind='default', dur=2200){
-    const el = document.createElement('div'); el.className = `toast ${kind!=='default'?kind:''}`; el.textContent = msg;
-    $('#toastArea').appendChild(el); setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 220); }, dur);
+  show(msg, icon='✨', dur=2500){
+    const el = document.createElement('div'); el.className = `toast`; 
+    el.innerHTML = `<span>${icon}</span> <span>${msg}</span>`;
+    $('#toastArea').appendChild(el); Haptic.light();
+    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 300); }, dur);
   }
 };
+
 const Sheet = {
-  open(title, bodyHTML, opts={}){ $('#sheetHead').innerHTML = `<span class="sheet-title">${esc(title)}</span>`; $('#sheetBody').innerHTML = bodyHTML; $('#sheet').classList.add('open'); $('#scrim').classList.add('open'); if(opts.mount) opts.mount(); },
-  close(){ $('#sheet').classList.remove('open'); $('#scrim').classList.remove('open'); }
-};
-const Dialog = {
-  open({title, body, confirmText='확인', cancelText='취소', danger=false, onConfirm}){
-    $('#dialogTitle').textContent = title; $('#dialogBody').textContent = body || '';
-    const btn = $('#dialogConfirm'); btn.textContent = confirmText; btn.className = `btn ${danger?'btn-accent':'btn-primary'}`;
-    btn.onclick = () => { this.close(); if(onConfirm) onConfirm(); };
-    $('#dialogCancel').onclick = () => this.close(); $('#dialog').classList.add('open'); $('#scrim').classList.add('open');
+  open(title, bodyHTML, opts={}){ 
+    $('#sheetHead').innerHTML = esc(title); 
+    $('#sheetBody').innerHTML = bodyHTML; 
+    $('#sheet').classList.add('open'); $('#scrim').classList.add('open'); 
+    Haptic.light();
+    if(opts.mount) opts.mount(); 
   },
-  close(){ $('#dialog').classList.remove('open'); if(!$('#sheet').classList.contains('open')) $('#scrim').classList.remove('open'); }
+  close(){ $('#sheet').classList.remove('open'); $('#scrim').classList.remove('open'); }
 };
 
 /* ===================================================================
-   AI SYNERGY ENGINE (MOCK)
-   단순 지표 합산이 아닌, MBTI 관계 역학 및 가족 위치 기반 시너지 추론
+   MZ VIBE AI ENGINE
    =================================================================== */
 const AIEngine = {
   evaluateInteraction(m1, m2) {
@@ -319,89 +281,75 @@ const AIEngine = {
   
   analyze(memberIds) {
     const members = memberIds.map(id => Store.member(id)).filter(Boolean);
-    if(!members.length) return { scores:{leadership:0, execution:0, creativity:0, analysis:0, empathy:0}, overall:0, eiBalance:{e:50,i:50}, strengths:[], gaps:[], insights:[] };
+    if(!members.length) return { scores:{leadership:0, execution:0, creativity:0, analysis:0, empathy:0}, overall:0, insights:[] };
 
     let s = { leadership:0, execution:0, creativity:0, analysis:0, empathy:0 };
-    let eCount = 0;
     let roles = { planner: 0, executor: 0, mediator: 0, analyst: 0 };
     
     members.forEach(m => {
       if(m.mbti){
-        if(m.mbti[0]==='E') { s.leadership+=15; eCount++; } else { s.analysis+=5; }
+        if(m.mbti[0]==='E') s.leadership+=15; else s.analysis+=5;
         if(m.mbti[1]==='S') { s.execution+=20; roles.executor++; } else { s.creativity+=20; roles.planner++; }
         if(m.mbti[2]==='T') { s.analysis+=20; roles.analyst++; } else { s.empathy+=20; roles.mediator++; }
         if(m.mbti[3]==='J') { s.execution+=10; s.leadership+=5; } else { s.creativity+=5; }
-      }
-      if(m.family) {
-        if(m.family.includes('첫째') || m.family.includes('장남') || m.family.includes('장녀')) s.leadership += 10;
-        if(m.family.includes('막내')) s.empathy += 10;
       }
     });
 
     let synergyBonus = 0;
     for (let i = 0; i < members.length; i++) {
-      for (let j = i + 1; j < members.length; j++) {
-        synergyBonus += this.evaluateInteraction(members[i].mbti, members[j].mbti);
-      }
+      for (let j = i + 1; j < members.length; j++) { synergyBonus += this.evaluateInteraction(members[i].mbti, members[j].mbti); }
     }
     
     const maxPer = Math.max(members.length * 30, 100);
     Object.keys(s).forEach(k => s[k] = clamp(Math.round(((s[k] + (synergyBonus/(members.length||1)))) / maxPer * 100), 20, 100));
     
     const overall = Math.round((s.leadership + s.execution + s.creativity + s.analysis + s.empathy) / 5);
-    const ePer = Math.round((eCount / members.length) * 100);
+    const insights = [];
     
-    const strengths = [], gaps = [], insights = [];
-    const axisLabel = { leadership:'리더십', execution:'실행력', creativity:'창의성', analysis:'분석력', empathy:'공감조율' };
+    // MZ Style Copywriting
+    if(roles.planner > 0 && roles.executor === 0) insights.push({ i:'🚨', t:'몽상가들의 파티 (실행력 떡락 주의)', d:'아이디어는 넷플릭스급인데, 막상 코딩할 사람이 없습니다. J나 S 성향의 멱살잡이 1명이 시급합니다.', type:'warn' });
+    else if(roles.planner > 0 && roles.executor > 0) insights.push({ i:'🚀', t:'티키타카 오지는 릴레이', d:'N의 미친 발상을 S가 묵묵히 현실로 깎아내는 갓벽한 업무 파이프라인입니다.', type:'ai' });
     
-    Object.entries(s).forEach(([k,v]) => { if(v>=75) strengths.push(axisLabel[k]); else if(v<45) gaps.push(axisLabel[k]); });
+    if(roles.analyst > (members.length/2)) insights.push({ i:'🧊', t:'T발 C야? 얼음송곳 팀', d:'효율과 논리가 지배하는 차가운 공간. 목표 달성은 빠르겠지만, 멘탈 나가는 팀원이 생길 수 있으니 칭찬을 의식적으로 해주세요.', type:'warn' });
+    if(roles.mediator > (members.length/2)) insights.push({ i:'💖', t:'F들의 힐링 캠프', d:'서로 상처받을까봐 피드백을 못할 수도 있습니다. 일할 땐 조금 더 매운맛이 필요합니다.', type:'warn' });
+    
+    if(synergyBonus > 20) insights.push({ i:'🔥', t:'우주 최강 도파민 파티', d:'성향이 서로의 단점을 미친듯이 보완해줍니다. 케미스트리 폭발, 팀워크 1티어 조합입니다.', type:'ai' });
+    else if(insights.length === 0) insights.push({ i:'⚖️', t:'육각형 안정형 팟', d:'모난 곳 없이 밸런스가 좋습니다. 무난하게 프로젝트를 폭파시킬 수 있는 든든한 조합.', type:'ai' });
 
-    if(roles.planner > 0 && roles.executor === 0) insights.push({ t:'실행력 병목 경고', d:'아이디어를 도출할(N) 멤버는 많으나, 이를 현실화하고 꼼꼼하게 마감할(S/J) 실행 담당자가 부족합니다. 일정 지연에 주의하세요.', type:'warn' });
-    else if(roles.planner > 0 && roles.executor > 0) insights.push({ t:'이상적인 기획-실행 릴레이', d:'기획자(N)의 창의적 발상을 실행자(S)가 구체화할 수 있는 훌륭한 업무 파이프라인이 구축되었습니다.', type:'ai' });
-    
-    if(roles.analyst > (members.length/2)) insights.push({ t:'데이터 기반의 차가운 의사결정', d:'논리와 효율(T)을 중시하는 멤버가 다수입니다. 목표 달성에는 유리하나, 팀 내 감정적 피로도 관리가 필요할 수 있습니다.', type:'warn' });
-    if(roles.mediator > (members.length/2)) insights.push({ t:'고도화된 소프트 스킬', d:'팀원 간의 감정과 분위기를 조율할 수 있는 능력(F)이 탁월하여, 위기 상황에서도 결속력이 쉽게 무너지지 않습니다.', type:'ai' });
-    
-    if(synergyBonus > 20) insights.push({ t:'🔥 AI 시너지 폭발', d:'서로의 단점을 완벽하게 보완하는 상호보완적 성향들이 매시업되었습니다. 예상치 못한 화학작용(Chemistry)이 기대됩니다.', type:'ai' });
-    if(insights.length === 0) insights.push({ t:'안정적인 균형', d:'전반적으로 모난 곳 없이 고른 성향이 분포되어 있어 예측 가능한 안정적인 프로젝트 수행이 가능합니다.', type:'ai' });
+    let title = "평범한 스쿼드";
+    if(overall > 85) title = "S급 전설의 레전드 스쿼드 👑";
+    else if(overall > 70) title = "포텐 터지는 시너지 스쿼드 ⚡";
 
-    return { scores:s, overall, eiBalance:{ e:ePer, i:100-ePer }, strengths, gaps, insights, count:members.length };
+    return { scores:s, overall, insights, count:members.length, title };
   },
 
   recommend(selectedIds, pool) {
     if(selectedIds.length === 0 || pool.length === 0) return [];
-    const currentAnalysis = this.analyze(selectedIds);
-    let bestMatch = null;
-    let highestGain = 0;
-    const availablePool = pool.filter(p => !selectedIds.includes(p.id));
+    const current = this.analyze(selectedIds);
+    let best = null, maxGain = 0;
     
-    availablePool.forEach(candidate => {
-      const simulatedAnalysis = this.analyze([...selectedIds, candidate.id]);
-      const gain = simulatedAnalysis.overall - currentAnalysis.overall;
-      let weaknessCovered = 0;
-      currentAnalysis.gaps.forEach(gap => {
-        if(!simulatedAnalysis.gaps.includes(gap)) weaknessCovered += 5; 
-      });
-      const totalScore = gain + weaknessCovered;
-      if (totalScore > highestGain) { highestGain = totalScore; bestMatch = candidate.id; }
+    pool.filter(p => !selectedIds.includes(p.id)).forEach(c => {
+      const sim = this.analyze([...selectedIds, c.id]);
+      const gain = sim.overall - current.overall;
+      if (gain > maxGain) { maxGain = gain; best = c.id; }
     });
-    return bestMatch ? [bestMatch] : [];
+    return best ? [best] : [];
   }
 };
 
 /* --- CHART RENDERER --- */
 function renderRadarChart(data){
-  const size = 240, cx = size/2, cy = size/2, r = 85;
+  const size = 260, cx = size/2, cy = size/2, r = 90;
   const angleAt = i => -Math.PI/2 + (i * 2*Math.PI/5);
   const pt = (i, val) => [cx + r*(val/100)*Math.cos(angleAt(i)), cy + r*(val/100)*Math.sin(angleAt(i))];
-  const rings = [0.2, 0.4, 0.6, 0.8, 1].map(k => `<polygon class="grid" points="${[0,1,2,3,4].map(i => `${cx + r*k*Math.cos(angleAt(i))},${cy + r*k*Math.sin(angleAt(i))}`).join(' ')}"/>`).join('');
+  const rings = [0.25, 0.5, 0.75, 1].map(k => `<polygon class="grid" points="${[0,1,2,3,4].map(i => `${cx + r*k*Math.cos(angleAt(i))},${cy + r*k*Math.sin(angleAt(i))}`).join(' ')}"/>`).join('');
   const axes = [0,1,2,3,4].map(i => `<line class="axis" x1="${cx}" y1="${cy}" x2="${pt(i,100)[0]}" y2="${pt(i,100)[1]}"/>`).join('');
   const dataPts = data.map((d,i) => pt(i, d.value).join(',')).join(' ');
-  const points = data.map((d,i) => `<circle class="point" cx="${pt(i, d.value)[0]}" cy="${pt(i, d.value)[1]}" r="4"/>`).join('');
+  const points = data.map((d,i) => `<circle class="point" cx="${pt(i, d.value)[0]}" cy="${pt(i, d.value)[1]}" r="5"/>`).join('');
   const labels = data.map((d,i) => {
-    const [x,y] = [cx + (r+22)*Math.cos(angleAt(i)), cy + (r+22)*Math.sin(angleAt(i))];
+    const [x,y] = [cx + (r+28)*Math.cos(angleAt(i)), cy + (r+28)*Math.sin(angleAt(i))];
     const anchor = Math.abs(x-cx)<10 ? 'middle' : x>cx ? 'start' : 'end';
-    return `<text class="label" x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle">${d.label} ${d.value}</text>`;
+    return `<text class="label" x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle">${d.label}</text>`;
   }).join('');
   return `<div class="radar-wrap"><div class="radar"><svg viewBox="0 0 ${size} ${size}">${rings}${axes}<polygon class="area" points="${dataPts}"/>${points}${labels}</svg></div></div>`;
 }
@@ -415,7 +363,7 @@ const Router = {
     this.current = { name, params };
     $('#stage').innerHTML = `<div class="screen fade-in">${Views[name](params)}</div>`;
     if(Views[name].mount) Views[name].mount(params);
-    const showTabs = ['home','teams','insights','settings'].includes(name);
+    const showTabs = ['home','teams','settings'].includes(name);
     $('#tabBar').classList.toggle('hidden', !showTabs);
     $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
   }
@@ -426,126 +374,154 @@ const Views = {};
 
 /* --- SPLASH --- */
 Views.splash = () => `
-  <div class="splash">
-    <div class="splash-logo"><span class="glyph"></span><span>One Team</span></div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:28px">
-      <div class="app-icon-lg">
-        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%;">
-          <defs><filter id="glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter></defs>
-          <circle cx="50" cy="60" r="38" stroke="#FFFFFF" stroke-width="1.5" fill="none" opacity="0.4" />
-          <circle cx="78" cy="60" r="26" stroke="#FFFFFF" stroke-width="1.5" fill="none" opacity="0.6" />
-          <clipPath id="overlap"><circle cx="78" cy="60" r="26" /></clipPath>
-          <circle cx="50" cy="60" r="38" fill="var(--accent)" clip-path="url(#overlap)" filter="url(#glow)" />
-          <circle cx="68" cy="60" r="4" fill="#FFFFFF" />
-        </svg>
-      </div>
-      <div class="splash-title">최적의 시너지를<br/><span class="line2">발견하는 기술.</span></div>
-    </div>
+  <div class="screen" style="align-items:center;justify-content:center; background:#000;">
+    <div style="font-size:40px;font-weight:900;letter-spacing:-0.05em; color:#fff; position:relative; z-index:2;">One Team.</div>
+    <div style="position:absolute; inset:0; background:var(--ai-grad); opacity:0.3; filter:blur(60px); animation:spinHolo 10s linear infinite;"></div>
   </div>
 `;
-Views.splash.mount = () => { setTimeout(() => { Store.state.profile && Store.state.profile.name ? Router.go('home') : Router.go('analyze'); }, 2200); };
+Views.splash.mount = () => { setTimeout(() => { Store.state.profile && Store.state.profile.name ? Router.go('home') : Router.go('analyze'); }, 1500); };
 
 /* --- HOME --- */
 Views.home = () => {
   const p = Store.state.profile;
-  const hero = p ? `<div class="hero-card"><div class="hero-row">${avatarHTML(p)}<div style="min-width:0;flex:1"><div class="hero-name truncate">${esc(p.name)}</div><div class="hero-sub">${esc(p.mbti)} · ${MBTI_LABELS[p.mbti]||''}${p.age ? ` · ${p.age}세` : ''}${p.gender ? ` · ${p.gender}` : ''}${p.bloodType ? ` · ${p.bloodType}형` : ''}</div></div></div></div>` : '';
+  const hero = p ? `<div class="card mb-24" style="background:var(--ink); color:white; border:none; padding:32px 24px;"><div style="display:flex;align-items:center;gap:20px;">${avatarHTML(p)}<div style="flex:1"><div style="font-size:24px;font-weight:900;">${esc(p.name)}님</div><div style="font-size:15px;color:rgba(255,255,255,0.7);margin-top:4px;font-weight:700;">${esc(p.mbti)} · ${MBTI_LABELS[p.mbti]}</div></div></div></div>` : '';
   return `
-    <div class="app-header"><div class="left"><div class="splash-logo" style="position:static; margin-left:4px;"><span class="glyph" style="width:20px;height:20px"></span><span style="letter-spacing:.12em;font-size:13px">One Team</span></div></div></div>
-    <div class="scroll">
+    <div class="app-header"><div class="left"><span class="h-title">홈</span></div></div>
+    <div class="scroll" style="padding:16px 22px;">
       ${hero}
-      <div class="quick-actions">
-        <button class="qa" data-go="analyze"><div class="qa-icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" fill="none" stroke-width="2"/></svg></div><div class="qa-title">프로필 수정</div><div class="qa-sub">나의 정보 업데이트</div></button>
-        <button class="qa" data-go="teamBuilder"><div class="qa-icon" style="background:var(--ai-grad)"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3" stroke="currentColor" fill="none" stroke-width="2"/><circle cx="17" cy="9" r="2.5" stroke="currentColor" fill="none" stroke-width="2"/><path d="M3 19c0-3 2.5-5 6-5s6 2 6 5" stroke="currentColor" fill="none" stroke-width="2"/></svg></div><div class="qa-title">팀 만들기 (AI)</div><div class="qa-sub">시너지 조합 및 분석</div></button>
+      <div class="section-h"><span class="h3">액션 스튜디오</span></div>
+      <div class="stack mb-24">
+        <button class="btn btn-primary" onclick="Router.go('teamBuilder')" style="height:72px; font-size:18px; justify-content:flex-start; padding:0 24px; background:var(--card); color:var(--ink); border:1px solid var(--line); box-shadow:var(--shadow-sm);">
+          <span style="font-size:24px; margin-right:12px;">✨</span> AI 팀 매시업 만들기
+        </button>
+        <button class="btn btn-secondary" onclick="Router.go('analyze')" style="height:60px; justify-content:flex-start; padding:0 24px; font-size:16px;">
+          <span style="font-size:20px; margin-right:12px;">👤</span> 내 프로필 업데이트
+        </button>
       </div>
-      <div class="section">
-        <div class="section-h"><span class="h3">최근 분석된 팀</span><button class="link" data-tab="teams">전체 보기</button></div>
-        <div class="stack stagger">
-          ${Store.state.teams.slice(0,3).map(t => `<button class="team-card" data-team="${t.id}"><div style="display:flex; justify-content:space-between"><div class="team-card-name">${esc(t.name)}</div><div style="font-size:12px; font-weight:800; color:var(--accent)">Score ${AIEngine.analyze(t.memberIds).overall}</div></div><div class="team-card-meta">${t.memberIds.length}명 팀원 구성</div></button>`).join('') || '<div class="small" style="text-align:center;padding:20px;color:var(--muted)">아직 생성된 팀이 없습니다.</div>'}
-        </div>
+      
+      <div class="section-h"><span class="h3">최근 스쿼드</span><button class="link" onclick="Router.go('teams')">전체보기 <svg viewBox="0 0 24 24" width="16" stroke="currentColor" fill="none"><path d="M9 18l6-6-6-6"/></svg></button></div>
+      <div class="stack">
+        ${Store.state.teams.slice(0,2).map(t => `<button class="team-card" data-team="${t.id}"><div class="team-card-name"><span>${esc(t.name)}</span><span style="color:var(--accent); font-weight:900;">${AIEngine.analyze(t.memberIds).overall}점</span></div><div class="team-card-meta">${t.memberIds.length}명의 능력자들</div><div class="team-avatars">${t.memberIds.slice(0,5).map(id => avatarHTML(Store.member(id))).join('')}</div></button>`).join('') || '<div style="text-align:center;padding:40px;color:var(--muted); font-weight:700; background:var(--card); border-radius:24px; border:1px dashed var(--line-2);">아직 스쿼드가 없어요!</div>'}
       </div>
     </div>
   `;
 };
-Views.home.mount = () => {
-  $$('[data-go]').forEach(b => b.addEventListener('click', () => { Haptic.light(); Router.go(b.dataset.go); }));
-  $$('[data-tab]').forEach(b => b.addEventListener('click', () => { Haptic.light(); Router.go(b.dataset.tab); }));
-  $$('[data-team]').forEach(b => b.addEventListener('click', () => { Haptic.light(); Router.go('teamDetail', {id: b.dataset.team}); }));
-};
+Views.home.mount = () => { $$('[data-team]').forEach(b => b.addEventListener('click', () => { Haptic.light(); Router.go('teamDetail', {id: b.dataset.team}); })); };
 
 /* --- TEAMS & DETAIL --- */
 Views.teams = () => `
-  <div class="app-header"><div class="left"><span class="h-title">팀 관리</span></div><div class="right"><button class="h-action" onclick="Router.go('teamBuilder')"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button></div></div>
-  <div class="scroll"><div class="section" id="teamListContainer"></div></div>
+  <div class="app-header"><div class="left"><span class="h-title">내 스쿼드</span></div></div>
+  <div class="scroll" style="padding:16px 22px;">
+    <div class="stack" id="teamListContainer"></div>
+  </div>
 `;
 Views.teams.mount = () => {
   const container = $('#teamListContainer');
-  if(!Store.state.teams.length){ container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">생성된 팀이 없습니다.</div>'; return; }
+  if(!Store.state.teams.length){ container.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--muted);font-weight:700;">조합된 팀이 없습니다.<br><br><button class="btn btn-primary" onclick="Router.go(\'teamBuilder\')">첫 스쿼드 만들기</button></div>'; return; }
   container.innerHTML = Store.state.teams.map(t => {
-    const analysis = AIEngine.analyze(t.memberIds);
-    const avatars = t.memberIds.slice(0,5).map(id => { const m = Store.member(id); return m ? `<div class="avatar" style="background:${pickColor(id)}">${esc(initial(m.name))}</div>` : ''; }).join('');
-    return `<button class="team-card" data-team="${t.id}"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="team-card-name">${esc(t.name)}</div><div class="team-card-meta">멤버 ${t.memberIds.length}명 · 종합 ${analysis.overall}점</div></div><div style="font-size:22px;font-weight:800;color:var(--accent)">${analysis.overall}</div></div><div class="team-avatars">${avatars}${t.memberIds.length>5?`<div class="avatar" style="background:var(--card-2);color:var(--muted)">+</div>`:''}</div></button>`;
+    const a = AIEngine.analyze(t.memberIds);
+    return `<button class="team-card" data-team="${t.id}"><div class="team-card-name"><span>${esc(t.name)}</span><span style="color:var(--accent); font-weight:900;">${a.overall}점</span></div><div class="team-card-meta">${a.title}</div><div class="team-avatars">${t.memberIds.slice(0,5).map(id => avatarHTML(Store.member(id))).join('')}</div></button>`;
   }).join('');
   $$('[data-team]').forEach(b => b.addEventListener('click', () => Router.go('teamDetail', {id: b.dataset.team})));
 };
 
 Views.teamDetail = ({id}) => {
   const team = Store.team(id);
-  if(!team) return `<div class="app-header"><button class="h-back" onclick="Router.go('teams')"><svg viewBox="0 0 24 24" width="24" stroke="currentColor" fill="none"><path d="M15 18l-6-6 6-6"/></svg></button></div><div class="scroll"><div style="padding:40px;text-align:center">팀을 찾을 수 없습니다.</div></div>`;
-  const analysis = AIEngine.analyze(team.memberIds);
-  const radarData = [ { label:'리더십', value:analysis.scores.leadership }, { label:'실행력', value:analysis.scores.execution }, { label:'창의성', value:analysis.scores.creativity }, { label:'분석력', value:analysis.scores.analysis }, { label:'공감조율', value:analysis.scores.empathy } ];
+  if(!team) return ``;
   
+  // Fake typing effect for AI load
+  setTimeout(() => {
+    $('#insightContent').innerHTML = renderInsights(team);
+    Haptic.success();
+  }, 1200);
+
   return `
-    <div class="app-header"><div class="left"><button class="h-back" onclick="Router.go('teams')"><svg viewBox="0 0 24 24" width="24" stroke="currentColor" fill="none" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button><span class="h-title">${esc(team.name)}</span></div><div class="right"><button class="h-action" id="btnDeleteTeam" style="color:var(--bad)"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></div>
-    <div class="scroll no-tab">
-      <div class="section"><div class="card">${renderRadarChart(radarData)}</div></div>
-      <div class="section">
-        <div class="section-h"><span class="h3">멤버 구성 (${team.memberIds.length}명)</span></div>
-        ${team.memberIds.map(mid => {
-          const m = Store.member(mid);
-          return m ? `<div class="match">${avatarHTML(m)}<div class="match-body"><div class="match-name">${esc(m.name)}</div><div class="match-meta">${esc(m.mbti)}${m.age ? ` · ${m.age}세` : ''}${m.gender ? ` · ${m.gender}` : ''}${m.bloodType ? ` · ${m.bloodType}형` : ''}${m.family ? ` · ${esc(m.family)}` : ''}</div></div></div>` : '';
-        }).join('')}
+    <div class="app-header"><div class="left"><button class="h-back" onclick="Router.go('teams')"><svg viewBox="0 0 24 24" width="24" stroke="currentColor" fill="none" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button></div><div class="right"><button class="h-action" id="btnMore"><svg viewBox="0 0 24 24" width="20" stroke="currentColor" fill="none" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></div></div>
+    <div class="scroll no-tab" style="padding:0 22px;">
+      <h2 style="font-size:28px; font-weight:900; margin-bottom:24px; letter-spacing:-0.04em;">${esc(team.name)}</h2>
+      
+      <div id="insightContent" style="min-height:400px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+        <div style="font-size:40px; animation: pulseGlow 1s infinite alternate;">✨</div>
+        <div class="typing-effect" style="margin-top:16px; font-weight:800; font-size:16px; color:var(--accent);">AI가 케미스트리를 분석 중입니다...</div>
       </div>
-      <div class="section" style="padding-bottom: 24px;">
-        <button class="btn btn-ai btn-block" onclick="Router.go('insights')">AI 심층 리포트 보기</button>
-      </div>
+    </div>
+    
+    <div style="position:fixed; bottom:0; left:0; right:0; padding:16px 22px calc(16px + var(--safe-bottom)); background:linear-gradient(transparent, var(--paper) 40%); pointer-events:none;">
+      <button class="btn btn-ai btn-block" onclick="Toast.show('이미지가 갤러리에 저장되었습니다! 📸')" style="pointer-events:auto; box-shadow:0 12px 30px rgba(255,51,0,0.3);"><svg viewBox="0 0 24 24" width="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg> 결과 자랑하기 (스토리 공유)</button>
     </div>
   `;
 };
+
+function renderInsights(team) {
+  const analysis = AIEngine.analyze(team.memberIds);
+  const radarData = [ { label:'리더십', value:analysis.scores.leadership }, { label:'실행력', value:analysis.scores.execution }, { label:'창의력', value:analysis.scores.creativity }, { label:'분석력', value:analysis.scores.analysis }, { label:'공감력', value:analysis.scores.empathy } ];
+  
+  return `
+    <div class="holo-card w-100">
+      <div style="font-size:16px; font-weight:800; opacity:0.8;">AI 종합 시너지 스코어</div>
+      <div style="font-size:64px; font-weight:900; letter-spacing:-0.05em; margin:8px 0; text-shadow:0 4px 20px rgba(255,255,255,0.4);">${analysis.overall}</div>
+      <div style="font-size:18px; font-weight:800; color:var(--accent-3);">${analysis.title}</div>
+      ${renderRadarChart(radarData)}
+    </div>
+    
+    <div style="width:100%; margin-top:32px; padding-bottom:100px;">
+      <div class="section-h"><span class="h3">🔥 AI 팩폭 리포트</span></div>
+      <div class="insight-list">
+        ${analysis.insights.map(r => `
+          <div class="insight-item ${r.type==='ai'?'ai-focus':''}">
+            <div class="insight-icon">${r.i}</div>
+            <div class="insight-text"><div class="insight-title">${r.t}</div><div class="insight-desc">${r.d}</div></div>
+          </div>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
 Views.teamDetail.mount = ({id}) => {
-  $('#btnDeleteTeam').addEventListener('click', () => {
-    Dialog.open({ title: '팀 삭제', body: '이 팀을 정말 삭제하시겠습니까?', danger: true, confirmText: '삭제', onConfirm: () => { Store.state.teams = Store.state.teams.filter(t => t.id !== id); Store.save(); Toast.show('팀이 삭제되었습니다.', 'success'); Router.go('teams'); } });
+  $('#btnMore').addEventListener('click', () => {
+    Sheet.open('스쿼드 관리', `
+      <div class="stack">
+        <button class="btn btn-secondary btn-block" onclick="Toast.show('이름 변경은 준비중입니다 🛠️'); Sheet.close();">이름 변경</button>
+        <button class="btn btn-block" style="background:#FF17441f; color:var(--bad);" id="btnDelTeam">스쿼드 해체 (삭제)</button>
+      </div>
+    `, { mount: () => {
+      $('#btnDelTeam').onclick = () => {
+        Store.state.teams = Store.state.teams.filter(t => t.id !== id); Store.save();
+        Sheet.close(); Haptic.heavy(); Toast.show('스쿼드가 해체되었습니다.', '💥'); Router.go('teams');
+      };
+    }});
   });
 };
 
-/* --- TEAM BUILDER (AI 고도화) --- */
+/* --- TEAM BUILDER --- */
 const BuilderState = { selected: new Set(), recommended: new Set() };
 Views.teamBuilder = () => {
   BuilderState.selected = new Set(Store.state.profile ? [Store.state.profile.id] : []);
   BuilderState.recommended = new Set();
   return `
     <div class="app-header">
-      <div class="left"><button class="h-back" onclick="Router.go('teams')"><svg viewBox="0 0 24 24" width="24" stroke="currentColor" fill="none"><path d="M15 18l-6-6 6-6"/></svg></button><span class="h-title">팀 매시업</span></div>
+      <div class="left"><button class="h-back" onclick="Router.go('home')"><svg viewBox="0 0 24 24" width="24" stroke="currentColor" fill="none" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button><span class="h-title">멤버 픽업</span></div>
       <div class="right">
-        <button class="h-action" id="btnAiRecommend" style="color:var(--accent); margin-right:8px;" title="AI 최적 멤버 추천"><svg viewBox="0 0 24 24" width="20" stroke="currentColor" fill="none" stroke-width="2.5"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg></button>
-        <button class="h-action" id="cmAddContact"><svg viewBox="0 0 24 24" width="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></button>
+        <button class="h-action" id="btnAiRecommend" style="color:var(--accent); margin-right:8px; background:rgba(255,51,0,0.1); border:1px solid rgba(255,51,0,0.2);"><svg viewBox="0 0 24 24" width="20" stroke="currentColor" fill="none" stroke-width="2.5"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg></button>
+        <button class="h-action" id="cmAddContact"><svg viewBox="0 0 24 24" width="20" stroke="currentColor" fill="none" stroke-width="2.5"><path d="M12 5v14m-7-7h14"/></svg></button>
       </div>
     </div>
-    <div class="scroll" id="builderList" style="padding-bottom:120px"></div>
+    <div class="scroll" id="builderList" style="padding:16px 16px 120px;"></div>
     <div class="builder-bar show" id="builderBar">
-      <div class="builder-bar-info"><div class="builder-bar-count" id="builderCount">0명 선택</div></div>
-      <button class="btn btn-primary" id="builderSave">시너지 분석 및 저장</button>
+      <div style="font-size:18px;font-weight:900;" id="builderCount">0명 선택</div>
+      <button class="btn btn-primary" id="builderSave" style="border-radius:99px; box-shadow:var(--shadow-sm);">매시업 믹스 🚀</button>
     </div>
   `;
 };
 Views.teamBuilder.mount = () => {
   const render = () => {
     const pool = [Store.state.profile, ...(Store.state.customMembers||[])].filter(Boolean);
-    if (pool.length === 0) { $('#builderList').innerHTML = `<div style="padding:40px;text-align:center;color:var(--muted)">선택할 멤버가 없습니다.</div>`; } 
+    if (pool.length === 0) { $('#builderList').innerHTML = `<div style="padding:60px 20px;text-align:center;color:var(--muted); font-weight:700;">풀에 멤버가 없어요.<br>우측 상단 + 버튼으로 팀원을 추가해보세요!</div>`; } 
     else {
       $('#builderList').innerHTML = pool.map(m => {
-        const sel = BuilderState.selected.has(m.id);
-        const aiRec = BuilderState.recommended.has(m.id);
-        return `<button class="builder-row ${sel?'selected':''} ${aiRec?'ai-recommended':''}" data-pick="${m.id}">${avatarHTML(m)}<div class="builder-body"><div class="builder-name">${esc(m.name)}</div><div class="builder-meta">${esc(m.mbti)}${m.age ? ` · ${m.age}세` : ''}${m.gender ? ` · ${m.gender}` : ''}${m.bloodType ? ` · ${m.bloodType}형` : ''}</div></div><div class="builder-check"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7" stroke-width="3" stroke="currentColor" fill="none"/></svg></div></button>`;
+        const sel = BuilderState.selected.has(m.id), aiRec = BuilderState.recommended.has(m.id);
+        return `<button class="team-card builder-row ${sel?'selected':''} ${aiRec?'ai-recommended':''}" data-pick="${m.id}" style="margin-bottom:12px; padding:16px;">${avatarHTML(m)}<div class="builder-body"><div class="builder-name">${esc(m.name)}</div><div class="builder-meta">${esc(m.mbti)} · ${MBTI_LABELS[m.mbti]}</div></div><div class="check-ring"><svg viewBox="0 0 24 24" width="16" stroke-width="4" stroke="currentColor" fill="none"><path d="M5 12l5 5L20 7"/></svg></div></button>`;
       }).join('');
     }
     $$('[data-pick]').forEach(b => b.addEventListener('click', () => { Haptic.light(); const id = b.dataset.pick; BuilderState.selected.has(id) ? BuilderState.selected.delete(id) : BuilderState.selected.add(id); render(); }));
@@ -554,213 +530,119 @@ Views.teamBuilder.mount = () => {
   render();
 
   $('#btnAiRecommend').addEventListener('click', () => {
-    const btn = $('#btnAiRecommend');
-    btn.innerHTML = `<div class="ai-loader" style="border-color:var(--accent); border-top-color:transparent; margin:0"></div>`;
+    Haptic.success();
+    const currentSelected = Array.from(BuilderState.selected);
+    const pool = [Store.state.profile, ...(Store.state.customMembers||[])].filter(Boolean);
+    const recommendedIds = AIEngine.recommend(currentSelected, pool);
     
-    setTimeout(() => {
-      Haptic.success();
-      const currentSelected = Array.from(BuilderState.selected);
-      const pool = [Store.state.profile, ...(Store.state.customMembers||[])].filter(Boolean);
-      const recommendedIds = AIEngine.recommend(currentSelected, pool);
-      
-      if(recommendedIds.length > 0) {
-        recommendedIds.forEach(id => { BuilderState.selected.add(id); BuilderState.recommended.add(id); });
-        Toast.show('AI가 최적의 시너지를 낼 멤버를 추천했습니다.', 'success');
-      } else {
-        Toast.show('더 이상 추천할 멤버가 풀에 없습니다.', 'default');
-      }
-      btn.innerHTML = `<svg viewBox="0 0 24 24" width="20" stroke="currentColor" fill="none" stroke-width="2.5"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>`;
-      render();
-    }, 600);
+    if(recommendedIds.length > 0) {
+      recommendedIds.forEach(id => { BuilderState.selected.add(id); BuilderState.recommended.add(id); });
+      Toast.show('AI가 최적의 조합을 찾았습니다!', '🤖');
+    } else {
+      Toast.show('더 이상 추천할 꿀조합이 없어요.', '🤔');
+    }
+    render();
   });
 
   $('#builderSave').addEventListener('click', () => {
-    if(BuilderState.selected.size < 2) return Toast.show('최소 2명 이상 선택해주세요.', 'error');
+    if(BuilderState.selected.size < 2) return Toast.show('스쿼드는 최소 2명이어야 해요!', '🚨');
     const newTeamId = uid('t');
-    Store.state.teams.push({ id: newTeamId, name: `AI 큐레이션 스쿼드 (${BuilderState.selected.size}명)`, memberIds: Array.from(BuilderState.selected), createdAt: Date.now() });
-    Store.save(); Haptic.success(); Router.go('insights');
+    Store.state.teams.push({ id: newTeamId, name: `도파민 스쿼드 #${Math.floor(Math.random()*999)}`, memberIds: Array.from(BuilderState.selected), createdAt: Date.now() });
+    Store.save(); Haptic.success(); Router.go('teamDetail', {id: newTeamId});
   });
 
   $('#cmAddContact').addEventListener('click', () => {
-    Sheet.open('새 멤버 풀 등록', `
-      <div class="stack">
-        <div class="field"><label class="field-label">이름</label><input class="input" id="cmName" placeholder="팀원 이름"/></div>
-        
-        <div class="field mt-8"><label class="field-label">인적사항 (나이/성별/혈액형)</label>
-          <div style="display:flex;gap:8px">
-            <input type="number" class="input" id="cmAge" placeholder="나이" style="width:70px"/>
-            <select class="input" id="cmGender" style="flex:1; background:var(--card);"><option value="">성별</option><option value="남성">남성</option><option value="여성">여성</option></select>
-            <select class="input" id="cmBloodType" style="flex:1; background:var(--card);"><option value="">혈액형</option><option value="A">A형</option><option value="B">B형</option><option value="O">O형</option><option value="AB">AB형</option></select>
-          </div>
-        </div>
-
-        <div class="field mt-8"><label class="field-label">가족관계 (옵션)</label><input type="text" class="input" id="cmFamily" placeholder="예: 기혼, 1남1녀 첫째"/></div>
-        
-        <div class="field mt-8"><label class="field-label">MBTI 성향</label>
+    Sheet.open('새 멤버 영입', `
+      <div class="stack" style="padding-top:8px;">
+        <div class="field"><input class="input" id="cmName" placeholder="이름 (닉네임) 입력" style="font-size:20px; height:64px; text-align:center;"/></div>
+        <div class="field mt-8"><label class="field-label">MBTI</label>
           <div class="mbti-grid" id="cmMbti">${MBTI_TYPES.map(t => `<button type="button" class="mbti-chip" data-m="${t}">${t}</button>`).join('')}</div>
         </div>
-        <button class="btn btn-primary btn-block mt-16" id="cmSave">팀 풀에 추가</button>
+        <button class="btn btn-primary btn-block mt-16" id="cmSave" style="height:60px;">영입 완료</button>
       </div>`, {
       mount: () => {
         let selectedMbti = '';
-        $$('[data-m]').forEach(b => b.addEventListener('click', () => { selectedMbti = b.dataset.m; $$('[data-m]').forEach(x => x.classList.toggle('selected', x===b)); }));
+        $$('[data-m]').forEach(b => b.addEventListener('click', () => { Haptic.light(); selectedMbti = b.dataset.m; $$('[data-m]').forEach(x => x.classList.toggle('selected', x===b)); }));
         $('#cmSave').addEventListener('click', () => {
           const name = $('#cmName').value.trim();
-          if(!name || !selectedMbti) return Toast.show('이름과 MBTI를 입력해주세요.', 'error');
+          if(!name || !selectedMbti) return Toast.show('이름과 MBTI는 필수입력이에요!', '🥺');
           const newId = uid('cm');
-          Store.state.customMembers.push({ 
-            id: newId, 
-            name, 
-            mbti: selectedMbti, 
-            age: $('#cmAge').value.trim(),
-            gender: $('#cmGender').value,
-            bloodType: $('#cmBloodType').value,
-            family: $('#cmFamily').value.trim() 
-          });
-          Store.save(); Sheet.close(); Toast.show('추가 완료', 'success'); BuilderState.selected.add(newId); render();
+          Store.state.customMembers.push({ id: newId, name, mbti: selectedMbti });
+          Store.save(); Sheet.close(); Toast.show('영입 완료!', '🎉'); BuilderState.selected.add(newId); render();
         });
       }
     });
   });
 };
 
-/* --- AI INSIGHTS --- */
-Views.insights = () => {
-  const teams = Store.state.teams;
-  if(!teams.length) return `<div class="app-header"><div class="left"><span class="h-title">AI 팀 리포트</span></div></div><div class="scroll"><div style="padding:40px;text-align:center;color:var(--muted)">분석할 팀이 없습니다.</div></div>`;
-  
-  const team = teams[teams.length-1];
-  const analysis = AIEngine.analyze(team.memberIds);
-  const c = 2*Math.PI*60;
-
-  return `
-    <div class="app-header"><div class="left"><span class="h-title">AI 매시업 리포트</span></div></div>
-    <div class="scroll">
-      <div class="section">
-        <div class="card" style="text-align:center; position:relative; overflow:hidden;">
-          <div style="font-size:14px;font-weight:700;color:var(--muted);margin-bottom:16px">${esc(team.name)} 케미스트리</div>
-          <div class="score-ring">
-            <svg viewBox="0 0 140 140"><circle class="track" cx="70" cy="70" r="60"/><circle class="fill" cx="70" cy="70" r="60" stroke-dasharray="${c}" stroke-dashoffset="${c}"/></svg>
-            <div class="score-ring-text"><div class="v">${analysis.overall}</div></div>
-          </div>
-          <div style="display:flex;justify-content:center;gap:6px;flex-wrap:wrap">
-            ${analysis.strengths.map(s => `<span class="chip chip-ai">${s} 특화</span>`).join('')}
-            ${analysis.gaps.map(g => `<span class="chip chip-warn">${g} 보완 필요</span>`).join('')}
-          </div>
-        </div>
-      </div>
-      <div class="section">
-        <div class="section-h"><span class="h3">데이터 기반 전략 제안</span></div>
-        ${analysis.insights.map(r => `
-          <div class="insight-card ${r.type==='ai'?'ai-insight':''}"><div class="insight-title">${r.t}</div><div class="insight-body">${r.d}</div></div>
-        `).join('')}
-      </div>
-    </div>
-  `;
-};
-Views.insights.mount = () => {
-  setTimeout(() => {
-    const fill = $('.score-ring .fill');
-    if(fill && Store.state.teams.length){
-      const a = AIEngine.analyze(Store.state.teams[Store.state.teams.length-1].memberIds);
-      fill.style.strokeDashoffset = 2*Math.PI*60 * (1 - a.overall/100);
-    }
-  }, 100);
-};
-
-/* --- WIZARD --- */
+/* --- WIZARD (ONBOARDING) --- */
 const WizState = { data: {} };
 Views.analyze = () => {
-  WizState.data = Store.state.profile || { name:'', mbti:'', age:'', family:'', gender:'', bloodType:'' };
+  WizState.data = Store.state.profile || { name:'', mbti:'' };
   const isFirstTime = !Store.state.profile;
-  const backBtnHtml = isFirstTime ? `<div></div>` : `<button class="h-back" onclick="Router.go('home')"><svg viewBox="0 0 24 24" width="24" stroke="currentColor" fill="none"><path d="M15 18l-6-6 6-6"/></svg></button>`;
+  const backBtnHtml = isFirstTime ? `<div></div>` : `<button class="h-back" onclick="Router.go('home')"><svg viewBox="0 0 24 24" width="24" stroke="currentColor" fill="none" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>`;
   return `
-    <div class="app-header"><div class="left">${backBtnHtml}<span class="h-title">데이터 프로필</span></div></div>
-    <div class="scroll no-tab" style="padding:24px 22px">
-      <h2 class="wiz-q">당신의 <em>업무 성향 데이터</em>를<br/>등록해주세요.</h2>
-      <div class="stack mt-16" style="margin-top: 32px; padding-bottom: 80px;">
-        <div class="field"><label class="field-label">이름</label><input class="input" id="wizName" value="${esc(WizState.data.name)}" placeholder="본인 이름 입력"/></div>
-        
-        <div class="field mt-8"><label class="field-label">인적사항 (나이/성별/혈액형)</label>
-          <div style="display:flex;gap:8px">
-            <input type="number" class="input" id="wizAge" value="${esc(WizState.data.age)}" placeholder="나이" style="width:70px"/>
-            <select class="input" id="wizGender" style="flex:1; background:var(--card);">
-              <option value="">성별</option>
-              <option value="남성" ${WizState.data.gender==='남성'?'selected':''}>남성</option>
-              <option value="여성" ${WizState.data.gender==='여성'?'selected':''}>여성</option>
-            </select>
-            <select class="input" id="wizBloodType" style="flex:1; background:var(--card);">
-              <option value="">혈액형</option>
-              <option value="A" ${WizState.data.bloodType==='A'?'selected':''}>A형</option>
-              <option value="B" ${WizState.data.bloodType==='B'?'selected':''}>B형</option>
-              <option value="O" ${WizState.data.bloodType==='O'?'selected':''}>O형</option>
-              <option value="AB" ${WizState.data.bloodType==='AB'?'selected':''}>AB형</option>
-            </select>
-          </div>
-        </div>
-
-        <div class="field mt-8"><label class="field-label">업무 및 조직 내 역할 힌트 (가족관계 등)</label><input type="text" class="input" id="wizFamily" value="${esc(WizState.data.family)}" placeholder="예: 1남 1녀 중 첫째, 10년차 리더 등"/></div>
-        <div class="field mt-8"><label class="field-label">MBTI 성격 유형</label><div class="mbti-grid">${MBTI_TYPES.map(t => `<button type="button" class="mbti-chip ${WizState.data.mbti===t?'selected':''}" data-wmbti="${t}">${t}</button>`).join('')}</div></div>
+    <div class="app-header"><div class="left">${backBtnHtml}</div></div>
+    <div class="scroll no-tab" style="padding:16px 24px">
+      <h2 class="wiz-q">당신의 <em>업무 DNA</em>를<br/>알려주세요.</h2>
+      <p style="color:var(--muted); font-size:15px; font-weight:600; margin-top:12px;">AI가 당신과 가장 잘 맞는 스쿼드를 짜드릴게요.</p>
+      
+      <div class="stack" style="margin-top: 40px; padding-bottom: 80px;">
+        <div class="field"><label class="field-label">호칭</label><input class="input" id="wizName" value="${esc(WizState.data.name)}" placeholder="이름 또는 닉네임"/></div>
+        <div class="field mt-16"><label class="field-label">MBTI</label><div class="mbti-grid">${MBTI_TYPES.map(t => `<button type="button" class="mbti-chip ${WizState.data.mbti===t?'selected':''}" data-wmbti="${t}">${t}</button>`).join('')}</div></div>
       </div>
     </div>
-    <div class="wiz-actions"><button class="btn btn-ai btn-block" id="wizSave">${isFirstTime ? 'AI 분석 시작하기' : '데이터 업데이트'}</button></div>
+    <div class="wiz-actions"><button class="btn btn-ai btn-block" id="wizSave" style="height:64px; border-radius:24px; font-size:18px;">${isFirstTime ? '시작하기 🚀' : '업데이트'}</button></div>
   `;
 };
 Views.analyze.mount = () => {
-  $$('[data-wmbti]').forEach(b => b.addEventListener('click', () => { WizState.data.mbti = b.dataset.wmbti; $$('[data-wmbti]').forEach(x => x.classList.toggle('selected', x===b)); }));
+  $$('[data-wmbti]').forEach(b => b.addEventListener('click', () => { Haptic.light(); WizState.data.mbti = b.dataset.wmbti; $$('[data-wmbti]').forEach(x => x.classList.toggle('selected', x===b)); }));
   $('#wizSave').addEventListener('click', () => {
     const name = $('#wizName').value.trim();
-    if(!name || !WizState.data.mbti) return Toast.show('필수 정보를 입력해주세요.', 'error');
-    Store.state.profile = { 
-      id: 'p_me', 
-      name, 
-      mbti: WizState.data.mbti, 
-      age: $('#wizAge').value.trim(),
-      gender: $('#wizGender').value,
-      bloodType: $('#wizBloodType').value,
-      family: $('#wizFamily').value.trim() 
-    };
-    Store.save(); Haptic.success(); Toast.show('프로필 연동 완료', 'success'); Router.go('home');
+    if(!name || !WizState.data.mbti) return Toast.show('모든 항목을 픽해주세요!', '🚨');
+    Store.state.profile = { id: 'p_me', name, mbti: WizState.data.mbti };
+    Store.save(); Haptic.success(); Router.go('home');
   });
 };
 
 /* --- SETTINGS --- */
 Views.settings = () => `
-  <div class="app-header"><div class="left"><span class="h-title">시스템 설정</span></div></div>
-  <div class="scroll">
-    <div class="section">
-      <div style="font-size:13px;font-weight:700;color:var(--muted);margin:0 0 8px 16px">화면 설정</div>
-      <div class="theme-seg">
-        <button class="theme-opt ${Store.state.settings.theme==='light'?'active':''}" data-theme="light">라이트</button>
-        <button class="theme-opt ${Store.state.settings.theme==='dark'?'active':''}" data-theme="dark">다크</button>
-        <button class="theme-opt ${Store.state.settings.theme==='system'?'active':''}" data-theme="system">시스템</button>
+  <div class="app-header"><div class="left"><span class="h-title">실험실</span></div></div>
+  <div class="scroll" style="padding:16px 22px;">
+    <div class="card" style="padding:16px; display:flex; flex-direction:column; gap:8px;">
+      <div style="font-size:14px;font-weight:800;color:var(--muted);margin-bottom:8px;">UI 테마 모드</div>
+      <div style="display:flex;gap:8px; background:var(--card-2); padding:6px; border-radius:18px;">
+        ${['light','dark','system'].map(t => `<button class="theme-opt ${Store.state.settings.theme===t?'active':''}" data-theme="${t}" style="flex:1; padding:12px; border-radius:14px; font-weight:800; font-size:14px; transition:all .2s; background:${Store.state.settings.theme===t?'var(--ink)':'transparent'}; color:${Store.state.settings.theme===t?'var(--paper)':'var(--muted)'};">${t==='light'?'☀️ 라이트':t==='dark'?'🌙 다크':'⚙️ 시스템'}</button>`).join('')}
       </div>
     </div>
-    <div class="section mt-16">
-      <div style="font-size:13px;font-weight:700;color:var(--muted);margin:0 0 8px 16px">데이터 거버넌스</div>
-      <div style="border-radius:20px;overflow:hidden;box-shadow:var(--shadow-sm)">
-        <button class="setting-row" id="btnReset" style="border-bottom:none">
-          <div class="setting-icon" style="background:#9B2D1F1f"><svg viewBox="0 0 24 24" stroke="var(--bad)"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M5 6l1 14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-14"/></svg></div>
-          <div class="setting-body"><div class="setting-title" style="color:var(--bad)">모든 데이터 초기화</div><div class="setting-sub">로컬에 저장된 분석 데이터를 영구 삭제합니다.</div></div>
-        </button>
-      </div>
+    
+    <div class="mt-16">
+      <button class="btn btn-block" id="btnReset" style="background:#FF17441f; color:var(--bad); height:60px;">데이터 전체 초기화 💣</button>
     </div>
   </div>
 `;
 Views.settings.mount = () => {
-  $$('[data-theme]').forEach(b => b.addEventListener('click', () => { Store.state.settings.theme = b.dataset.theme; Store.save(); applyTheme(); $$('[data-theme]').forEach(x => x.classList.toggle('active', x===b)); }));
-  $('#btnReset').addEventListener('click', () => { Dialog.open({ title:'초기화 경고', body:'저장된 데이터가 복구할 수 없이 삭제됩니다.', danger:true, confirmText:'초기화', onConfirm: () => { Store.state = deepClone(DEFAULT_STATE); Store.save(); applyTheme(); Router.go('splash'); } }); });
+  $$('[data-theme]').forEach(b => b.addEventListener('click', () => { 
+    Haptic.light(); Store.state.settings.theme = b.dataset.theme; Store.save(); applyTheme(); 
+    $$('[data-theme]').forEach(x => { x.style.background='transparent'; x.style.color='var(--muted)'; });
+    b.style.background='var(--ink)'; b.style.color='var(--paper)';
+  }));
+  $('#btnReset').addEventListener('click', () => { 
+    Sheet.open('정말 초기화할까요?', '<div class="stack"><p style="color:var(--muted); font-size:15px; font-weight:600; text-align:center;">저장된 프로필과 팀 데이터가 모두 날아갑니다.</p><button class="btn btn-block" style="background:var(--bad); color:#fff; height:60px;" id="btnConfirmReset">네, 폭파시킬게요 💣</button></div>', {
+      mount: () => { $('#btnConfirmReset').onclick = () => { Store.state = deepClone(DEFAULT_STATE); Store.save(); applyTheme(); Sheet.close(); Router.go('splash'); }; }
+    });
+  });
 };
 
 function applyTheme() {
   let t = Store.state.settings.theme || 'system'; if(t === 'system') t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', t);
-  const metaTheme = $('#meta-theme'); if(metaTheme) metaTheme.setAttribute('content', t === 'dark' ? '#0F0E0C' : '#0a0a0a');
+  const metaTheme = $('#meta-theme'); if(metaTheme) metaTheme.setAttribute('content', t === 'dark' ? '#09090B' : '#0a0a0a');
 }
 function boot(){
   Store.load(); applyTheme();
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if(Store.state.settings.theme === 'system') applyTheme(); });
-  $('#scrim').addEventListener('click', () => { if($('#sheet').classList.contains('open')) Sheet.close(); else Dialog.close(); });
+  $('#scrim').addEventListener('click', () => { if($('#sheet').classList.contains('open')) Sheet.close(); });
   Router.go('splash');
 }
 document.addEventListener('DOMContentLoaded', boot);
