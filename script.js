@@ -2,7 +2,7 @@
 
 const STORAGE_KEY = 'oneteam_db_mz_v1';
 const MBTI_TYPES = ['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'];
-const MBTI_LABELS = { INTJ:'갓벽주의 전략가', INTP:'방구석 아인슈타인', ENTJ:'도파민 폭주 기관차', ENTP:'팩폭 장인', INFJ:'겉바속촉 예언자', INFP:'망상 풀가동 요정', ENFJ:'인간 리트리버', ENFP:'인싸 중의 인싸', ISTJ:'엑셀 인간화', ISFJ:'프로수발러', ESTJ:'효율 집착 광공', ESFJ:'핵인싸 총무', ISTP:'효율 낭만파', ISFP:'누워있는 예술가', ESTP:'브레이크 고장', ESFP:'인간 ホットシックス' };
+const MBTI_LABELS = { INTJ:'갓벽주의 전략가', INTP:'방구석 아인슈타인', ENTJ:'도파민 폭주 기관차', ENTP:'팩폭 장인', INFJ:'겉바속촉 예언자', INFP:'망상 풀가동 요정', ENFJ:'인간 리트리버', ENFP:'인싸 중의 인싸', ISTJ:'엑셀 인간화', ISFJ:'프로수발러', ESTJ:'효율 집착 광공', ESFJ:'핵인싸 총무', ISTP:'효율 낭만파', ISFP:'누워있는 예술가', ESTP:'브레이크 고장', ESFP:'인간 핫식스' };
 const AVATAR_PALETTE = ['#FF3300','#4A154B','#00C853','#FF007F','#7000FF','#FF9100','#00B0FF','#1A1A1A'];
 
 const $ = (sel, root=document) => root.querySelector(sel);
@@ -158,45 +158,35 @@ const Router = {
 const avatarHTML = m => `<div class="avatar avatar-md" style="background:${pickColor(m.id)}">${esc(initial(m.name))}</div>`;
 const Views = {};
 
-/* --- GODO SPLASH --- */
+/* --- HIGH-END MINIMAL SPLASH --- */
 Views.splash = () => `
   <div class="screen" id="splash">
-    <div id="splash-emblem">
-      <div class="emblem-arc"></div>
-      <div class="emblem-arc"></div>
-      <div class="emblem-arc"></div>
-      <div id="emblem-core"></div>
-    </div>
-    <div id="splash-text">
-      <div class="splash-title">One Team.</div>
-      <div class="splash-subtitle typing-effect">AI 팀원 매시업.</div>
+    <div class="splash-wrapper">
+      <div id="splash-emblem">
+        <div class="emblem-ring"></div>
+        <div id="emblem-core"></div>
+      </div>
+      <div id="splash-text">
+        <div class="splash-copy">너랑 나랑 맞을까?</div>
+        <div class="splash-title">One Team</div>
+      </div>
     </div>
   </div>
 `;
 
 Views.splash.mount = () => {
   const splash = $('#splash');
-  const title = $('.splash-title', splash);
-  const subtitle = $('.splash-subtitle', splash);
-
-  Haptic.heavy(); // 임팩트 있는 스플래시 시작
-
-  // 1. 엠블렘 애니메이션은 CSS로 자동 시작
-
-  // 2. 타이포그래피 애니메이션 시퀀스 제어
-  // 메인 타이틀 등장 (2초 후)
-  setTimeout(() => { title.style.animationPlayState = 'running'; }, 2000);
   
-  // 서브 타이틀 등장 (2.5초 후)
-  setTimeout(() => { subtitle.style.animationPlayState = 'running'; }, 2500);
+  // 마이크로 햅틱 피드백으로 정밀한 첫인상 부여
+  setTimeout(() => { Haptic.light(); }, 200);
 
-  // 3. 메인 화면으로 전환
-  // 모든 애니메이션이 끝난 후 (dur-slow +dur_extra)
+  // 2.6초간 완벽히 균형 잡힌 다크 인터랙션을 보여준 후 부드럽게 대시보드로 진입
   setTimeout(() => {
-    splash.classList.add('out'); // 페이드아웃 시작
-    // 페이드아웃 애니메이션 완료 후 라우팅
-    setTimeout(() => { Router.go('home'); }, 480); // dur-slow와 동일하게 설정
-  }, 4500); // 전체 스플래시 유지 시간
+    splash.classList.add('out'); 
+    setTimeout(() => { 
+      Store.state.profile && Store.state.profile.name ? Router.go('home') : Router.go('analyze'); 
+    }, 600); 
+  }, 2600); 
 };
 
 /* --- HOME --- */
@@ -554,7 +544,7 @@ Views.settings.mount = () => {
     b.style.background='var(--card)'; b.style.color='var(--ink)';
   }));
   $('#btnReset').addEventListener('click', () => { 
-    Sheet.open('정말 초기화할까요?', '<div class="stack"><p style="color:var(--muted); font-size:15px; font-weight:600; text-align:center;">저장된 프로필과 팀 데이터가 모두 날아갑니다.</p><button class="btn btn-block" style="background:var(--bad); color:#fff; height:60px;" id="btnConfirmReset">네, 폭파시킬게요 💣</button></div>', {
+    Sheet.open('정말 초기화할까요?', '<div class="stack"><p style="color:var(--muted); font-size:15px; font-weight:600; text-align:center;">저장된 프로필과 팀 데이터가 모두 날아갑니다.</p><button class="btn btn-block" style="background:var(--bad); color:#fff; height:60px;" id="btnConfirmReset">네, 폭파시게요 💣</button></div>', {
       mount: () => { $('#btnConfirmReset').onclick = () => { Store.state = deepClone(DEFAULT_STATE); Store.save(); applyTheme(); Sheet.close(); Router.go('splash'); }; }
     });
   });
