@@ -102,7 +102,7 @@
   /* ============ WIZARD & FORMS ============ */
   .wiz-q{font-size:28px;font-weight:800;line-height:1.3; letter-spacing:-0.04em;}
   .wiz-q em{font-style:normal;background:var(--ai-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-  .wiz-actions{position:absolute;bottom:0;left:0;right:0;padding:16px 22px calc(16px + var(--safe-bottom));background:linear-gradient(transparent, var(--paper) 30%);}
+  .wiz-actions{position:absolute;bottom:0;left:0;right:0;padding:16px 22px calc(16px + var(--safe-bottom));background:linear-gradient(transparent, var(--paper) 30%); z-index: 30;}
   
   .field{display:flex;flex-direction:column;gap:10px;}
   .field-label{font-size:14px;font-weight:800;color:var(--muted);}
@@ -384,7 +384,15 @@ Views.splash.mount = () => { setTimeout(() => { Store.state.profile && Store.sta
 /* --- HOME --- */
 Views.home = () => {
   const p = Store.state.profile;
-  const hero = p ? `<div class="card mb-24" style="background:var(--ink); color:white; border:none; padding:32px 24px;"><div style="display:flex;align-items:center;gap:20px;">${avatarHTML(p)}<div style="flex:1"><div style="font-size:24px;font-weight:900;">${esc(p.name)}님</div><div style="font-size:15px;color:rgba(255,255,255,0.7);margin-top:4px;font-weight:700;">${esc(p.mbti)} · ${MBTI_LABELS[p.mbti]}</div></div></div></div>` : '';
+  let details = '';
+  if (p) {
+    const extra = [p.gender, p.bloodType, p.family, p.hobbies ? `🎨 ${p.hobbies}` : ''].filter(Boolean).join(' · ');
+    details = `
+      <div style="font-size:15px;color:rgba(255,255,255,0.7);margin-top:4px;font-weight:700;">${esc(p.mbti)} · ${MBTI_LABELS[p.mbti]}</div>
+      ${extra ? `<div style="font-size:13px;color:rgba(255,255,255,0.5);margin-top:4px;font-weight:500;">${esc(extra)}</div>` : ''}
+    `;
+  }
+  const hero = p ? `<div class="card mb-24" style="background:var(--ink); color:white; border:none; padding:32px 24px;"><div style="display:flex;align-items:center;gap:20px;">${avatarHTML(p)}<div style="flex:1"><div style="font-size:24px;font-weight:900;">${esc(p.name)}님</div>${details}</div></div></div>` : '';
   return `
     <div class="app-header"><div class="left"><span class="h-title">홈</span></div></div>
     <div class="scroll" style="padding:16px 22px;">
@@ -431,8 +439,10 @@ Views.teamDetail = ({id}) => {
   
   // Fake typing effect for AI load
   setTimeout(() => {
-    $('#insightContent').innerHTML = renderInsights(team);
-    Haptic.success();
+    if($('#insightContent')) {
+      $('#insightContent').innerHTML = renderInsights(team);
+      Haptic.success();
+    }
   }, 1200);
 
   return `
@@ -521,7 +531,9 @@ Views.teamBuilder.mount = () => {
     else {
       $('#builderList').innerHTML = pool.map(m => {
         const sel = BuilderState.selected.has(m.id), aiRec = BuilderState.recommended.has(m.id);
-        return `<button class="team-card builder-row ${sel?'selected':''} ${aiRec?'ai-recommended':''}" data-pick="${m.id}" style="margin-bottom:12px; padding:16px;">${avatarHTML(m)}<div class="builder-body"><div class="builder-name">${esc(m.name)}</div><div class="builder-meta">${esc(m.mbti)} · ${MBTI_LABELS[m.mbti]}</div></div><div class="check-ring"><svg viewBox="0 0 24 24" width="16" stroke-width="4" stroke="currentColor" fill="none"><path d="M5 12l5 5L20 7"/></svg></div></button>`;
+        const extra = [m.gender, m.bloodType, m.hobbies].filter(Boolean).join(' · ');
+        const metaText = extra ? `${esc(m.mbti)} (${extra})` : `${esc(m.mbti)} · ${MBTI_LABELS[m.mbti]}`;
+        return `<button class="team-card builder-row ${sel?'selected':''} ${aiRec?'ai-recommended':''}" data-pick="${m.id}" style="margin-bottom:12px; padding:16px;">${avatarHTML(m)}<div class="builder-body"><div class="builder-name">${esc(m.name)}</div><div class="builder-meta">${metaText}</div></div><div class="check-ring"><svg viewBox="0 0 24 24" width="16" stroke-width="4" stroke="currentColor" fill="none"><path d="M5 12l5 5L20 7"/></svg></div></button>`;
       }).join('');
     }
     $$('[data-pick]').forEach(b => b.addEventListener('click', () => { Haptic.light(); const id = b.dataset.pick; BuilderState.selected.has(id) ? BuilderState.selected.delete(id) : BuilderState.selected.add(id); render(); }));
@@ -553,21 +565,54 @@ Views.teamBuilder.mount = () => {
 
   $('#cmAddContact').addEventListener('click', () => {
     Sheet.open('새 멤버 영입', `
-      <div class="stack" style="padding-top:8px;">
+      <div class="stack" style="padding-top:8px; max-height: 65vh; overflow-y: auto;">
         <div class="field"><input class="input" id="cmName" placeholder="이름 (닉네임) 입력" style="font-size:20px; height:64px; text-align:center;"/></div>
+        
+        <div class="field mt-8"><label class="field-label">성별</label>
+          <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
+            ${['남성','여성','선택안함'].map(g => `<button type="button" class="mbti-chip" data-cmgender="${g}">${g}</button>`).join('')}
+          </div>
+        </div>
+
+        <div class="field mt-8"><label class="field-label">혈액형</label>
+          <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
+            ${['A형','B형','O형','AB형'].map(b => `<button type="button" class="mbti-chip" data-cmblood="${b}">${b}</button>`).join('')}
+          </div>
+        </div>
+
         <div class="field mt-8"><label class="field-label">MBTI</label>
           <div class="mbti-grid" id="cmMbti">${MBTI_TYPES.map(t => `<button type="button" class="mbti-chip" data-m="${t}">${t}</button>`).join('')}</div>
         </div>
-        <button class="btn btn-primary btn-block mt-16" id="cmSave" style="height:60px;">영입 완료</button>
+
+        <div class="field mt-8"><label class="field-label">가족 관계</label><input class="input" id="cmFamily" placeholder="예: 미혼, 형제 2명"/></div>
+        
+        <div class="field mt-8"><label class="field-label">취미 / 관심사</label><input class="input" id="cmHobbies" placeholder="예: 스케이트보드, 게임"/></div>
+
+        <button class="btn btn-primary btn-block mt-16" id="cmSave" style="height:60px; margin-bottom:16px;">영입 완료</button>
       </div>`, {
       mount: () => {
         let selectedMbti = '';
+        let selectedGender = '';
+        let selectedBlood = '';
         $$('[data-m]').forEach(b => b.addEventListener('click', () => { Haptic.light(); selectedMbti = b.dataset.m; $$('[data-m]').forEach(x => x.classList.toggle('selected', x===b)); }));
+        $$('[data-cmgender]').forEach(b => b.addEventListener('click', () => { Haptic.light(); selectedGender = b.dataset.cmgender; $$('[data-cmgender]').forEach(x => x.classList.toggle('selected', x===b)); }));
+        $$('[data-cmblood]').forEach(b => b.addEventListener('click', () => { Haptic.light(); selectedBlood = b.dataset.cmblood; $$('[data-cmblood]').forEach(x => x.classList.toggle('selected', x===b)); }));
+        
         $('#cmSave').addEventListener('click', () => {
           const name = $('#cmName').value.trim();
+          const family = $('#cmFamily').value.trim();
+          const hobbies = $('#cmHobbies').value.trim();
           if(!name || !selectedMbti) return Toast.show('이름과 MBTI는 필수입력이에요!', '🥺');
           const newId = uid('cm');
-          Store.state.customMembers.push({ id: newId, name, mbti: selectedMbti });
+          Store.state.customMembers.push({ 
+            id: newId, 
+            name, 
+            mbti: selectedMbti,
+            gender: selectedGender,
+            bloodType: selectedBlood,
+            family,
+            hobbies
+          });
           Store.save(); Sheet.close(); Toast.show('영입 완료!', '🎉'); BuilderState.selected.add(newId); render();
         });
       }
@@ -578,7 +623,7 @@ Views.teamBuilder.mount = () => {
 /* --- WIZARD (ONBOARDING) --- */
 const WizState = { data: {} };
 Views.analyze = () => {
-  WizState.data = Store.state.profile || { name:'', mbti:'' };
+  WizState.data = Store.state.profile || { name:'', mbti:'', gender:'', bloodType:'', family:'', hobbies:'' };
   const isFirstTime = !Store.state.profile;
   const backBtnHtml = isFirstTime ? `<div></div>` : `<button class="h-back" onclick="Router.go('home')"><svg viewBox="0 0 24 24" width="24" stroke="currentColor" fill="none" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>`;
   return `
@@ -587,9 +632,28 @@ Views.analyze = () => {
       <h2 class="wiz-q">당신의 <em>업무 DNA</em>를<br/>알려주세요.</h2>
       <p style="color:var(--muted); font-size:15px; font-weight:600; margin-top:12px;">AI가 당신과 가장 잘 맞는 스쿼드를 짜드릴게요.</p>
       
-      <div class="stack" style="margin-top: 40px; padding-bottom: 80px;">
+      <div class="stack" style="margin-top: 40px; padding-bottom: 140px;">
         <div class="field"><label class="field-label">호칭</label><input class="input" id="wizName" value="${esc(WizState.data.name)}" placeholder="이름 또는 닉네임"/></div>
-        <div class="field mt-16"><label class="field-label">MBTI</label><div class="mbti-grid">${MBTI_TYPES.map(t => `<button type="button" class="mbti-chip ${WizState.data.mbti===t?'selected':''}" data-wmbti="${t}">${t}</button>`).join('')}</div></div>
+        
+        <div class="field mt-16"><label class="field-label">성별</label>
+          <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
+            ${['남성','여성','선택안함'].map(g => `<button type="button" class="mbti-chip ${WizState.data.gender===g?'selected':''}" data-wgender="${g}">${g}</button>`).join('')}
+          </div>
+        </div>
+
+        <div class="field mt-16"><label class="field-label">혈액형</label>
+          <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
+            ${['A형','B형','O형','AB형'].map(b => `<button type="button" class="mbti-chip ${WizState.data.bloodType===b?'selected':''}" data-wblood="${b}">${b}</button>`).join('')}
+          </div>
+        </div>
+
+        <div class="field mt-16"><label class="field-label">MBTI</label>
+          <div class="mbti-grid">${MBTI_TYPES.map(t => `<button type="button" class="mbti-chip ${WizState.data.mbti===t?'selected':''}" data-wmbti="${t}">${t}</button>`).join('')}</div>
+        </div>
+        
+        <div class="field mt-16"><label class="field-label">가족 관계</label><input class="input" id="wizFamily" value="${esc(WizState.data.family)}" placeholder="예: 기혼, 자녀 1명"/></div>
+        
+        <div class="field mt-16"><label class="field-label">취미 / 관심사</label><input class="input" id="wizHobbies" value="${esc(WizState.data.hobbies)}" placeholder="예: 풋살, 탁구, AI 음악 제작"/></div>
       </div>
     </div>
     <div class="wiz-actions"><button class="btn btn-ai btn-block" id="wizSave" style="height:64px; border-radius:24px; font-size:18px;">${isFirstTime ? '시작하기 🚀' : '업데이트'}</button></div>
@@ -597,10 +661,23 @@ Views.analyze = () => {
 };
 Views.analyze.mount = () => {
   $$('[data-wmbti]').forEach(b => b.addEventListener('click', () => { Haptic.light(); WizState.data.mbti = b.dataset.wmbti; $$('[data-wmbti]').forEach(x => x.classList.toggle('selected', x===b)); }));
+  $$('[data-wgender]').forEach(b => b.addEventListener('click', () => { Haptic.light(); WizState.data.gender = b.dataset.wgender; $$('[data-wgender]').forEach(x => x.classList.toggle('selected', x===b)); }));
+  $$('[data-wblood]').forEach(b => b.addEventListener('click', () => { Haptic.light(); WizState.data.bloodType = b.dataset.wblood; $$('[data-wblood]').forEach(x => x.classList.toggle('selected', x===b)); }));
+  
   $('#wizSave').addEventListener('click', () => {
     const name = $('#wizName').value.trim();
-    if(!name || !WizState.data.mbti) return Toast.show('모든 항목을 픽해주세요!', '🚨');
-    Store.state.profile = { id: 'p_me', name, mbti: WizState.data.mbti };
+    const family = $('#wizFamily').value.trim();
+    const hobbies = $('#wizHobbies').value.trim();
+    if(!name || !WizState.data.mbti) return Toast.show('이름과 MBTI는 필수입력이에요!', '🚨');
+    Store.state.profile = { 
+      id: 'p_me', 
+      name, 
+      mbti: WizState.data.mbti,
+      gender: WizState.data.gender || '',
+      bloodType: WizState.data.bloodType || '',
+      family,
+      hobbies
+    };
     Store.save(); Haptic.success(); Router.go('home');
   });
 };
