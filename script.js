@@ -84,78 +84,181 @@ function bindSheetSwipeDown() {
    MZ VIBE AI ENGINE
    =================================================================== */
 const AIEngine = {
+  /* ---------- 두 멤버 간 페어 시너지 ---------- */
   evaluateInteraction(m1, m2) {
-    if(!m1 || !m2) return 0;
+    if (!m1 || !m2) return 0;
     let score = 0;
-    if (m1[1] !== m2[1]) score += 15; 
+    // MBTI 4축 다양성 (S/N 가장 중요, J/P 두번째, T/F 세번째, E/I 보너스)
+    if (m1[1] !== m2[1]) score += 15;
     if (m1[3] !== m2[3]) score += 10;
-    if (m1 === m2) score -= 10;
+    if (m1[2] !== m2[2]) score += 8;
+    if (m1[0] !== m2[0]) score += 5;
+    // 완전 동일 MBTI 패널티
+    if (m1 === m2) score -= 8;
     return score;
   },
-  
+
+  /* ---------- 종합 분석 (MBTI + 혈액형 + 성별 + 가족 + 취미 모두 반영) ---------- */
   analyze(memberIds) {
+    const empty = { scores: { leadership: 0, execution: 0, creativity: 0, analysis: 0, empathy: 0 }, overall: 0, insights: [], count: 0, title: '비어있는 스쿼드' };
     const members = memberIds.map(id => Store.member(id)).filter(Boolean);
-    if(!members.length) return { scores:{leadership:0, execution:0, creativity:0, analysis:0, empathy:0}, overall:0, insights:[] };
+    if (!members.length) return empty;
 
-    let s = { leadership:0, execution:0, creativity:0, analysis:0, empathy:0 };
-    let roles = { planner: 0, executor: 0, mediator: 0, analyst: 0 };
-    
+    // === 1. MBTI 기반 5각 능력치 (각 멤버 평균) ===
+    let raw = { leadership: 0, execution: 0, creativity: 0, analysis: 0, empathy: 0 };
+    let roles = { planner: 0, executor: 0, mediator: 0, analyst: 0, leader: 0 };
+
     members.forEach(m => {
-      if(m.mbti){
-        if(m.mbti[0]==='E') s.leadership+=15; else s.analysis+=5;
-        if(m.mbti[1]==='S') { s.execution+=20; roles.executor++; } else { s.creativity+=20; roles.planner++; }
-        if(m.mbti[2]==='T') { s.analysis+=20; roles.analyst++; } else { s.empathy+=20; roles.mediator++; }
-        if(m.mbti[3]==='J') { s.execution+=10; s.leadership+=5; } else { s.creativity+=5; }
-      }
+      const mb = (m.mbti || 'XXXX').toUpperCase();
+      if (mb[0] === 'E') { raw.leadership += 25; raw.empathy += 8; roles.leader++; }
+      else if (mb[0] === 'I') { raw.analysis += 15; raw.creativity += 10; }
+
+      if (mb[1] === 'S') { raw.execution += 30; raw.analysis += 8; roles.executor++; }
+      else if (mb[1] === 'N') { raw.creativity += 30; raw.empathy += 5; roles.planner++; }
+
+      if (mb[2] === 'T') { raw.analysis += 25; raw.leadership += 7; roles.analyst++; }
+      else if (mb[2] === 'F') { raw.empathy += 30; raw.creativity += 5; roles.mediator++; }
+
+      if (mb[3] === 'J') { raw.execution += 18; raw.leadership += 10; }
+      else if (mb[3] === 'P') { raw.creativity += 20; raw.empathy += 5; }
     });
+    Object.keys(raw).forEach(k => raw[k] = raw[k] / members.length);
 
-    let synergyBonus = 0;
-    for (let i = 0; i < members.length; i++) {
-      for (let j = i + 1; j < members.length; j++) { synergyBonus += this.evaluateInteraction(members[i].mbti, members[j].mbti); }
+    // === 2. 보너스 (다양성/시너지) ===
+    let bonus = 0;
+    const tags = new Set();
+
+    if (members.length >= 2) {
+      // MBTI 4축 다양성
+      const axisDiverse = [0, 1, 2, 3].map(i =>
+        new Set(members.map(m => (m.mbti || '')[i]).filter(Boolean)).size >= 2 ? 1 : 0
+      );
+      const mbtiDiv = axisDiverse.reduce((a, b) => a + b, 0);
+      bonus += mbtiDiv * 5;
+      if (mbtiDiv >= 3) tags.add('mbti_diverse');
+      if (mbtiDiv <= 1) tags.add('mbti_similar');
+
+      // 페어 시너지 평균
+      let pairSum = 0, pairs = 0;
+      for (let i = 0; i < members.length; i++) {
+        for (let j = i + 1; j < members.length; j++) {
+          pairSum += this.evaluateInteraction(members[i].mbti, members[j].mbti);
+          pairs++;
+        }
+      }
+      const avgPair = pairs ? pairSum / pairs : 0;
+      bonus += avgPair * 0.6;
+      if (avgPair >= 25) tags.add('synergy_high');
+      if (avgPair < 5) tags.add('synergy_low');
+
+      // 혈액형 다양성
+      const bloods = members.map(m => m.bloodType).filter(Boolean);
+      if (bloods.length >= 2) {
+        const uniq = new Set(bloods).size;
+        bonus += Math.min(uniq - 1, 3) * 4;
+        if (uniq === Math.min(members.length, 4) && members.length >= 3) tags.add('blood_all_diverse');
+        if (uniq === 1 && bloods.length === members.length) tags.add('blood_same');
+      }
+
+      // 성별 밸런스
+      const genders = members.map(m => m.gender).filter(g => g && g !== '선택안함');
+      if (genders.length >= 2) {
+        const uniq = new Set(genders).size;
+        if (uniq >= 2) { bonus += 8; tags.add('gender_mix'); }
+      }
+
+      // 가족관계 다양성
+      const fams = members.map(m => m.family).filter(Boolean);
+      if (fams.length >= 2) {
+        const uniq = new Set(fams.map(f => f.trim().toLowerCase())).size;
+        if (uniq >= 2) { bonus += 5; tags.add('family_diverse'); }
+      }
+
+      // 취미 다양성
+      const hobs = members.map(m => m.hobbies).filter(Boolean);
+      if (hobs.length >= 2) {
+        const uniq = new Set(hobs.map(h => h.trim().toLowerCase())).size;
+        if (uniq >= Math.max(2, members.length - 1)) { bonus += 4; tags.add('hobby_diverse'); }
+      }
+
+      // 4역할 풀패키지
+      const filled = (roles.planner > 0 ? 1 : 0) + (roles.executor > 0 ? 1 : 0)
+                   + (roles.analyst > 0 ? 1 : 0) + (roles.mediator > 0 ? 1 : 0);
+      bonus += filled * 3;
+      if (filled === 4) { bonus += 10; tags.add('dream_team'); }
+      if (roles.leader > 0) bonus += 3;
+      if (roles.planner > 0 && roles.executor === 0) tags.add('all_planner');
+      if (roles.analyst > members.length / 2) tags.add('too_T');
+      if (roles.mediator > members.length / 2) tags.add('too_F');
+    } else {
+      tags.add('solo');
     }
-    
-    const maxPer = Math.max(members.length * 30, 100);
-    Object.keys(s).forEach(k => s[k] = clamp(Math.round(((s[k] + (synergyBonus/(members.length||1)))) / maxPer * 100), 20, 100));
-    
-    const overall = Math.round((s.leadership + s.execution + s.creativity + s.analysis + s.empathy) / 5);
+
+    // 팀 사이즈
+    const n = members.length;
+    bonus += n === 1 ? -8 : n === 2 ? 4 : n <= 5 ? 7 : n <= 7 ? 3 : -5;
+
+    // === 3. 최종 점수 ===
+    const scores = {};
+    Object.keys(raw).forEach(k => {
+      scores[k] = clamp(Math.round(raw[k] + Math.max(0, bonus) * 0.25), 15, 99);
+    });
+    const dimAvg = (scores.leadership + scores.execution + scores.creativity + scores.analysis + scores.empathy) / 5;
+    const overall = clamp(Math.round(dimAvg * 0.5 + bonus * 0.4 + 18), 10, 99);
+
+    // === 4. 인사이트 ===
     const insights = [];
-    
-    if(roles.planner > 0 && roles.executor === 0) insights.push({ i:'🚨', t:'몽상가들의 파티 (실행력 떡락 주의)', d:'아이디어는 넷플릭스급인데, 막상 코딩할 사람이 없습니다. J나 S 성향의 멱살잡이 1명이 시급합니다.', type:'warn' });
-    else if(roles.planner > 0 && roles.executor > 0) insights.push({ i:'🚀', t:'티키타카 오지는 릴레이', d:'N의 미친 발상을 S가 묵묵히 현실로 깎아내는 갓벽한 업무 파이프라인입니다.', type:'ai' });
-    
-    if(roles.analyst > (members.length/2)) insights.push({ i:'🧊', t:'T발 C야? 얼음송곳 팀', d:'효율과 논리가 지배하는 차가운 공간. 목표 달성은 빠르겠지만, 멘탈 나가는 팀원이 생길 수 있으니 칭찬을 의식적으로 해주세요.', type:'warn' });
-    if(roles.mediator > (members.length/2)) insights.push({ i:'💖', t:'F들의 힐링 캠프', d:'서로 상처받을까봐 피드백을 못할 수도 있습니다. 일할 땐 조금 더 매운맛이 필요합니다.', type:'warn' });
-    
-    if(synergyBonus > 20) insights.push({ i:'🔥', t:'우주 최강 도파민 파티', d:'성향이 서로의 단점을 미친듯이 보완해줍니다. 케미스트리 폭발, 팀워크 1티어 조합입니다.', type:'ai' });
-    else if(insights.length === 0) insights.push({ i:'⚖️', t:'육각형 안정형 팟', d:'모난 곳 없이 밸런스가 좋습니다. 무난하게 프로젝트를 폭파시킬 수 있는 든든한 조합.', type:'ai' });
+    if (tags.has('all_planner'))   insights.push({ i: '🚨', t: '몽상가들의 파티 (실행력 떡락 주의)', d: '아이디어는 넷플릭스급인데, 막상 코딩할 사람이 없습니다. J나 S 성향의 멱살잡이 1명이 시급합니다.', type: 'warn' });
+    else if (roles.planner > 0 && roles.executor > 0) insights.push({ i: '🚀', t: '티키타카 오지는 릴레이', d: 'N의 미친 발상을 S가 묵묵히 현실로 깎아내는 갓벽한 업무 파이프라인입니다.', type: 'ai' });
+    if (tags.has('too_T'))         insights.push({ i: '🧊', t: 'T발 C야? 얼음송곳 팀', d: '효율과 논리가 지배하는 차가운 공간. 목표 달성은 빠르겠지만, 멘탈 나가는 팀원이 생길 수 있으니 칭찬을 의식적으로 해주세요.', type: 'warn' });
+    if (tags.has('too_F'))         insights.push({ i: '💖', t: 'F들의 힐링 캠프', d: '서로 상처받을까봐 피드백을 못할 수도 있습니다. 일할 땐 조금 더 매운맛이 필요합니다.', type: 'warn' });
+    if (tags.has('synergy_high'))  insights.push({ i: '🔥', t: '우주 최강 도파민 파티', d: '성향이 서로의 단점을 미친듯이 보완해줍니다. 케미스트리 폭발, 팀워크 1티어 조합입니다.', type: 'ai' });
+    if (tags.has('dream_team'))    insights.push({ i: '👑', t: '4역할 풀패키지 드림팀', d: '기획(N)·실행(S)·분석(T)·공감(F) 모든 영역에 사람이 있는 완전체. 회사가 좋아할 그림.', type: 'ai' });
+    if (tags.has('gender_mix'))    insights.push({ i: '🌗', t: '성비 골든밸런스', d: '다양한 관점이 회의실을 더 다채롭게. 결과물의 포용성이 +20%.', type: 'ai' });
+    if (tags.has('blood_all_diverse')) insights.push({ i: '🩸', t: '혈액형 풀세트 콜렉터', d: 'A·B·O·AB가 다 모이면 한국식 편견을 한 번에 시험할 수 있어요. 보너스 케미.', type: 'ai' });
+    if (tags.has('blood_same'))    insights.push({ i: '🩸', t: '단일 혈액형 군단', d: '같은 혈액형끼리 모인 단단한 결속. 단, 새로운 자극은 좀 부족할 수 있어요.', type: 'warn' });
+    if (tags.has('family_diverse')) insights.push({ i: '🏡', t: '인생경험 다양도 만렙', d: '다양한 가족 배경이 의사결정의 시야를 넓혀줍니다.', type: 'ai' });
+    if (tags.has('hobby_diverse')) insights.push({ i: '🎨', t: '덕질 풀스펙트럼', d: '서로 다른 관심사가 회식 메뉴 고르는 재미를 +10%.', type: 'ai' });
+    if (tags.has('mbti_similar'))  insights.push({ i: '🪞', t: '끼리끼리 거울방', d: '생각이 너무 비슷합니다. 가끔은 다른 결의 의견이 그리울 수도.', type: 'warn' });
+    if (tags.has('solo'))          insights.push({ i: '🧍', t: '솔로 모드', d: '혼자선 종합 시너지 계산이 어려워요. 동료 1명 이상 추가해 보세요.', type: 'warn' });
+    if (insights.length === 0)     insights.push({ i: '⚖️', t: '육각형 안정형 팟', d: '모난 곳 없이 밸런스가 좋습니다. 무난하게 프로젝트를 폭파시킬 수 있는 든든한 조합.', type: 'ai' });
 
-    let title = "평범한 스쿼드";
-    if(overall > 85) title = "S급 전설의 레전드 스쿼드 👑";
-    else if(overall > 70) title = "포텐 터지는 시너지 스쿼드 ⚡";
+    // === 5. 타이틀 ===
+    let title;
+    if (overall >= 90) title = 'S급 전설의 레전드 스쿼드 👑';
+    else if (overall >= 80) title = '갓벽 시너지 A급 스쿼드 ⚡';
+    else if (overall >= 70) title = '포텐 터지는 스쿼드 🚀';
+    else if (overall >= 60) title = '균형 잡힌 안정형 스쿼드 ✨';
+    else if (overall >= 50) title = '쓸만한 도파민 스쿼드 🎯';
+    else if (overall >= 40) title = '아쉬운 케미 스쿼드 🤔';
+    else title = '병맛 형벌 스쿼드 ⚠️';
 
-    return { scores:s, overall, insights, count:members.length, title };
+    return { scores, overall, insights, count: members.length, title };
   },
 
+  /* ---------- AI 추천: 현재 셀렉션을 가장 많이 끌어올리는 멤버 1명 ---------- */
   recommend(selectedIds, pool) {
-    if(selectedIds.length === 0 || pool.length === 0) return [];
-    const current = this.analyze(selectedIds);
-    let best = null, maxGain = 0;
-    
+    if (!pool.length) return [];
+    const base = selectedIds.length ? this.analyze(selectedIds) : { overall: 0 };
+    let best = null, maxGain = -Infinity;
     pool.filter(p => !selectedIds.includes(p.id)).forEach(c => {
       const sim = this.analyze([...selectedIds, c.id]);
-      const gain = sim.overall - current.overall;
+      const gain = sim.overall - base.overall;
       if (gain > maxGain) { maxGain = gain; best = c.id; }
     });
-    return best ? [best] : [];
+    return (best && maxGain > 0) ? [best] : [];
   }
 };
 
 /* ===================================================================
-   ARCADE SOUND ENGINE (Web Audio API synth)
+   ARCADE SOUND ENGINE — 마림바/우드 또각또각 + 조약돌 톤
+   - 사인 기본파 + 옥타브 배음 + 짧은 밴드패스 노이즈 트랜지언트
+   - 펜타토닉 멜로디로 항상 듣기 좋은 화성
    =================================================================== */
 const SFX = {
   _ctx: null,
   _master: null,
+  _reverb: null,
   _muted: false,
   ctx() {
     if (!this._ctx) {
@@ -163,71 +266,146 @@ const SFX = {
         const AC = window.AudioContext || window.webkitAudioContext;
         this._ctx = new AC();
         this._master = this._ctx.createGain();
-        this._master.gain.value = 0.5;
-        this._master.connect(this._ctx.destination);
+        this._master.gain.value = 0.55;
+        const comp = this._ctx.createDynamicsCompressor();
+        comp.threshold.value = -18; comp.knee.value = 12; comp.ratio.value = 4;
+        comp.attack.value = 0.003; comp.release.value = 0.12;
+        this._master.connect(comp); comp.connect(this._ctx.destination);
+        this._reverb = this._buildReverb();
+        if (this._reverb) {
+          const wet = this._ctx.createGain(); wet.gain.value = 0.18;
+          this._reverb.connect(wet); wet.connect(this._master);
+        }
       } catch (e) { return null; }
     }
-    if (this._ctx.state === 'suspended') { try { this._ctx.resume(); } catch(_){} }
+    if (this._ctx.state === 'suspended') { try { this._ctx.resume(); } catch (_) {} }
     return this._ctx;
   },
-  setMuted(m) { this._muted = !!m; if (this._master) this._master.gain.value = m ? 0 : 0.5; },
-  _tone({ freq = 440, dur = 0.08, type = 'square', vol = 0.3, slide = 0, attack = 0.002, decay = 0 }) {
+  _buildReverb() {
+    try {
+      const ctx = this._ctx;
+      const conv = ctx.createConvolver();
+      const sr = ctx.sampleRate, len = sr * 0.6;
+      const ir = ctx.createBuffer(2, len, sr);
+      for (let ch = 0; ch < 2; ch++) {
+        const d = ir.getChannelData(ch);
+        for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / len, 2.4);
+      }
+      conv.buffer = ir; return conv;
+    } catch (_) { return null; }
+  },
+  setMuted(m) { this._muted = !!m; if (this._master) this._master.gain.value = m ? 0 : 0.55; },
+
+  /* ---------- 마림바/우드블록 톤: 사인 기본 + 옥타브 배음 + 짧은 BP 노이즈 클릭 ---------- */
+  _wood({ freq = 700, dur = 0.18, vol = 0.28, harmonic = true, click = true, send = 0.25 }) {
+    if (this._muted) return;
+    const ctx = this.ctx(); if (!ctx) return;
+    const t = ctx.currentTime;
+    const bus = ctx.createGain(); bus.gain.value = 1;
+    bus.connect(this._master);
+    if (this._reverb && send > 0) {
+      const sendGain = ctx.createGain(); sendGain.gain.value = send;
+      bus.connect(sendGain); sendGain.connect(this._reverb);
+    }
+
+    const fund = ctx.createOscillator();
+    fund.type = 'sine';
+    fund.frequency.setValueAtTime(freq, t);
+    const fg = ctx.createGain();
+    fg.gain.setValueAtTime(0.0001, t);
+    fg.gain.exponentialRampToValueAtTime(vol, t + 0.004);
+    fg.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    fund.connect(fg); fg.connect(bus);
+    fund.start(t); fund.stop(t + dur + 0.03);
+
+    if (harmonic) {
+      const h = ctx.createOscillator();
+      h.type = 'sine';
+      h.frequency.setValueAtTime(freq * 2, t);
+      const hg = ctx.createGain();
+      hg.gain.setValueAtTime(0.0001, t);
+      hg.gain.exponentialRampToValueAtTime(vol * 0.32, t + 0.003);
+      hg.gain.exponentialRampToValueAtTime(0.0001, t + dur * 0.55);
+      h.connect(hg); hg.connect(bus);
+      h.start(t); h.stop(t + dur + 0.03);
+
+      const h3 = ctx.createOscillator();
+      h3.type = 'sine';
+      h3.frequency.setValueAtTime(freq * 3, t);
+      const h3g = ctx.createGain();
+      h3g.gain.setValueAtTime(0.0001, t);
+      h3g.gain.exponentialRampToValueAtTime(vol * 0.14, t + 0.002);
+      h3g.gain.exponentialRampToValueAtTime(0.0001, t + dur * 0.35);
+      h3.connect(h3g); h3g.connect(bus);
+      h3.start(t); h3.stop(t + dur + 0.03);
+    }
+
+    if (click) {
+      const cl = 0.012;
+      const nb = ctx.createBuffer(1, Math.floor(ctx.sampleRate * cl), ctx.sampleRate);
+      const d = nb.getChannelData(0);
+      for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+      const ns = ctx.createBufferSource(); ns.buffer = nb;
+      const bp = ctx.createBiquadFilter();
+      bp.type = 'bandpass'; bp.frequency.value = Math.min(6500, freq * 2.2); bp.Q.value = 4.5;
+      const ng = ctx.createGain(); ng.gain.value = vol * 0.55;
+      ns.connect(bp); bp.connect(ng); ng.connect(bus);
+      ns.start(t);
+    }
+  },
+
+  /* ---------- 조약돌: 둥글둥글한 사인파, 살짝 떨어지는 피치 ---------- */
+  _pebble({ freq = 900, dur = 0.10, vol = 0.22 }) {
     if (this._muted) return;
     const ctx = this.ctx(); if (!ctx) return;
     const t = ctx.currentTime;
     const o = ctx.createOscillator();
+    o.type = 'sine';
+    o.frequency.setValueAtTime(freq * 1.35, t);
+    o.frequency.exponentialRampToValueAtTime(freq * 0.55, t + dur);
     const g = ctx.createGain();
-    o.type = type;
-    o.frequency.setValueAtTime(freq, t);
-    if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(40, freq + slide), t + dur);
-    g.gain.setValueAtTime(0, t);
-    g.gain.linearRampToValueAtTime(vol, t + attack);
-    g.gain.exponentialRampToValueAtTime(0.0001, t + dur + decay);
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + 0.003);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
     o.connect(g); g.connect(this._master);
-    o.start(t); o.stop(t + dur + decay + 0.02);
+    o.start(t); o.stop(t + dur + 0.02);
   },
-  _noise({ dur = 0.06, vol = 0.2, hp = 800 }) {
-    if (this._muted) return;
-    const ctx = this.ctx(); if (!ctx) return;
-    const t = ctx.currentTime;
-    const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
-    const d = buf.getChannelData(0);
-    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
-    const src = ctx.createBufferSource(); src.buffer = buf;
-    const filt = ctx.createBiquadFilter(); filt.type = 'highpass'; filt.frequency.value = hp;
-    const g = ctx.createGain(); g.gain.value = vol;
-    src.connect(filt); filt.connect(g); g.connect(this._master);
-    src.start(t);
+
+  _melody(notes, step = 60, vol = 0.28, opts = {}) {
+    notes.forEach((freq, i) => {
+      setTimeout(() => this._wood({ freq, dur: opts.dur || 0.22, vol, harmonic: true, send: opts.send ?? 0.3 }), i * step);
+    });
   },
-  move()      { this._tone({ freq: 220, dur: 0.04, type: 'square', vol: 0.18, slide: 40 }); },
-  rotate()    { this._tone({ freq: 520, dur: 0.06, type: 'triangle', vol: 0.22, slide: 220 }); },
-  softDrop()  { this._tone({ freq: 180, dur: 0.03, type: 'square', vol: 0.14 }); },
-  hardDrop()  {
-    this._tone({ freq: 110, dur: 0.10, type: 'sawtooth', vol: 0.28, slide: -60 });
-    this._noise({ dur: 0.10, vol: 0.18, hp: 400 });
+
+  // 펜타토닉 음역 (C 메이저: C D E G A) — 항상 화성적으로 듣기 좋음
+  _PENT: [523.25, 587.33, 659.25, 783.99, 880, 1046.5, 1174.66, 1318.51],
+
+  // === 게임 액션 사운드 ===
+  move()     { this._wood({ freq: 659.25, dur: 0.07, vol: 0.18, harmonic: false, send: 0.15 }); },
+  rotate()   { this._wood({ freq: 987.77, dur: 0.10, vol: 0.22, harmonic: true,  send: 0.25 }); },
+  softDrop() { this._wood({ freq: 523.25, dur: 0.05, vol: 0.16, harmonic: false, click: false, send: 0.1 }); },
+  hardDrop() {
+    this._wood({ freq: 392, dur: 0.18, vol: 0.30, harmonic: true, send: 0.4 });
+    this._pebble({ freq: 196, dur: 0.22, vol: 0.18 });
   },
-  lock()      { this._tone({ freq: 90, dur: 0.05, type: 'square', vol: 0.22 }); },
+  lock()     { this._wood({ freq: 440, dur: 0.12, vol: 0.26, harmonic: true, send: 0.3 }); },
+
   lineClear(n) {
-    const ctx = this.ctx(); if (!ctx) return;
-    const base = [523, 659, 784, 1046];
-    for (let i = 0; i < Math.min(n, 4); i++) {
-      setTimeout(() => this._tone({ freq: base[i], dur: 0.12, type: 'square', vol: 0.26 }), i * 60);
-    }
-    if (n >= 4) setTimeout(() => this._tone({ freq: 1319, dur: 0.25, type: 'sawtooth', vol: 0.3, slide: 200 }), 240);
+    const p = this._PENT;
+    const seq = n === 1 ? [p[0], p[2], p[4]]
+              : n === 2 ? [p[0], p[2], p[4], p[5]]
+              : n === 3 ? [p[0], p[2], p[4], p[5], p[6]]
+              :           [p[0], p[2], p[4], p[5], p[6], p[7]];
+    this._melody(seq, 55, 0.3, { dur: 0.28, send: 0.45 });
   },
-  levelUp() {
-    [440, 554, 659, 880].forEach((f, i) => setTimeout(() => this._tone({ freq: f, dur: 0.08, type: 'square', vol: 0.24 }), i * 70));
-  },
-  gameOver() {
-    [392, 349, 311, 261, 196].forEach((f, i) => setTimeout(() => this._tone({ freq: f, dur: 0.18, type: 'sawtooth', vol: 0.28 }), i * 120));
-  },
-  win() {
-    [523, 659, 784, 1046, 1319].forEach((f, i) => setTimeout(() => this._tone({ freq: f, dur: 0.14, type: 'triangle', vol: 0.3 }), i * 90));
-  },
-  tap()       { this._tone({ freq: 880, dur: 0.03, type: 'sine', vol: 0.12 }); },
+  levelUp()  { this._melody([523.25, 659.25, 783.99, 1046.5], 70, 0.3, { dur: 0.22, send: 0.4 }); },
+  gameOver() { this._melody([523.25, 466.16, 392, 311.13, 261.63], 130, 0.28, { dur: 0.32, send: 0.5 }); },
+  win()      { this._melody([523.25, 659.25, 783.99, 1046.5, 1318.51, 1567.98], 80, 0.32, { dur: 0.28, send: 0.55 }); },
+
+  tap()      { this._wood({ freq: 1318.51, dur: 0.05, vol: 0.14, harmonic: false, send: 0.1 }); },
 };
 
-function playPebble() { SFX.tap(); }
+function playPebble() { SFX.lock(); }
 
 /* ===================================================================
    ROUTING & VIEWS
@@ -336,7 +514,7 @@ Views.home = () => {
     </div>
   `;
 };
-Views.home.mount = () => { $$('[data-team]').forEach(b => b.addEventListener('click', () => { Haptic.light(); Router.go('teamDetail', {id: b.dataset.team}); })); };
+Views.home.mount = () => { $$('[data-team]').forEach(b => b.addEventListener('click', () => { Haptic.light(); SFX.tap(); Router.go('teamDetail', { id: b.dataset.team }); })); };
 
 /* ===================================================================
    TETRIS PENALTY ARCADE
@@ -348,11 +526,11 @@ Views.tetris = () => `
   <div class="screen" id="tetris-screen">
     <div class="tetris-topbar">
       <button class="h-back" id="tBack" aria-label="나가기">
-        <svg viewBox="0 0 24 24" width="20"><path d="M15 19l-7-7 7-7"/></svg>
+        <svg viewBox="0 0 24 24" width="22" height="22"><path d="M15 19l-7-7 7-7"/></svg>
       </button>
       <div class="tetris-title">PENALTY ARCADE</div>
       <button class="tetris-pause" id="tPause" aria-label="일시정지">
-        <svg viewBox="0 0 24 24" width="20"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+        <svg viewBox="0 0 24 24" width="22" height="22"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
       </button>
     </div>
 
@@ -944,12 +1122,23 @@ Views.teams = () => `
 `;
 Views.teams.mount = () => {
   const container = $('#teamListContainer');
-  if(!Store.state.teams.length){ container.innerHTML = '<div style="text-align:center;padding:60px 20px;color:var(--muted);font-weight:700;">조합된 팀이 없습니다.<br><br><button class="btn btn-primary" onclick="Router.go(\'teamBuilder\')">첫 스쿼드 만들기</button></div>'; return; }
+  if (!Store.state.teams.length) {
+    container.innerHTML = `
+      <div style="text-align:center;padding:48px 20px 24px;color:var(--muted);font-weight:700;">
+        <div style="font-size:48px;margin-bottom:12px;">🧩</div>
+        <div style="font-size:16px;color:var(--ink);margin-bottom:6px;">아직 만든 스쿼드가 없어요</div>
+        <div style="font-size:13px;color:var(--muted);">AI가 도와줄게요. 첫 스쿼드를 만들어볼까요?</div>
+      </div>
+      <button class="btn btn-ai btn-block" onclick="Router.go('teamBuilder')" style="height:64px; font-size:17px; border-radius:20px; box-shadow:0 12px 24px rgba(255,51,0,0.3);">
+        ✨ 첫 스쿼드 만들기
+      </button>`;
+    return;
+  }
   container.innerHTML = Store.state.teams.map(t => {
     const a = AIEngine.analyze(t.memberIds);
     return `<button class="team-card" data-team="${t.id}"><div class="team-card-name"><span>${esc(t.name)}</span><span style="color:var(--accent); font-weight:900;">${a.overall}점</span></div><div class="team-card-meta">${a.title}</div><div class="team-avatars">${t.memberIds.slice(0,5).map(id => avatarHTML(Store.member(id))).join('')}</div></button>`;
   }).join('');
-  $$('[data-team]').forEach(b => b.addEventListener('click', () => Router.go('teamDetail', {id: b.dataset.team})));
+  $$('[data-team]').forEach(b => b.addEventListener('click', () => { Haptic.light(); SFX.tap(); Router.go('teamDetail', { id: b.dataset.team }); }));
 };
 
 Views.teamDetail = ({id}) => {
@@ -1107,10 +1296,10 @@ Views.teamBuilder = () => {
         </button>
       </div>
     </div>
-    <div class="scroll" id="builderList" style="padding:16px 16px 120px;"></div>
+    <div class="scroll" id="builderList" style="padding:16px 16px calc(140px + var(--kb-inset));"></div>
     <div class="builder-bar show" id="builderBar">
       <div style="font-size:18px;font-weight:900;" id="builderCount">0명 선택</div>
-      <button class="btn btn-primary" id="builderSave" style="border-radius:99px; box-shadow:var(--shadow-sm);">매시업 믹스 🚀</button>
+      <button class="btn btn-ai" id="builderSave" style="height:60px; padding:0 22px; border-radius:99px; font-size:16px; box-shadow:0 10px 24px rgba(255,51,0,0.35);">매시업 믹스 🚀</button>
     </div>
   `;
 };
@@ -1121,17 +1310,38 @@ Views.teamBuilder.mount = () => {
   }
 
   const render = () => {
-    const pool = [Store.state.profile, ...(Store.state.customMembers||[])].filter(Boolean);
-    if (pool.length === 0) { $('#builderList').innerHTML = `<div style="padding:60px 20px;text-align:center;color:var(--muted); font-weight:700;">풀에 멤버가 없어요.<br>우측 상단 + 버튼으로 팀원을 추가해보세요!</div>`; } 
-    else {
-      $('#builderList').innerHTML = pool.map(m => {
+    const pool = [Store.state.profile, ...(Store.state.customMembers || [])].filter(Boolean);
+    const addCta = `
+      <button class="btn btn-ai btn-block" id="builderAddCta" style="height:64px; font-size:17px; border-radius:20px; box-shadow:0 12px 24px rgba(255,51,0,0.3); margin-top:8px;">
+        <svg viewBox="0 0 24 24" width="20"><path d="M19 8v6M16 11h6"/><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/></svg>
+        새 팀원 영입하기
+      </button>`;
+
+    if (pool.length === 0) {
+      $('#builderList').innerHTML = `
+        <div style="padding:48px 20px 24px;text-align:center;color:var(--muted); font-weight:700;">
+          <div style="font-size:40px; margin-bottom:8px;">🫥</div>
+          <div style="font-size:16px; color:var(--ink); margin-bottom:6px;">풀에 멤버가 없어요</div>
+          <div style="font-size:13px; color:var(--muted); margin-bottom:24px;">아래 버튼으로 팀원을 영입해보세요</div>
+        </div>
+        ${addCta}`;
+    } else {
+      const list = pool.map(m => {
         const sel = BuilderState.selected.has(m.id), aiRec = BuilderState.recommended.has(m.id);
         const extra = [m.gender, m.bloodType, m.hobbies].filter(Boolean).join(' · ');
-        const metaText = extra ? `${esc(m.mbti)} (${extra})` : `${esc(m.mbti)} · ${MBTI_LABELS[m.mbti]}`;
-        return `<button class="team-card builder-row ${sel?'selected':''} ${aiRec?'ai-recommended':''}" data-pick="${m.id}" style="margin-bottom:12px; padding:16px;">${avatarHTML(m)}<div class="builder-body"><div class="builder-name">${esc(m.name)}</div><div class="builder-meta">${metaText}</div></div><div class="check-ring"><svg viewBox="0 0 24 24" width="16"><path d="M5 12l4 4L19 7"/></svg></div></button>`;
+        const metaText = extra ? `${esc(m.mbti)} (${extra})` : `${esc(m.mbti)} · ${MBTI_LABELS[m.mbti] || ''}`;
+        return `<button class="team-card builder-row ${sel ? 'selected' : ''} ${aiRec ? 'ai-recommended' : ''}" data-pick="${m.id}" style="margin-bottom:12px; padding:16px;">${avatarHTML(m)}<div class="builder-body"><div class="builder-name">${esc(m.name)}</div><div class="builder-meta">${metaText}</div></div><div class="check-ring"><svg viewBox="0 0 24 24" width="16"><path d="M5 12l4 4L19 7"/></svg></div></button>`;
       }).join('');
+      $('#builderList').innerHTML = list + addCta;
     }
-    $$('[data-pick]').forEach(b => b.addEventListener('click', () => { Haptic.light(); const id = b.dataset.pick; BuilderState.selected.has(id) ? BuilderState.selected.delete(id) : BuilderState.selected.add(id); render(); }));
+    $$('[data-pick]').forEach(b => b.addEventListener('click', () => {
+      Haptic.light(); SFX.tap();
+      const id = b.dataset.pick;
+      BuilderState.selected.has(id) ? BuilderState.selected.delete(id) : BuilderState.selected.add(id);
+      render();
+    }));
+    const addBtn = $('#builderAddCta');
+    if (addBtn) addBtn.addEventListener('click', () => { Haptic.light(); SFX.tap(); $('#cmAddContact').click(); });
     $('#builderCount').textContent = `${BuilderState.selected.size}명 선택`;
   };
   render();
@@ -1174,8 +1384,8 @@ Views.teamBuilder.mount = () => {
 
   $('#cmAddContact').addEventListener('click', () => {
     Sheet.open('새 멤버 영입', `
-      <div class="stack" style="padding-top:8px; max-height: 65vh; overflow-y: auto;">
-        <div class="field"><input class="input" id="cmName" placeholder="이름 (닉네임) 입력" style="font-size:20px; height:64px; text-align:center;"/></div>
+      <div class="stack" style="padding-top:8px;">
+        <div class="field"><input class="input" id="cmName" placeholder="이름 (닉네임) 입력" style="font-size:20px; height:64px; text-align:center;" autocomplete="off" autocapitalize="off" autocorrect="off"/></div>
         
         <div class="field mt-8"><label class="field-label">성별</label>
           <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
@@ -1193,11 +1403,14 @@ Views.teamBuilder.mount = () => {
           <div class="mbti-grid" id="cmMbti">${MBTI_TYPES.map(t => `<button type="button" class="mbti-chip" data-m="${t}">${t}</button>`).join('')}</div>
         </div>
 
-        <div class="field mt-8"><label class="field-label">가족 관계</label><input class="input" id="cmFamily" placeholder="예: 미혼, 형제 2명"/></div>
-        
-        <div class="field mt-8"><label class="field-label">취미 / 관심사</label><input class="input" id="cmHobbies" placeholder="예: 스케이트보드, 게임"/></div>
+        <div class="field mt-8"><label class="field-label">가족 관계</label><input class="input" id="cmFamily" placeholder="예: 미혼, 형제 2명" autocomplete="off"/></div>
 
-        <button class="btn btn-primary btn-block mt-16" id="cmSave" style="height:60px; margin-bottom:16px;">영입 완료</button>
+        <div class="field mt-8"><label class="field-label">취미 / 관심사</label><input class="input" id="cmHobbies" placeholder="예: 스케이트보드, 게임" autocomplete="off"/></div>
+
+        <button class="btn btn-ai btn-block mt-16" id="cmSave" style="height:64px; font-size:18px; border-radius:20px; box-shadow:0 12px 24px rgba(255,51,0,0.3); margin-bottom:16px;">
+          <svg viewBox="0 0 24 24" width="20"><path d="M5 12l4 4L19 7"/></svg>
+          영입 완료
+        </button>
       </div>`, {
       mount: () => {
         let selectedMbti = '';
@@ -1241,7 +1454,7 @@ Views.analyze = () => {
       <div style="background:var(--card-2); padding:calc(16px + var(--safe-top)) 24px 40px; border-bottom-left-radius:32px; border-bottom-right-radius:32px; position:relative; overflow:hidden; flex-shrink:0; box-shadow:var(--shadow-sm); border-bottom:1px solid var(--line);">
         <div style="position:absolute; inset:0; background:var(--ai-grad); opacity:0.15; filter:blur(40px);"></div>
         
-        <div style="position:relative; z-index:2; display:flex; align-items:center; height:40px; margin-bottom:24px; margin-left:-8px;">
+        <div style="position:relative; z-index:2; display:flex; align-items:center; height:44px; margin-bottom:20px; margin-left:-8px;">
            ${backBtnHtml}
         </div>
         
@@ -1251,9 +1464,9 @@ Views.analyze = () => {
         </div>
       </div>
 
-      <div class="scroll no-tab" style="padding:32px 24px 140px; flex:1; background:transparent;">
+      <div class="scroll no-tab" style="padding:32px 24px calc(140px + var(--kb-inset)); flex:1; background:transparent;">
         <div class="stack">
-          <div class="field"><label class="field-label">호칭</label><input class="input" id="wizName" value="${esc(WizState.data.name)}" placeholder="이름 또는 닉네임"/></div>
+          <div class="field"><label class="field-label">호칭</label><input class="input" id="wizName" value="${esc(WizState.data.name)}" placeholder="이름 또는 닉네임" autocomplete="nickname" enterkeyhint="next"/></div>
           
           <div class="field mt-16"><label class="field-label">성별</label>
             <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
@@ -1271,9 +1484,9 @@ Views.analyze = () => {
             <div class="mbti-grid">${MBTI_TYPES.map(t => `<button type="button" class="mbti-chip ${WizState.data.mbti===t?'selected':''}" data-wmbti="${t}">${t}</button>`).join('')}</div>
           </div>
           
-          <div class="field mt-16"><label class="field-label">가족 관계</label><input class="input" id="wizFamily" value="${esc(WizState.data.family)}" placeholder="예: 기혼, 자녀 1명"/></div>
-          
-          <div class="field mt-16"><label class="field-label">취미 / 관심사</label><input class="input" id="wizHobbies" value="${esc(WizState.data.hobbies)}" placeholder="예: 풋살, 탁구, AI 음악 제작"/></div>
+          <div class="field mt-16"><label class="field-label">가족 관계</label><input class="input" id="wizFamily" value="${esc(WizState.data.family)}" placeholder="예: 기혼, 자녀 1명" autocomplete="off" enterkeyhint="next"/></div>
+
+          <div class="field mt-16"><label class="field-label">취미 / 관심사</label><input class="input" id="wizHobbies" value="${esc(WizState.data.hobbies)}" placeholder="예: 풋살, 탁구, AI 음악 제작" autocomplete="off" enterkeyhint="done"/></div>
         </div>
       </div>
       
@@ -1363,6 +1576,72 @@ function preventDoubleTapZoom() {
   }, { passive: false });
 }
 
+/* ===================================================================
+   키보드 / 포커스 매니지먼트
+   - 모바일 가상 키보드 높이를 --kb-inset 변수로 노출
+   - input/textarea 포커스 시 시야 가운데로 부드럽게 스크롤
+   - body.kb-open 토글로 하단 고정 바를 키보드 위로 띄움
+   =================================================================== */
+function bindKeyboardAwareInputs() {
+  const vv = window.visualViewport;
+  let kbOpen = false;
+  const update = () => {
+    if (!vv) return;
+    const inset = Math.max(0, window.innerHeight - vv.height - vv.offsetTop);
+    document.documentElement.style.setProperty('--kb-inset', `${inset}px`);
+    const open = inset > 60;
+    if (open !== kbOpen) {
+      kbOpen = open;
+      document.body.classList.toggle('kb-open', open);
+    }
+  };
+  if (vv) {
+    vv.addEventListener('resize', update);
+    vv.addEventListener('scroll', update);
+    update();
+  }
+
+  const isInput = (el) => el && el.matches && el.matches('input:not([type=button]):not([type=submit]), textarea, select, [contenteditable=true]');
+
+  document.addEventListener('focusin', (e) => {
+    const el = e.target;
+    if (!isInput(el)) return;
+    document.body.classList.add('input-focused');
+    // 키보드가 열릴 시간을 주고, 가운데 정렬로 스크롤
+    const reveal = () => {
+      try {
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      } catch (_) {
+        try { el.scrollIntoView(false); } catch (__) {}
+      }
+    };
+    setTimeout(reveal, 280);
+    setTimeout(reveal, 520);
+  });
+
+  document.addEventListener('focusout', (e) => {
+    if (!isInput(e.target)) return;
+    setTimeout(() => {
+      if (!document.activeElement || !isInput(document.activeElement)) {
+        document.body.classList.remove('input-focused');
+      }
+    }, 100);
+  });
+
+  // 텍스트 인풋: Enter 키로 다음 입력 또는 포커스 해제
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter') return;
+    const el = e.target;
+    if (!isInput(el) || el.tagName === 'TEXTAREA') return;
+    e.preventDefault();
+    const form = el.closest('form, .sheet-body, .scroll') || document;
+    const fields = Array.from(form.querySelectorAll('input:not([type=button]):not([type=submit]), textarea'));
+    const idx = fields.indexOf(el);
+    if (idx >= 0 && idx + 1 < fields.length) fields[idx + 1].focus();
+    else el.blur();
+  });
+}
+
 function boot(){
   Store.load(); applyTheme();
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if(Store.state.settings.theme === 'system') applyTheme(); });
@@ -1370,6 +1649,7 @@ function boot(){
   bindTabBar();
   bindSheetSwipeDown();
   preventDoubleTapZoom();
+  bindKeyboardAwareInputs();
   const wakeAudio = () => { SFX.ctx(); document.removeEventListener('pointerdown', wakeAudio); document.removeEventListener('touchstart', wakeAudio); };
   document.addEventListener('pointerdown', wakeAudio, { once: true });
   document.addEventListener('touchstart', wakeAudio, { once: true });
