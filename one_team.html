@@ -92,7 +92,7 @@
   .splash{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--ink);color:var(--paper);z-index:1000;}
   .splash-logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;position:absolute;top:calc(20px + var(--safe-top));}
   .glyph{display:inline-block;width:14px;height:14px;background:var(--accent);border-radius:50%;}
-  .app-icon-lg{width:72px;height:72px;margin-bottom:24px;}
+  .app-icon-lg{width:100px;height:100px;margin-bottom:24px;}
   .splash-title{font-size:26px;font-weight:800;line-height:1.3;text-align:center;}
   .line2{display:block;color:var(--muted-2);}
 
@@ -100,7 +100,7 @@
   .hero-card{padding:12px 22px 24px;}
   .hero-row{display:flex;align-items:center;gap:16px;}
   .hero-name{font-size:24px;font-weight:800;}
-  .hero-sub{font-size:14px;color:var(--muted);margin-top:4px;font-weight:600;}
+  .hero-sub{font-size:14px;color:var(--muted);margin-top:6px;font-weight:600;line-height:1.4;}
   
   .quick-actions{display:flex;gap:12px;padding:0 22px 32px;}
   .qa{flex:1;background:var(--card);padding:18px;border-radius:20px;text-align:left;box-shadow:var(--shadow-sm);transition:transform .15s;}
@@ -117,7 +117,7 @@
   
   .field{display:flex;flex-direction:column;gap:8px;}
   .field-label{font-size:13px;font-weight:700;color:var(--muted);}
-  .input{height:52px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:0 16px;font-size:16px;font-weight:600;outline:none;transition:border-color .2s;color:var(--ink);}
+  .input{height:52px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:0 16px;font-size:16px;font-weight:600;outline:none;transition:border-color .2s;color:var(--ink);width:100%;}
   .input:focus{border-color:var(--ink);}
   
   .mbti-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
@@ -134,7 +134,7 @@
   .team-avatars .avatar:first-child{margin-left:0}
   
   .match{background:var(--card);border-radius:18px;padding:14px 16px;display:flex;align-items:center;gap:14px;width:100%;text-align:left;box-shadow:var(--shadow-sm);margin-bottom:10px;}
-  .match-body{flex:1;min-width:0} .match-name{font-size:15px;font-weight:700} .match-meta{font-size:12px;color:var(--muted);font-weight:600;margin-top:2px;}
+  .match-body{flex:1;min-width:0} .match-name{font-size:15px;font-weight:700} .match-meta{font-size:12px;color:var(--muted);font-weight:600;margin-top:4px;line-height:1.4;}
 
   /* ============ TEAM BUILDER ============ */
   .builder-row{display:flex;align-items:center;gap:14px;padding:14px 22px;width:100%;text-align:left;background:transparent;transition:background .15s;}
@@ -260,7 +260,7 @@ function registerInlineServiceWorker() {
   }
   
   const swCode = `
-    const CACHE_NAME = 'oneteam-cache-v3';
+    const CACHE_NAME = 'oneteam-cache-v4';
     self.addEventListener('install', event => {
       event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(['./'])));
     });
@@ -286,8 +286,8 @@ function registerInlineServiceWorker() {
    =================================================================== */
 'use strict';
 
-const STORAGE_KEY = 'oneteam_db_v4';
-const APP_VERSION = '1.3.0';
+const STORAGE_KEY = 'oneteam_db_v5';
+const APP_VERSION = '1.4.0';
 
 const MBTI_TYPES = ['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'];
 const MBTI_LABELS = { INTJ:'전략가', INTP:'논리술사', ENTJ:'통솔자', ENTP:'변론가', INFJ:'옹호자', INFP:'중재자', ENFJ:'선도자', ENFP:'활동가', ISTJ:'현실주의', ISFJ:'수호자', ESTJ:'경영자', ESFJ:'집정관', ISTP:'장인', ISFP:'모험가', ESTP:'사업가', ESFP:'연예인' };
@@ -303,7 +303,6 @@ const pickColor = seed => AVATAR_PALETTE[hash(String(seed))%AVATAR_PALETTE.lengt
 const initial = name => (name||'?').trim().charAt(0);
 const clamp = (n,min,max) => Math.max(min, Math.min(max, n));
 
-// 실명 및 더미 데이터를 모두 제거한 순수한 초기 상태
 const DEFAULT_STATE = {
   settings: { theme: 'system', firstLaunch: true },
   profile: null,
@@ -470,7 +469,10 @@ Views.home = () => {
     <div class="hero-card">
       <div class="hero-row">
         ${avatarHTML(p)}
-        <div style="min-width:0;flex:1"><div class="hero-name truncate">${esc(p.name)}</div><div class="hero-sub">${esc(p.mbti)} · ${MBTI_LABELS[p.mbti]||''}</div></div>
+        <div style="min-width:0;flex:1">
+          <div class="hero-name truncate">${esc(p.name)}</div>
+          <div class="hero-sub">${esc(p.mbti)} · ${MBTI_LABELS[p.mbti]||''}${p.age ? ` · ${p.age}세` : ''}${p.gender ? ` · ${p.gender}` : ''}${p.bloodType ? ` · ${p.bloodType}형` : ''}</div>
+        </div>
       </div>
     </div>
   ` : '';
@@ -480,7 +482,7 @@ Views.home = () => {
     <div class="scroll">
       ${hero}
       <div class="quick-actions">
-        <button class="qa" data-go="analyze"><div class="qa-icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" fill="none" stroke-width="2"/></svg></div><div class="qa-title">프로필 분석</div><div class="qa-sub">나의 성향 재설정</div></button>
+        <button class="qa" data-go="analyze"><div class="qa-icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" fill="none" stroke-width="2"/></svg></div><div class="qa-title">프로필 수정</div><div class="qa-sub">나의 정보 업데이트</div></button>
         <button class="qa" data-go="teamBuilder"><div class="qa-icon"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3" stroke="currentColor" fill="none" stroke-width="2"/><circle cx="17" cy="9" r="2.5" stroke="currentColor" fill="none" stroke-width="2"/><path d="M3 19c0-3 2.5-5 6-5s6 2 6 5" stroke="currentColor" fill="none" stroke-width="2"/></svg></div><div class="qa-title">팀 만들기</div><div class="qa-sub">팀원 조합 및 분석</div></button>
       </div>
       <div class="section">
@@ -503,18 +505,39 @@ Views.splash = () => `
   <div class="splash">
     <div class="splash-logo"><span class="glyph"></span><span>One Team</span></div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:28px">
-      <div class="app-icon-lg"><svg viewBox="0 0 64 64" fill="none"><circle cx="24" cy="28" r="9" fill="#F4EFE6"/><circle cx="40" cy="28" r="9" fill="#F4EFE6" opacity="0.7"/><path d="M14 50c0-5.5 4.5-10 10-10s10 4.5 10 10M30 50c0-3.5 3-6.5 6.5-6.5S43 46.5 43 50" stroke="#F4EFE6" stroke-width="3" stroke-linecap="round"/></svg></div>
+      <div class="app-icon-lg">
+        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="50" cy="50" r="40" fill="url(#gradBg)" opacity="0.1"/>
+          <path d="M50 15 L80 32.5 V67.5 L50 85 L20 67.5 V32.5 Z" stroke="url(#gradLines)" stroke-width="4" stroke-linejoin="round"/>
+          <circle cx="50" cy="50" r="16" fill="url(#gradAccent)"/>
+          <path d="M50 34 C 58.8 34 66 41.2 66 50" stroke="#F4EFE6" stroke-width="4" stroke-linecap="round"/>
+          <defs>
+            <linearGradient id="gradBg" x1="0" y1="0" x2="100" y2="100">
+              <stop stop-color="#FF4D1F"/>
+              <stop offset="1" stop-color="#1B3A7A"/>
+            </linearGradient>
+            <linearGradient id="gradLines" x1="20" y1="15" x2="80" y2="85">
+              <stop stop-color="#FF4D1F"/>
+              <stop offset="0.5" stop-color="#E8C547"/>
+              <stop offset="1" stop-color="#1B3A7A"/>
+            </linearGradient>
+            <linearGradient id="gradAccent" x1="34" y1="34" x2="66" y2="66">
+              <stop stop-color="#FF4D1F"/>
+              <stop offset="1" stop-color="#C76A1A"/>
+            </linearGradient>
+          </defs>
+        </svg>
+      </div>
       <div class="splash-title">팀의 화학을<span class="line2">설계하다.</span></div>
     </div>
   </div>
 `;
 Views.splash.mount = () => { 
   setTimeout(() => {
-    // 프로필 등록 유무에 따라 라우팅 분기 처리
     if (Store.state.profile && Store.state.profile.name) {
       Router.go('home');
     } else {
-      Router.go('analyze'); // 첫 실행 시 프로필 생성 유도
+      Router.go('analyze');
     }
   }, 1500); 
 };
@@ -585,7 +608,16 @@ Views.teamDetail = ({id}) => {
         <div class="section-h"><span class="h3">멤버 구성 (${team.memberIds.length}명)</span></div>
         ${team.memberIds.map(mid => {
           const m = Store.member(mid);
-          return m ? `<div class="match">${avatarHTML(m)}<div class="match-body"><div class="match-name">${esc(m.name)}</div><div class="match-meta">${esc(m.mbti)} · ${(m.traits||[]).join(', ')}</div></div></div>` : '';
+          return m ? `<div class="match">
+            ${avatarHTML(m)}
+            <div class="match-body">
+              <div class="match-name">${esc(m.name)}</div>
+              <div class="match-meta">
+                ${esc(m.mbti)}${m.age ? ` · ${m.age}세` : ''}${m.bloodType ? ` · ${m.bloodType}형` : ''}${m.family ? ` · ${esc(m.family)}` : ''}<br/>
+                ${(m.traits||[]).join(', ')}
+              </div>
+            </div>
+          </div>` : '';
         }).join('')}
       </div>
     </div>
@@ -688,7 +720,10 @@ Views.teamBuilder.mount = () => {
         return `
           <button class="builder-row ${sel?'selected':''}" data-pick="${m.id}">
             ${avatarHTML(m)}
-            <div class="builder-body"><div class="builder-name">${esc(m.name)}</div><div class="builder-meta">${esc(m.mbti)}</div></div>
+            <div class="builder-body">
+              <div class="builder-name">${esc(m.name)}</div>
+              <div class="builder-meta">${esc(m.mbti)}${m.age ? ` · ${m.age}세` : ''} ${m.gender||''}</div>
+            </div>
             <div class="builder-check"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7" stroke-width="3" stroke="currentColor" fill="none"/></svg></div>
           </button>
         `;
@@ -715,18 +750,46 @@ Views.teamBuilder.mount = () => {
     Sheet.open('새 멤버 추가', `
       <div class="stack">
         <div class="field"><label class="field-label">이름</label><input class="input" id="cmName" placeholder="새로운 팀원 이름"/></div>
-        <div class="field"><label class="field-label">MBTI 성향</label><div class="mbti-grid" id="cmMbti">${MBTI_TYPES.map(t => `<button type="button" class="mbti-chip" data-m="${t}">${t}</button>`).join('')}</div></div>
+        
+        <div class="field"><label class="field-label">성별</label>
+          <div class="mbti-grid" style="grid-template-columns:1fr 1fr">
+            <button type="button" class="mbti-chip" data-cg="남성">남성</button>
+            <button type="button" class="mbti-chip" data-cg="여성">여성</button>
+          </div>
+        </div>
+
+        <div class="field"><label class="field-label">혈액형</label>
+          <div class="mbti-grid">
+            ${['A','B','O','AB'].map(t => `<button type="button" class="mbti-chip" data-cb="${t}">${t}</button>`).join('')}
+          </div>
+        </div>
+
+        <div class="field"><label class="field-label">나이</label><input type="number" class="input" id="cmAge" placeholder="나이 입력 (숫자)"/></div>
+        <div class="field"><label class="field-label">가족관계</label><input type="text" class="input" id="cmFamily" placeholder="예: 1남 1녀 중 첫째, 기혼 등"/></div>
+
+        <div class="field mt-8"><label class="field-label">MBTI 성향</label><div class="mbti-grid" id="cmMbti">${MBTI_TYPES.map(t => `<button type="button" class="mbti-chip" data-m="${t}">${t}</button>`).join('')}</div></div>
+        
         <button class="btn btn-primary btn-block mt-16" id="cmSave">팀 풀(Pool)에 추가</button>
       </div>
     `, {
       mount: () => {
         let selectedMbti = '';
+        let selectedGender = '';
+        let selectedBlood = '';
+
         $$('[data-m]').forEach(b => b.addEventListener('click', () => { selectedMbti = b.dataset.m; $$('[data-m]').forEach(x => x.classList.toggle('selected', x===b)); }));
+        $$('[data-cg]').forEach(b => b.addEventListener('click', () => { selectedGender = b.dataset.cg; $$('[data-cg]').forEach(x => x.classList.toggle('selected', x===b)); }));
+        $$('[data-cb]').forEach(b => b.addEventListener('click', () => { selectedBlood = b.dataset.cb; $$('[data-cb]').forEach(x => x.classList.toggle('selected', x===b)); }));
+
         $('#cmSave').addEventListener('click', () => {
           const name = $('#cmName').value.trim();
+          const age = $('#cmAge').value.trim();
+          const family = $('#cmFamily').value.trim();
+
           if(!name || !selectedMbti) return Toast.show('이름과 MBTI를 모두 입력해주세요.', 'error');
+          
           const newId = uid('cm');
-          Store.state.customMembers.push({ id: newId, name, mbti: selectedMbti, traits:['열정'] });
+          Store.state.customMembers.push({ id: newId, name, mbti: selectedMbti, gender: selectedGender, bloodType: selectedBlood, age: age, family: family, traits:['열정'] });
           Store.save(); Sheet.close(); Toast.show('성공적으로 추가되었습니다.', 'success');
           BuilderState.selected.add(newId); render();
         });
@@ -738,10 +801,9 @@ Views.teamBuilder.mount = () => {
 /* --- WIZARD (간편 프로필 설정) --- */
 const WizState = { data: {} };
 Views.analyze = () => {
-  WizState.data = Store.state.profile || { name:'', mbti:'' };
+  WizState.data = Store.state.profile || { name:'', mbti:'', gender:'', bloodType:'', age:'', family:'' };
   const isFirstTime = !Store.state.profile;
   
-  // 최초 진입 시(프로필이 없는 경우) 뒤로가기 버튼 숨김 처리
   const backBtnHtml = isFirstTime 
     ? `<div></div>` 
     : `<button class="h-back" onclick="Router.go('home')"><svg viewBox="0 0 24 24" width="24" stroke="currentColor" fill="none"><path d="M15 18l-6-6 6-6"/></svg></button>`;
@@ -749,21 +811,53 @@ Views.analyze = () => {
   return `
     <div class="app-header"><div class="left">${backBtnHtml}<span class="h-title">프로필 설정</span></div></div>
     <div class="scroll no-tab" style="padding:24px 22px">
-      <h2 class="wiz-q">환영합니다! 👋<br/>당신의 <em>이름</em>과 <em>MBTI</em>를<br/>알려주세요.</h2>
-      <div class="stack mt-16" style="margin-top: 32px;">
+      <h2 class="wiz-q">환영합니다! 👋<br/>당신의 <em>프로필</em>을<br/>완성해주세요.</h2>
+      <div class="stack mt-16" style="margin-top: 32px; padding-bottom: 80px;">
         <div class="field"><label class="field-label">이름</label><input class="input" id="wizName" value="${esc(WizState.data.name)}" placeholder="본인 이름 입력"/></div>
-        <div class="field mt-8"><label class="field-label">MBTI</label><div class="mbti-grid">${MBTI_TYPES.map(t => `<button type="button" class="mbti-chip ${WizState.data.mbti===t?'selected':''}" data-mbti="${t}">${t}</button>`).join('')}</div></div>
+        
+        <div class="field mt-8"><label class="field-label">성별</label>
+          <div class="mbti-grid" style="grid-template-columns:1fr 1fr">
+            <button type="button" class="mbti-chip ${WizState.data.gender==='남성'?'selected':''}" data-wgender="남성">남성</button>
+            <button type="button" class="mbti-chip ${WizState.data.gender==='여성'?'selected':''}" data-wgender="여성">여성</button>
+          </div>
+        </div>
+
+        <div class="field mt-8"><label class="field-label">혈액형</label>
+          <div class="mbti-grid">
+            ${['A','B','O','AB'].map(t => `<button type="button" class="mbti-chip ${WizState.data.bloodType===t?'selected':''}" data-wblood="${t}">${t}</button>`).join('')}
+          </div>
+        </div>
+
+        <div class="field mt-8"><label class="field-label">나이</label><input type="number" class="input" id="wizAge" value="${esc(WizState.data.age)}" placeholder="나이 입력 (숫자)"/></div>
+        <div class="field mt-8"><label class="field-label">가족관계</label><input type="text" class="input" id="wizFamily" value="${esc(WizState.data.family)}" placeholder="예: 1남 1녀 중 둘째, 기혼 등"/></div>
+
+        <div class="field mt-8"><label class="field-label">MBTI</label><div class="mbti-grid">${MBTI_TYPES.map(t => `<button type="button" class="mbti-chip ${WizState.data.mbti===t?'selected':''}" data-wmbti="${t}">${t}</button>`).join('')}</div></div>
       </div>
     </div>
     <div class="wiz-actions"><button class="btn btn-primary btn-block" id="wizSave">${isFirstTime ? '시작하기' : '저장하기'}</button></div>
   `;
 };
 Views.analyze.mount = () => {
-  $$('[data-mbti]').forEach(b => b.addEventListener('click', () => { WizState.data.mbti = b.dataset.mbti; $$('[data-mbti]').forEach(x => x.classList.toggle('selected', x===b)); }));
+  $$('[data-wmbti]').forEach(b => b.addEventListener('click', () => { WizState.data.mbti = b.dataset.wmbti; $$('[data-wmbti]').forEach(x => x.classList.toggle('selected', x===b)); }));
+  $$('[data-wgender]').forEach(b => b.addEventListener('click', () => { WizState.data.gender = b.dataset.wgender; $$('[data-wgender]').forEach(x => x.classList.toggle('selected', x===b)); }));
+  $$('[data-wblood]').forEach(b => b.addEventListener('click', () => { WizState.data.bloodType = b.dataset.wblood; $$('[data-wblood]').forEach(x => x.classList.toggle('selected', x===b)); }));
+
   $('#wizSave').addEventListener('click', () => {
     const name = $('#wizName').value.trim();
+    const age = $('#wizAge').value.trim();
+    const family = $('#wizFamily').value.trim();
+
     if(!name || !WizState.data.mbti) return Toast.show('이름과 MBTI를 모두 입력해주세요.', 'error');
-    Store.state.profile = { id: 'p_me', name, mbti: WizState.data.mbti, traits:['열정','협업'] };
+    Store.state.profile = { 
+      id: 'p_me', 
+      name, 
+      mbti: WizState.data.mbti, 
+      gender: WizState.data.gender,
+      bloodType: WizState.data.bloodType,
+      age: age,
+      family: family,
+      traits:['열정','협업'] 
+    };
     Store.save(); Haptic.success(); Toast.show('프로필이 저장되었습니다.', 'success'); Router.go('home');
   });
 };
