@@ -7,7 +7,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="One Team">
-<title>One Team — 팀원 매시업</title>
+<title>One Team — AI 팀원 매시업</title>
 
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css">
 <style>
@@ -17,6 +17,7 @@
     --line:#0a0a0a14; --line-2:#0a0a0a26; --muted:#6B6258; --muted-2:#9A9088;
     --accent:#FF4D1F; --accent-2:#1B3A7A; --accent-3:#E8C547;
     --good:#1F7A5A; --bad:#9B2D1F; --warn:#C76A1A; --card:#FFFFFF; --card-2:#FAF6EC;
+    --ai-grad: linear-gradient(135deg, #FF4D1F 0%, #E8C547 100%);
     --overlay:rgba(10,10,10,.5); --sheet-bg:#FFFFFF;
     --shadow-sm:0 2px 8px -2px rgba(10,10,10,.08); --shadow-lg:0 24px 60px -20px rgba(10,10,10,.28);
     --radius-lg:24px; --dur-fast:160ms; --dur:220ms; --dur-slow:380ms; --ease:cubic-bezier(.22,.61,.36,1);
@@ -26,11 +27,12 @@
     --ink:#F4EFE6; --ink-2:#E5DCC9; --paper:#0F0E0C; --paper-2:#181614; --paper-3:#22201D;
     --line:#f4efe61c; --line-2:#f4efe636; --muted:#8A8074; --muted-2:#5F5750;
     --card:#1A1815; --card-2:#22201D; --overlay:rgba(0,0,0,.75); --sheet-bg:#1A1815;
+    --ai-grad: linear-gradient(135deg, #FF6B45 0%, #F0D570 100%);
   }
   *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
   html,body{height:100%;overflow:hidden;background:#0a0a0a;font-family:'Pretendard',system-ui,sans-serif;color:var(--ink);}
   button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;outline:none;}
-  input{font:inherit;color:inherit}
+  input, select{font:inherit;color:inherit;outline:none;}
   ::-webkit-scrollbar{display:none;}
 
   /* ============ DEVICE & LAYOUT ============ */
@@ -78,6 +80,7 @@
   .btn-primary{background:var(--ink);color:var(--paper)} 
   .btn-secondary{background:var(--line);color:var(--ink)}
   .btn-accent{background:var(--accent);color:#fff} 
+  .btn-ai{background:var(--ai-grad);color:#fff; box-shadow: 0 4px 14px rgba(255, 77, 31, 0.3);}
   .btn-block{width:100%} 
   .btn-danger{background:#9B2D1F1f;color:var(--bad)}
   
@@ -85,10 +88,10 @@
   .avatar{border-radius:14px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:800;flex-shrink:0;}
   .avatar-md{width:52px;height:52px;font-size:21px} .avatar-lg{width:72px;height:72px;font-size:28px}
   .chip{display:inline-flex;align-items:center;padding:6px 12px;border-radius:99px;font-size:12px;font-weight:600;background:var(--line);color:var(--ink);}
-  .chip-good{background:#1F7A5A1f;color:var(--good)} .chip-warn{background:#C76A1A1f;color:var(--warn)}
+  .chip-good{background:#1F7A5A1f;color:var(--good)} .chip-warn{background:#C76A1A1f;color:var(--warn)} .chip-ai{background:var(--ai-grad);color:#fff;border:none;}
   .section{padding:0 22px;margin-bottom:28px} .section-h{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;}
 
-  /* ============ SPLASH (REVISED) ============ */
+  /* ============ SPLASH ============ */
   .splash{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000000;color:#FFFFFF;z-index:1000;}
   .splash-logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;position:absolute;top:calc(20px + var(--safe-top)); color:#FFFFFF;}
   .glyph{display:inline-block;width:14px;height:14px;background:var(--accent);border-radius:50%;}
@@ -96,10 +99,7 @@
   .splash-title{font-size:26px;font-weight:800;line-height:1.3;text-align:center; color:#FFFFFF;}
   .line2{display:block;color:rgba(255,255,255,0.6); font-weight:500;}
 
-  @keyframes logoFloat {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-8px); }
-  }
+  @keyframes logoFloat { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-8px); } }
 
   /* ============ HOME ============ */
   .hero-card{padding:12px 22px 24px;}
@@ -117,12 +117,12 @@
 
   /* ============ FORMS (WIZARD & SHEET) ============ */
   .wiz-q{font-size:24px;font-weight:700;line-height:1.4;}
-  .wiz-q em{font-style:normal;color:var(--accent);}
+  .wiz-q em{font-style:normal;background:var(--ai-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
   .wiz-actions{position:absolute;bottom:0;left:0;right:0;padding:16px 22px calc(16px + var(--safe-bottom));background:var(--paper);border-top:1px solid var(--line);}
   
   .field{display:flex;flex-direction:column;gap:8px;}
   .field-label{font-size:13px;font-weight:700;color:var(--muted);}
-  .input{height:52px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:0 16px;font-size:16px;font-weight:600;outline:none;transition:border-color .2s;color:var(--ink);width:100%;}
+  .input{height:52px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:0 16px;font-size:16px;font-weight:600;transition:border-color .2s;color:var(--ink);width:100%;}
   .input:focus{border-color:var(--ink);}
   
   .mbti-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;}
@@ -148,7 +148,8 @@
   .builder-name{font-size:16px;font-weight:700;}
   .builder-meta{font-size:13px;color:var(--muted);font-weight:600;margin-top:4px;}
   .builder-check{width:26px;height:26px;border-radius:50%;border:2px solid var(--line-2);display:flex;align-items:center;justify-content:center;color:transparent;transition:all .2s;}
-  .builder-row.selected .builder-check{background:var(--accent);border-color:var(--accent);color:#fff;}
+  .builder-row.selected .builder-check{background:var(--ink);border-color:var(--ink);color:var(--paper);}
+  .builder-row.ai-recommended .builder-name::after { content: 'AI 추천'; font-size: 10px; background: var(--ai-grad); color: white; padding: 2px 6px; border-radius: 8px; margin-left: 6px; vertical-align: middle; }
   .builder-check svg{width:14px;height:14px;}
   
   .builder-bar{position:absolute;bottom:0;left:0;right:0;padding:16px 22px calc(16px + var(--safe-bottom));background:var(--card);box-shadow:0 -4px 20px rgba(0,0,0,0.05);display:flex;justify-content:space-between;align-items:center;transform:translateY(100%);transition:transform .3s var(--ease);z-index:20;}
@@ -167,7 +168,7 @@
   .score-ring{width:140px;height:140px;margin:0 auto 20px;position:relative;}
   .score-ring svg{width:100%;height:100%;transform:rotate(-90deg)}
   .score-ring .track{fill:none;stroke:var(--line);stroke-width:10}
-  .score-ring .fill{fill:none;stroke:var(--accent);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1s ease-out;}
+  .score-ring .fill{fill:none;stroke:url(#grad);stroke-width:10;stroke-linecap:round;transition:stroke-dashoffset 1s cubic-bezier(0.4, 0, 0.2, 1);}
   .score-ring-text{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;}
   .score-ring-text .v{font-size:38px;font-weight:800;letter-spacing:-.03em;}
 
@@ -175,11 +176,12 @@
   .balance-side{flex:1;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;transition:flex .4s ease-out;}
   .balance-side.e{background:var(--accent-3);color:var(--ink)} .balance-side.i{background:var(--accent-2);color:#fff}
 
-  .insight-card{background:var(--card);border-radius:18px;padding:20px;margin-bottom:12px;box-shadow:var(--shadow-sm);}
+  .insight-card{background:var(--card);border-radius:18px;padding:20px;margin-bottom:12px;box-shadow:var(--shadow-sm); border-left: 4px solid var(--accent);}
+  .insight-card.ai-insight { border-left: 4px solid transparent; background-image: linear-gradient(var(--card), var(--card)), var(--ai-grad); background-origin: border-box; background-clip: padding-box, border-box; }
   .insight-title{font-size:15px;font-weight:700;margin-bottom:8px;display:flex;align-items:center;gap:8px;}
-  .insight-body{font-size:14px;color:var(--muted);line-height:1.6;}
+  .insight-body{font-size:14px;color:var(--muted);line-height:1.6; word-break: keep-all;}
 
-  /* ============ SETTINGS ============ */
+  /* ============ SETTINGS & OVERLAYS ============ */
   .setting-row{width:100%;padding:18px 22px;display:flex;align-items:center;gap:14px;text-align:left;background:var(--card);border-bottom:1px solid var(--line);transition:background .15s;}
   .setting-row:active{background:var(--card-2)}
   .setting-icon{width:36px;height:36px;border-radius:12px;background:var(--paper-3);display:grid;place-items:center;}
@@ -189,7 +191,6 @@
   .theme-opt{flex:1;padding:14px;border-radius:14px;background:var(--card-2);font-size:13px;font-weight:600;display:flex;flex-direction:column;align-items:center;gap:8px;transition:background .2s;}
   .theme-opt.active{background:var(--ink);color:var(--paper)}
 
-  /* ============ OVERLAYS ============ */
   .scrim{position:absolute;inset:0;background:var(--overlay);z-index:100;opacity:0;pointer-events:none;transition:opacity .2s;}
   .scrim.open{opacity:1;pointer-events:auto}
   
@@ -212,15 +213,27 @@
   .toast.out{animation:toastOut .2s forwards;}
   @keyframes toastIn{from{transform:translateY(-20px);opacity:0}to{transform:translateY(0);opacity:1}}
   @keyframes toastOut{from{transform:translateY(0);opacity:1}to{transform:translateY(-20px);opacity:0}}
+  
+  /* AI Loading */
+  .ai-loader { display:inline-block; width:16px; height:16px; border:2px solid rgba(255,255,255,0.3); border-radius:50%; border-top-color:#fff; animation:spin 1s ease-in-out infinite; margin-right:8px; vertical-align:middle; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 </style>
 </head>
 <body>
+
+<svg style="width:0;height:0;position:absolute;" aria-hidden="true">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#FF4D1F" />
+      <stop offset="100%" stop-color="#E8C547" />
+    </linearGradient>
+  </defs>
+</svg>
 
 <div class="device-wrap">
   <div class="device">
     <div class="app">
       <div class="stage" id="stage"></div>
-
       <nav class="tab-bar hidden" id="tabBar">
         <button class="tab" data-tab="home"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a2 2 0 0 1-2 2h-4v-7H9v7H5a2 2 0 0 1-2-2z"/></svg><span>홈</span></button>
         <button class="tab" data-tab="teams"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3"/><circle cx="17" cy="9" r="2.5"/><path d="M3 19c0-3 2.5-5 6-5s6 2 6 5M14 19c0-2 1.5-3.5 3.5-3.5S21 17 21 19"/></svg><span>팀</span></button>
@@ -229,74 +242,20 @@
         <button class="tab" data-tab="settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09a1.65 1.65 0 0 0-1-1.51 1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg><span>설정</span></button>
       </nav>
     </div>
-
     <div class="toast-area" id="toastArea"></div>
     <div class="scrim" id="scrim"></div>
-    
-    <div class="sheet" id="sheet">
-      <div class="sheet-handle"></div>
-      <div class="sheet-head" id="sheetHead"></div>
-      <div class="sheet-body" id="sheetBody"></div>
-    </div>
-    
-    <div class="dialog" id="dialog">
-      <div class="dialog-title" id="dialogTitle"></div>
-      <div class="dialog-body" id="dialogBody"></div>
-      <div class="dialog-actions">
-        <button class="btn btn-secondary" id="dialogCancel">취소</button>
-        <button class="btn" id="dialogConfirm">확인</button>
-      </div>
-    </div>
-    
+    <div class="sheet" id="sheet"><div class="sheet-handle"></div><div class="sheet-head" id="sheetHead"></div><div class="sheet-body" id="sheetBody"></div></div>
+    <div class="dialog" id="dialog"><div class="dialog-title" id="dialogTitle"></div><div class="dialog-body" id="dialogBody"></div><div class="dialog-actions"><button class="btn btn-secondary" id="dialogCancel">취소</button><button class="btn" id="dialogConfirm">확인</button></div></div>
     <input type="file" id="importFile" accept="application/json" style="display:none"/>
   </div>
 </div>
 
 <script>
-/* ===================================================================
-   SERVICE WORKER (로컬 실행 감지 추가)
-   =================================================================== */
-function registerInlineServiceWorker() {
-  if (!('serviceWorker' in navigator)) return;
-  
-  if (window.location.protocol === 'file:') {
-    console.log('로컬 파일 환경에서는 Service Worker를 비활성화합니다.');
-    return;
-  }
-  
-  const swCode = `
-    const CACHE_NAME = 'oneteam-cache-v4';
-    self.addEventListener('install', event => {
-      event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll(['./'])));
-    });
-    self.addEventListener('fetch', event => {
-      event.respondWith(caches.match(event.request).then(response => response || fetch(event.request)));
-    });
-  `;
-  try {
-    const blob = new Blob([swCode], { type: 'application/javascript' });
-    const swUrl = URL.createObjectURL(blob);
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register(swUrl)
-        .then(reg => console.log('✅ 인라인 Service Worker 등록 완료'))
-        .catch(err => console.warn('Service Worker 등록 실패:', err));
-    });
-  } catch (e) {
-    console.warn('Blob 생성 실패 (보안 제한 환경)', e);
-  }
-}
-
-/* ===================================================================
-   ONE TEAM — LOGIC
-   =================================================================== */
 'use strict';
 
-const STORAGE_KEY = 'oneteam_db_v5';
-const APP_VERSION = '1.4.0';
-
+const STORAGE_KEY = 'oneteam_db_v6';
 const MBTI_TYPES = ['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'];
 const MBTI_LABELS = { INTJ:'전략가', INTP:'논리술사', ENTJ:'통솔자', ENTP:'변론가', INFJ:'옹호자', INFP:'중재자', ENFJ:'선도자', ENFP:'활동가', ISTJ:'현실주의', ISFJ:'수호자', ESTJ:'경영자', ESFJ:'집정관', ISTP:'장인', ISFP:'모험가', ESTP:'사업가', ESFP:'연예인' };
-
 const AVATAR_PALETTE = ['#FF4D1F','#1B3A7A','#E8C547','#1F7A5A','#9B2D1F','#C76A1A','#5E4A8A','#2D6B7A'];
 
 const $ = (sel, root=document) => root.querySelector(sel);
@@ -308,143 +267,142 @@ const pickColor = seed => AVATAR_PALETTE[hash(String(seed))%AVATAR_PALETTE.lengt
 const initial = name => (name||'?').trim().charAt(0);
 const clamp = (n,min,max) => Math.max(min, Math.min(max, n));
 
-const DEFAULT_STATE = {
-  settings: { theme: 'system', firstLaunch: true },
-  profile: null,
-  customMembers: [],
-  teams: []
-};
-
+const DEFAULT_STATE = { settings: { theme: 'system', firstLaunch: true }, profile: null, customMembers: [], teams: [] };
 const deepClone = obj => JSON.parse(JSON.stringify(obj));
 
 const Store = {
   state: deepClone(DEFAULT_STATE),
   load(){
-    try {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if(raw) {
-        const parsed = JSON.parse(raw);
-        this.state = {
-          ...deepClone(DEFAULT_STATE),
-          ...parsed,
-          settings: { ...DEFAULT_STATE.settings, ...(parsed.settings || {}) }
-        };
-      }
-    } catch(e){ console.warn('로컬 스토리지 로드 에러', e); }
+    try { const raw = localStorage.getItem(STORAGE_KEY); if(raw) { this.state = { ...deepClone(DEFAULT_STATE), ...JSON.parse(raw) }; } } catch(e){}
   },
-  save(){ 
-    try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state)); } 
-    catch(e){ console.warn('로컬 스토리지 저장 에러', e); }
-  },
+  save(){ try { localStorage.setItem(STORAGE_KEY, JSON.stringify(this.state)); } catch(e){} },
   pool(){ return [...(this.state.customMembers || [])]; },
-  member(id){ 
-    if(this.state.profile && this.state.profile.id === id) return this.state.profile;
-    return this.pool().find(m => m && m.id === id); 
-  },
+  member(id){ if(this.state.profile && this.state.profile.id === id) return this.state.profile; return this.pool().find(m => m && m.id === id); },
   team(id){ return (this.state.teams || []).find(t => t.id === id); },
 };
 
-/* ---------- Haptic Feedback ---------- */
-const Haptic = {
-  light(){ this._do(8); },
-  medium(){ this._do(15); },
-  success(){ this._do([0,15,40,15]); },
-  _do(p){ try{ navigator.vibrate && navigator.vibrate(p); } catch(_){} }
-};
+const Haptic = { light(){ this._do(8); }, medium(){ this._do(15); }, success(){ this._do([0,15,40,15]); }, _do(p){ try{ navigator.vibrate && navigator.vibrate(p); } catch(_){} } };
 
-/* ---------- Overlays ---------- */
 const Toast = {
-  show(message, kind='default', duration=2200){
-    const el = document.createElement('div');
-    el.className = `toast ${kind!=='default'?kind:''}`;
-    el.textContent = message;
-    $('#toastArea').appendChild(el);
-    setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 220); }, duration);
+  show(msg, kind='default', dur=2200){
+    const el = document.createElement('div'); el.className = `toast ${kind!=='default'?kind:''}`; el.textContent = msg;
+    $('#toastArea').appendChild(el); setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 220); }, dur);
   }
 };
-
 const Sheet = {
-  open(title, bodyHTML, opts={}){
-    $('#sheetHead').innerHTML = `<span class="sheet-title">${esc(title)}</span>`;
-    $('#sheetBody').innerHTML = bodyHTML;
-    $('#sheet').classList.add('open');
-    $('#scrim').classList.add('open');
-    if(opts.mount) opts.mount();
-  },
+  open(title, bodyHTML, opts={}){ $('#sheetHead').innerHTML = `<span class="sheet-title">${esc(title)}</span>`; $('#sheetBody').innerHTML = bodyHTML; $('#sheet').classList.add('open'); $('#scrim').classList.add('open'); if(opts.mount) opts.mount(); },
   close(){ $('#sheet').classList.remove('open'); $('#scrim').classList.remove('open'); }
 };
-
 const Dialog = {
   open({title, body, confirmText='확인', cancelText='취소', danger=false, onConfirm}){
-    $('#dialogTitle').textContent = title;
-    $('#dialogBody').textContent = body || '';
-    const confirmBtn = $('#dialogConfirm');
-    confirmBtn.textContent = confirmText;
-    confirmBtn.className = `btn ${danger?'btn-accent':'btn-primary'}`;
-    confirmBtn.onclick = () => { this.close(); if(onConfirm) onConfirm(); };
-    $('#dialogCancel').onclick = () => this.close();
-    $('#dialog').classList.add('open'); 
-    $('#scrim').classList.add('open');
+    $('#dialogTitle').textContent = title; $('#dialogBody').textContent = body || '';
+    const btn = $('#dialogConfirm'); btn.textContent = confirmText; btn.className = `btn ${danger?'btn-accent':'btn-primary'}`;
+    btn.onclick = () => { this.close(); if(onConfirm) onConfirm(); };
+    $('#dialogCancel').onclick = () => this.close(); $('#dialog').classList.add('open'); $('#scrim').classList.add('open');
   },
-  close(){ 
-    $('#dialog').classList.remove('open'); 
-    if(!$('#sheet').classList.contains('open')) $('#scrim').classList.remove('open'); 
-  }
+  close(){ $('#dialog').classList.remove('open'); if(!$('#sheet').classList.contains('open')) $('#scrim').classList.remove('open'); }
 };
 
 /* ===================================================================
-   CHEMISTRY ANALYTICS ENGINE
+   AI SYNERGY ENGINE (MOCK)
+   단순 지표 합산이 아닌, MBTI 관계 역학 및 가족 위치 기반 시너지 추론
    =================================================================== */
-function analyzeTeam(memberIds){
-  const members = memberIds.map(id => Store.member(id)).filter(Boolean);
-  if(!members.length) return { scores:{leadership:0, execution:0, creativity:0, analysis:0, empathy:0}, overall:0, eiBalance:{e:50,i:50}, strengths:[], gaps:[], count:0 };
-
-  let s = { leadership:0, execution:0, creativity:0, analysis:0, empathy:0 };
-  const traitMap = { '리더십':'leadership', '추진력':'leadership', '실행력':'execution', '꼼꼼함':'execution', '창의성':'creativity', '분석력':'analysis', '통찰력':'analysis', '공감':'empathy', '협업':'empathy' };
+const AIEngine = {
+  evaluateInteraction(m1, m2) {
+    if(!m1 || !m2) return 0;
+    let score = 0;
+    if (m1[1] !== m2[1]) score += 15; 
+    if (m1[3] !== m2[3]) score += 10;
+    if (m1 === m2) score -= 10;
+    return score;
+  },
   
-  let eCount = 0;
-  members.forEach(m => {
-    (m.traits||[]).forEach(t => { if(traitMap[t]) s[traitMap[t]] += 20; });
-    if(m.mbti){
-      if(m.mbti[0]==='E') { s.leadership+=10; eCount++; }
-      if(m.mbti[1]==='S') { s.execution+=15; }
-      if(m.mbti[1]==='N') { s.creativity+=15; }
-      if(m.mbti[2]==='T') { s.analysis+=15; }
-      if(m.mbti[2]==='F') { s.empathy+=15; }
-      if(m.mbti[3]==='J') { s.execution+=10; s.leadership+=5; }
+  analyze(memberIds) {
+    const members = memberIds.map(id => Store.member(id)).filter(Boolean);
+    if(!members.length) return { scores:{leadership:0, execution:0, creativity:0, analysis:0, empathy:0}, overall:0, eiBalance:{e:50,i:50}, strengths:[], gaps:[], insights:[] };
+
+    let s = { leadership:0, execution:0, creativity:0, analysis:0, empathy:0 };
+    let eCount = 0;
+    let roles = { planner: 0, executor: 0, mediator: 0, analyst: 0 };
+    
+    members.forEach(m => {
+      if(m.mbti){
+        if(m.mbti[0]==='E') { s.leadership+=15; eCount++; } else { s.analysis+=5; }
+        if(m.mbti[1]==='S') { s.execution+=20; roles.executor++; } else { s.creativity+=20; roles.planner++; }
+        if(m.mbti[2]==='T') { s.analysis+=20; roles.analyst++; } else { s.empathy+=20; roles.mediator++; }
+        if(m.mbti[3]==='J') { s.execution+=10; s.leadership+=5; } else { s.creativity+=5; }
+      }
+      if(m.family) {
+        if(m.family.includes('첫째') || m.family.includes('장남') || m.family.includes('장녀')) s.leadership += 10;
+        if(m.family.includes('막내')) s.empathy += 10;
+      }
+    });
+
+    let synergyBonus = 0;
+    for (let i = 0; i < members.length; i++) {
+      for (let j = i + 1; j < members.length; j++) {
+        synergyBonus += this.evaluateInteraction(members[i].mbti, members[j].mbti);
+      }
     }
-  });
+    
+    const maxPer = Math.max(members.length * 30, 100);
+    Object.keys(s).forEach(k => s[k] = clamp(Math.round(((s[k] + (synergyBonus/(members.length||1)))) / maxPer * 100), 20, 100));
+    
+    const overall = Math.round((s.leadership + s.execution + s.creativity + s.analysis + s.empathy) / 5);
+    const ePer = Math.round((eCount / members.length) * 100);
+    
+    const strengths = [], gaps = [], insights = [];
+    const axisLabel = { leadership:'리더십', execution:'실행력', creativity:'창의성', analysis:'분석력', empathy:'공감조율' };
+    
+    Object.entries(s).forEach(([k,v]) => { if(v>=75) strengths.push(axisLabel[k]); else if(v<45) gaps.push(axisLabel[k]); });
 
-  const maxPer = Math.max(members.length * 25, 100);
-  Object.keys(s).forEach(k => s[k] = clamp(Math.round((s[k]/maxPer)*100), 20, 100));
+    if(roles.planner > 0 && roles.executor === 0) insights.push({ t:'실행력 병목 경고', d:'아이디어를 도출할(N) 멤버는 많으나, 이를 현실화하고 꼼꼼하게 마감할(S/J) 실행 담당자가 부족합니다. 일정 지연에 주의하세요.', type:'warn' });
+    else if(roles.planner > 0 && roles.executor > 0) insights.push({ t:'이상적인 기획-실행 릴레이', d:'기획자(N)의 창의적 발상을 실행자(S)가 구체화할 수 있는 훌륭한 업무 파이프라인이 구축되었습니다.', type:'ai' });
+    
+    if(roles.analyst > (members.length/2)) insights.push({ t:'데이터 기반의 차가운 의사결정', d:'논리와 효율(T)을 중시하는 멤버가 다수입니다. 목표 달성에는 유리하나, 팀 내 감정적 피로도 관리가 필요할 수 있습니다.', type:'warn' });
+    if(roles.mediator > (members.length/2)) insights.push({ t:'고도화된 소프트 스킬', d:'팀원 간의 감정과 분위기를 조율할 수 있는 능력(F)이 탁월하여, 위기 상황에서도 결속력이 쉽게 무너지지 않습니다.', type:'ai' });
+    
+    if(synergyBonus > 20) insights.push({ t:'🔥 AI 시너지 폭발', d:'서로의 단점을 완벽하게 보완하는 상호보완적 성향들이 매시업되었습니다. 예상치 못한 화학작용(Chemistry)이 기대됩니다.', type:'ai' });
+    if(insights.length === 0) insights.push({ t:'안정적인 균형', d:'전반적으로 모난 곳 없이 고른 성향이 분포되어 있어 예측 가능한 안정적인 프로젝트 수행이 가능합니다.', type:'ai' });
 
-  const strengths = [], gaps = [];
-  const axisLabel = { leadership:'리더십', execution:'실행력', creativity:'창의성', analysis:'분석력', empathy:'공감조율' };
-  Object.entries(s).forEach(([k,v]) => { if(v>=75) strengths.push(axisLabel[k]); else if(v<45) gaps.push(axisLabel[k]); });
-  
-  const overall = Math.round((s.leadership + s.execution + s.creativity + s.analysis + s.empathy) / 5);
-  const ePer = Math.round((eCount / members.length) * 100);
+    return { scores:s, overall, eiBalance:{ e:ePer, i:100-ePer }, strengths, gaps, insights, count:members.length };
+  },
 
-  return { scores:s, overall, eiBalance:{ e:ePer, i:100-ePer }, strengths, gaps, count:members.length };
-}
+  recommend(selectedIds, pool) {
+    if(selectedIds.length === 0 || pool.length === 0) return [];
+    const currentAnalysis = this.analyze(selectedIds);
+    let bestMatch = null;
+    let highestGain = 0;
+    const availablePool = pool.filter(p => !selectedIds.includes(p.id));
+    
+    availablePool.forEach(candidate => {
+      const simulatedAnalysis = this.analyze([...selectedIds, candidate.id]);
+      const gain = simulatedAnalysis.overall - currentAnalysis.overall;
+      let weaknessCovered = 0;
+      currentAnalysis.gaps.forEach(gap => {
+        if(!simulatedAnalysis.gaps.includes(gap)) weaknessCovered += 5; 
+      });
+      const totalScore = gain + weaknessCovered;
+      if (totalScore > highestGain) { highestGain = totalScore; bestMatch = candidate.id; }
+    });
+    return bestMatch ? [bestMatch] : [];
+  }
+};
 
+/* --- CHART RENDERER --- */
 function renderRadarChart(data){
   const size = 240, cx = size/2, cy = size/2, r = 85;
   const angleAt = i => -Math.PI/2 + (i * 2*Math.PI/5);
   const pt = (i, val) => [cx + r*(val/100)*Math.cos(angleAt(i)), cy + r*(val/100)*Math.sin(angleAt(i))];
-  
   const rings = [0.2, 0.4, 0.6, 0.8, 1].map(k => `<polygon class="grid" points="${[0,1,2,3,4].map(i => `${cx + r*k*Math.cos(angleAt(i))},${cy + r*k*Math.sin(angleAt(i))}`).join(' ')}"/>`).join('');
   const axes = [0,1,2,3,4].map(i => `<line class="axis" x1="${cx}" y1="${cy}" x2="${pt(i,100)[0]}" y2="${pt(i,100)[1]}"/>`).join('');
-  
   const dataPts = data.map((d,i) => pt(i, d.value).join(',')).join(' ');
   const points = data.map((d,i) => `<circle class="point" cx="${pt(i, d.value)[0]}" cy="${pt(i, d.value)[1]}" r="4"/>`).join('');
-  
   const labels = data.map((d,i) => {
     const [x,y] = [cx + (r+22)*Math.cos(angleAt(i)), cy + (r+22)*Math.sin(angleAt(i))];
     const anchor = Math.abs(x-cx)<10 ? 'middle' : x>cx ? 'start' : 'end';
     return `<text class="label" x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle">${d.label} ${d.value}</text>`;
   }).join('');
-
   return `<div class="radar-wrap"><div class="radar"><svg viewBox="0 0 ${size} ${size}">${rings}${axes}<polygon class="area" points="${dataPts}"/>${points}${labels}</svg></div></div>`;
 }
 
@@ -464,36 +422,45 @@ const Router = {
 };
 
 const avatarHTML = m => `<div class="avatar avatar-md" style="background:${pickColor(m.id)}">${esc(initial(m.name))}</div>`;
-
 const Views = {};
+
+/* --- SPLASH --- */
+Views.splash = () => `
+  <div class="splash">
+    <div class="splash-logo"><span class="glyph"></span><span>One Team</span></div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:28px">
+      <div class="app-icon-lg">
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%;">
+          <defs><filter id="glow" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="blur" /><feComposite in="SourceGraphic" in2="blur" operator="over" /></filter></defs>
+          <circle cx="50" cy="60" r="38" stroke="#FFFFFF" stroke-width="1.5" fill="none" opacity="0.4" />
+          <circle cx="78" cy="60" r="26" stroke="#FFFFFF" stroke-width="1.5" fill="none" opacity="0.6" />
+          <clipPath id="overlap"><circle cx="78" cy="60" r="26" /></clipPath>
+          <circle cx="50" cy="60" r="38" fill="var(--accent)" clip-path="url(#overlap)" filter="url(#glow)" />
+          <circle cx="68" cy="60" r="4" fill="#FFFFFF" />
+        </svg>
+      </div>
+      <div class="splash-title">최적의 시너지를<br/><span class="line2">발견하는 기술.</span></div>
+    </div>
+  </div>
+`;
+Views.splash.mount = () => { setTimeout(() => { Store.state.profile && Store.state.profile.name ? Router.go('home') : Router.go('analyze'); }, 2200); };
 
 /* --- HOME --- */
 Views.home = () => {
   const p = Store.state.profile;
-  const hero = p ? `
-    <div class="hero-card">
-      <div class="hero-row">
-        ${avatarHTML(p)}
-        <div style="min-width:0;flex:1">
-          <div class="hero-name truncate">${esc(p.name)}</div>
-          <div class="hero-sub">${esc(p.mbti)} · ${MBTI_LABELS[p.mbti]||''}${p.age ? ` · ${p.age}세` : ''}${p.gender ? ` · ${p.gender}` : ''}${p.bloodType ? ` · ${p.bloodType}형` : ''}</div>
-        </div>
-      </div>
-    </div>
-  ` : '';
-
+  const hero = p ? `<div class="hero-card"><div class="hero-row">${avatarHTML(p)}<div style="min-width:0;flex:1"><div class="hero-name truncate">${esc(p.name)}</div><div class="hero-sub">${esc(p.mbti)} · ${MBTI_LABELS[p.mbti]||''}${p.age ? ` · ${p.age}세` : ''}${p.gender ? ` · ${p.gender}` : ''}${p.bloodType ? ` · ${p.bloodType}형` : ''}</div></div></div></div>` : '';
   return `
     <div class="app-header"><div class="left"><div class="splash-logo" style="position:static; margin-left:4px;"><span class="glyph" style="width:20px;height:20px"></span><span style="letter-spacing:.12em;font-size:13px">One Team</span></div></div></div>
     <div class="scroll">
       ${hero}
       <div class="quick-actions">
         <button class="qa" data-go="analyze"><div class="qa-icon"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" fill="none" stroke-width="2"/></svg></div><div class="qa-title">프로필 수정</div><div class="qa-sub">나의 정보 업데이트</div></button>
-        <button class="qa" data-go="teamBuilder"><div class="qa-icon"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3" stroke="currentColor" fill="none" stroke-width="2"/><circle cx="17" cy="9" r="2.5" stroke="currentColor" fill="none" stroke-width="2"/><path d="M3 19c0-3 2.5-5 6-5s6 2 6 5" stroke="currentColor" fill="none" stroke-width="2"/></svg></div><div class="qa-title">팀 만들기</div><div class="qa-sub">팀원 조합 및 분석</div></button>
+        <button class="qa" data-go="teamBuilder"><div class="qa-icon" style="background:var(--ai-grad)"><svg viewBox="0 0 24 24"><circle cx="9" cy="8" r="3" stroke="currentColor" fill="none" stroke-width="2"/><circle cx="17" cy="9" r="2.5" stroke="currentColor" fill="none" stroke-width="2"/><path d="M3 19c0-3 2.5-5 6-5s6 2 6 5" stroke="currentColor" fill="none" stroke-width="2"/></svg></div><div class="qa-title">팀 만들기 (AI)</div><div class="qa-sub">시너지 조합 및 분석</div></button>
       </div>
       <div class="section">
-        <div class="section-h"><span class="h3">최근 팀 목록</span><button class="link" data-tab="teams">전체 보기</button></div>
+        <div class="section-h"><span class="h3">최근 분석된 팀</span><button class="link" data-tab="teams">전체 보기</button></div>
         <div class="stack stagger">
-          ${Store.state.teams.slice(0,3).map(t => `<button class="team-card" data-team="${t.id}"><div class="team-card-name">${esc(t.name)}</div><div class="team-card-meta">${t.memberIds.length}명 팀원 구성</div></button>`).join('') || '<div class="small" style="text-align:center;padding:20px;color:var(--muted)">아직 생성된 팀이 없습니다.<br/>[팀 만들기]를 눌러 시작해보세요.</div>'}
+          ${Store.state.teams.slice(0,3).map(t => `<button class="team-card" data-team="${t.id}"><div style="display:flex; justify-content:space-between"><div class="team-card-name">${esc(t.name)}</div><div style="font-size:12px; font-weight:800; color:var(--accent)">Score ${AIEngine.analyze(t.memberIds).overall}</div></div><div class="team-card-meta">${t.memberIds.length}명 팀원 구성</div></button>`).join('') || '<div class="small" style="text-align:center;padding:20px;color:var(--muted)">아직 생성된 팀이 없습니다.</div>'}
         </div>
       </div>
     </div>
@@ -505,177 +472,187 @@ Views.home.mount = () => {
   $$('[data-team]').forEach(b => b.addEventListener('click', () => { Haptic.light(); Router.go('teamDetail', {id: b.dataset.team}); }));
 };
 
-/* --- SPLASH (수정된 버젼 적용) --- */
-Views.splash = () => `
-  <div class="splash">
-    <div class="splash-logo"><span class="glyph"></span><span>One Team</span></div>
-    <div style="display:flex;flex-direction:column;align-items:center;gap:28px">
-      <div class="app-icon-lg">
-        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%;">
-          <defs>
-            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
-              <feGaussianBlur stdDeviation="3" result="blur" />
-              <feComposite in="SourceGraphic" in2="blur" operator="over" />
-            </filter>
-          </defs>
-          <circle cx="50" cy="60" r="38" stroke="#FFFFFF" stroke-width="1.5" fill="none" opacity="0.4" />
-          <circle cx="78" cy="60" r="26" stroke="#FFFFFF" stroke-width="1.5" fill="none" opacity="0.6" />
-          <clipPath id="overlap">
-            <circle cx="78" cy="60" r="26" />
-          </clipPath>
-          <circle cx="50" cy="60" r="38" fill="var(--accent)" clip-path="url(#overlap)" filter="url(#glow)" />
-          <circle cx="68" cy="60" r="4" fill="#FFFFFF" />
-        </svg>
-      </div>
-      <div class="splash-title">최적의 시너지를<br/><span class="line2">발견하는 기술.</span></div>
-    </div>
-  </div>
-`;
-Views.splash.mount = () => { 
-  setTimeout(() => {
-    if (Store.state.profile && Store.state.profile.name) {
-      Router.go('home');
-    } else {
-      Router.go('analyze');
-    }
-  }, 2200); 
-};
-
-/* --- TEAMS --- */
+/* --- TEAMS & DETAIL --- */
 Views.teams = () => `
-  <div class="app-header">
-    <div class="left"><span class="h-title">팀 관리</span></div>
-    <div class="right"><button class="h-action" onclick="Router.go('teamBuilder')"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button></div>
-  </div>
-  <div class="scroll">
-    <div class="section" id="teamListContainer"></div>
-  </div>
+  <div class="app-header"><div class="left"><span class="h-title">팀 관리</span></div><div class="right"><button class="h-action" onclick="Router.go('teamBuilder')"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button></div></div>
+  <div class="scroll"><div class="section" id="teamListContainer"></div></div>
 `;
 Views.teams.mount = () => {
   const container = $('#teamListContainer');
   if(!Store.state.teams.length){ container.innerHTML = '<div style="text-align:center;padding:40px;color:var(--muted)">생성된 팀이 없습니다.</div>'; return; }
-  
   container.innerHTML = Store.state.teams.map(t => {
-    const analysis = analyzeTeam(t.memberIds);
-    const avatars = t.memberIds.slice(0,5).map(id => {
-      const m = Store.member(id); return m ? `<div class="avatar" style="background:${pickColor(id)}">${esc(initial(m.name))}</div>` : '';
-    }).join('');
-    return `
-      <button class="team-card" data-team="${t.id}">
-        <div style="display:flex;justify-content:space-between;align-items:flex-start">
-          <div><div class="team-card-name">${esc(t.name)}</div><div class="team-card-meta">멤버 ${t.memberIds.length}명 · 종합 ${analysis.overall}점</div></div>
-          <div style="font-size:22px;font-weight:800;color:var(--accent)">${analysis.overall}</div>
-        </div>
-        <div class="team-avatars">${avatars}${t.memberIds.length>5?`<div class="avatar" style="background:var(--card-2);color:var(--muted)">+</div>`:''}</div>
-      </button>
-    `;
+    const analysis = AIEngine.analyze(t.memberIds);
+    const avatars = t.memberIds.slice(0,5).map(id => { const m = Store.member(id); return m ? `<div class="avatar" style="background:${pickColor(id)}">${esc(initial(m.name))}</div>` : ''; }).join('');
+    return `<button class="team-card" data-team="${t.id}"><div style="display:flex;justify-content:space-between;align-items:flex-start"><div><div class="team-card-name">${esc(t.name)}</div><div class="team-card-meta">멤버 ${t.memberIds.length}명 · 종합 ${analysis.overall}점</div></div><div style="font-size:22px;font-weight:800;color:var(--accent)">${analysis.overall}</div></div><div class="team-avatars">${avatars}${t.memberIds.length>5?`<div class="avatar" style="background:var(--card-2);color:var(--muted)">+</div>`:''}</div></button>`;
   }).join('');
-
   $$('[data-team]').forEach(b => b.addEventListener('click', () => Router.go('teamDetail', {id: b.dataset.team})));
 };
 
-/* --- TEAM DETAIL --- */
 Views.teamDetail = ({id}) => {
   const team = Store.team(id);
   if(!team) return `<div class="app-header"><button class="h-back" onclick="Router.go('teams')"><svg viewBox="0 0 24 24" width="24" stroke="currentColor" fill="none"><path d="M15 18l-6-6 6-6"/></svg></button></div><div class="scroll"><div style="padding:40px;text-align:center">팀을 찾을 수 없습니다.</div></div>`;
+  const analysis = AIEngine.analyze(team.memberIds);
+  const radarData = [ { label:'리더십', value:analysis.scores.leadership }, { label:'실행력', value:analysis.scores.execution }, { label:'창의성', value:analysis.scores.creativity }, { label:'분석력', value:analysis.scores.analysis }, { label:'공감조율', value:analysis.scores.empathy } ];
   
-  const analysis = analyzeTeam(team.memberIds);
-  const radarData = [
-    { label:'리더십', value:analysis.scores.leadership }, { label:'실행력', value:analysis.scores.execution },
-    { label:'창의성', value:analysis.scores.creativity }, { label:'분석력', value:analysis.scores.analysis },
-    { label:'공감조율', value:analysis.scores.empathy }
-  ];
-
   return `
-    <div class="app-header">
-      <div class="left"><button class="h-back" onclick="Router.go('teams')"><svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" fill="none" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button><span class="h-title">${esc(team.name)}</span></div>
-      <div class="right"><button class="h-action" id="btnDeleteTeam" style="color:var(--bad)"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div>
-    </div>
+    <div class="app-header"><div class="left"><button class="h-back" onclick="Router.go('teams')"><svg viewBox="0 0 24 24" width="24" stroke="currentColor" fill="none" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button><span class="h-title">${esc(team.name)}</span></div><div class="right"><button class="h-action" id="btnDeleteTeam" style="color:var(--bad)"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></button></div></div>
     <div class="scroll no-tab">
       <div class="section"><div class="card">${renderRadarChart(radarData)}</div></div>
-      <div class="section">
-        <div class="section-h"><span class="h3">팀 밸런스</span></div>
-        <div class="card">
-          <div style="font-size:14px;font-weight:600;margin-bottom:8px">E/I 에너지 방향</div>
-          <div class="balance-bar">
-            <div class="balance-side e" style="flex:${analysis.eiBalance.e}">E ${analysis.eiBalance.e}%</div>
-            <div class="balance-side i" style="flex:${analysis.eiBalance.i}">I ${analysis.eiBalance.i}%</div>
-          </div>
-        </div>
-      </div>
       <div class="section">
         <div class="section-h"><span class="h3">멤버 구성 (${team.memberIds.length}명)</span></div>
         ${team.memberIds.map(mid => {
           const m = Store.member(mid);
-          return m ? `<div class="match">
-            ${avatarHTML(m)}
-            <div class="match-body">
-              <div class="match-name">${esc(m.name)}</div>
-              <div class="match-meta">
-                ${esc(m.mbti)}${m.age ? ` · ${m.age}세` : ''}${m.bloodType ? ` · ${m.bloodType}형` : ''}${m.family ? ` · ${esc(m.family)}` : ''}<br/>
-                ${(m.traits||[]).join(', ')}
-              </div>
-            </div>
-          </div>` : '';
+          return m ? `<div class="match">${avatarHTML(m)}<div class="match-body"><div class="match-name">${esc(m.name)}</div><div class="match-meta">${esc(m.mbti)}${m.age ? ` · ${m.age}세` : ''}${m.gender ? ` · ${m.gender}` : ''}${m.bloodType ? ` · ${m.bloodType}형` : ''}${m.family ? ` · ${esc(m.family)}` : ''}</div></div></div>` : '';
         }).join('')}
+      </div>
+      <div class="section" style="padding-bottom: 24px;">
+        <button class="btn btn-ai btn-block" onclick="Router.go('insights')">AI 심층 리포트 보기</button>
       </div>
     </div>
   `;
 };
 Views.teamDetail.mount = ({id}) => {
   $('#btnDeleteTeam').addEventListener('click', () => {
-    Dialog.open({
-      title: '팀 삭제',
-      body: '이 팀을 정말 삭제하시겠습니까?',
-      danger: true,
-      confirmText: '삭제',
-      onConfirm: () => {
-        Store.state.teams = Store.state.teams.filter(t => t.id !== id);
-        Store.save(); Toast.show('팀이 삭제되었습니다.', 'success'); Router.go('teams');
+    Dialog.open({ title: '팀 삭제', body: '이 팀을 정말 삭제하시겠습니까?', danger: true, confirmText: '삭제', onConfirm: () => { Store.state.teams = Store.state.teams.filter(t => t.id !== id); Store.save(); Toast.show('팀이 삭제되었습니다.', 'success'); Router.go('teams'); } });
+  });
+};
+
+/* --- TEAM BUILDER (AI 고도화) --- */
+const BuilderState = { selected: new Set(), recommended: new Set() };
+Views.teamBuilder = () => {
+  BuilderState.selected = new Set(Store.state.profile ? [Store.state.profile.id] : []);
+  BuilderState.recommended = new Set();
+  return `
+    <div class="app-header">
+      <div class="left"><button class="h-back" onclick="Router.go('teams')"><svg viewBox="0 0 24 24" width="24" stroke="currentColor" fill="none"><path d="M15 18l-6-6 6-6"/></svg></button><span class="h-title">팀 매시업</span></div>
+      <div class="right">
+        <button class="h-action" id="btnAiRecommend" style="color:var(--accent); margin-right:8px;" title="AI 최적 멤버 추천"><svg viewBox="0 0 24 24" width="20" stroke="currentColor" fill="none" stroke-width="2.5"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg></button>
+        <button class="h-action" id="cmAddContact"><svg viewBox="0 0 24 24" width="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></button>
+      </div>
+    </div>
+    <div class="scroll" id="builderList" style="padding-bottom:120px"></div>
+    <div class="builder-bar show" id="builderBar">
+      <div class="builder-bar-info"><div class="builder-bar-count" id="builderCount">0명 선택</div></div>
+      <button class="btn btn-primary" id="builderSave">시너지 분석 및 저장</button>
+    </div>
+  `;
+};
+Views.teamBuilder.mount = () => {
+  const render = () => {
+    const pool = [Store.state.profile, ...(Store.state.customMembers||[])].filter(Boolean);
+    if (pool.length === 0) { $('#builderList').innerHTML = `<div style="padding:40px;text-align:center;color:var(--muted)">선택할 멤버가 없습니다.</div>`; } 
+    else {
+      $('#builderList').innerHTML = pool.map(m => {
+        const sel = BuilderState.selected.has(m.id);
+        const aiRec = BuilderState.recommended.has(m.id);
+        return `<button class="builder-row ${sel?'selected':''} ${aiRec?'ai-recommended':''}" data-pick="${m.id}">${avatarHTML(m)}<div class="builder-body"><div class="builder-name">${esc(m.name)}</div><div class="builder-meta">${esc(m.mbti)}${m.age ? ` · ${m.age}세` : ''}${m.gender ? ` · ${m.gender}` : ''}${m.bloodType ? ` · ${m.bloodType}형` : ''}</div></div><div class="builder-check"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7" stroke-width="3" stroke="currentColor" fill="none"/></svg></div></button>`;
+      }).join('');
+    }
+    $$('[data-pick]').forEach(b => b.addEventListener('click', () => { Haptic.light(); const id = b.dataset.pick; BuilderState.selected.has(id) ? BuilderState.selected.delete(id) : BuilderState.selected.add(id); render(); }));
+    $('#builderCount').textContent = `${BuilderState.selected.size}명 선택`;
+  };
+  render();
+
+  $('#btnAiRecommend').addEventListener('click', () => {
+    const btn = $('#btnAiRecommend');
+    btn.innerHTML = `<div class="ai-loader" style="border-color:var(--accent); border-top-color:transparent; margin:0"></div>`;
+    
+    setTimeout(() => {
+      Haptic.success();
+      const currentSelected = Array.from(BuilderState.selected);
+      const pool = [Store.state.profile, ...(Store.state.customMembers||[])].filter(Boolean);
+      const recommendedIds = AIEngine.recommend(currentSelected, pool);
+      
+      if(recommendedIds.length > 0) {
+        recommendedIds.forEach(id => { BuilderState.selected.add(id); BuilderState.recommended.add(id); });
+        Toast.show('AI가 최적의 시너지를 낼 멤버를 추천했습니다.', 'success');
+      } else {
+        Toast.show('더 이상 추천할 멤버가 풀에 없습니다.', 'default');
+      }
+      btn.innerHTML = `<svg viewBox="0 0 24 24" width="20" stroke="currentColor" fill="none" stroke-width="2.5"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg>`;
+      render();
+    }, 600);
+  });
+
+  $('#builderSave').addEventListener('click', () => {
+    if(BuilderState.selected.size < 2) return Toast.show('최소 2명 이상 선택해주세요.', 'error');
+    const newTeamId = uid('t');
+    Store.state.teams.push({ id: newTeamId, name: `AI 큐레이션 스쿼드 (${BuilderState.selected.size}명)`, memberIds: Array.from(BuilderState.selected), createdAt: Date.now() });
+    Store.save(); Haptic.success(); Router.go('insights');
+  });
+
+  $('#cmAddContact').addEventListener('click', () => {
+    Sheet.open('새 멤버 풀 등록', `
+      <div class="stack">
+        <div class="field"><label class="field-label">이름</label><input class="input" id="cmName" placeholder="팀원 이름"/></div>
+        
+        <div class="field mt-8"><label class="field-label">인적사항 (나이/성별/혈액형)</label>
+          <div style="display:flex;gap:8px">
+            <input type="number" class="input" id="cmAge" placeholder="나이" style="width:70px"/>
+            <select class="input" id="cmGender" style="flex:1; background:var(--card);"><option value="">성별</option><option value="남성">남성</option><option value="여성">여성</option></select>
+            <select class="input" id="cmBloodType" style="flex:1; background:var(--card);"><option value="">혈액형</option><option value="A">A형</option><option value="B">B형</option><option value="O">O형</option><option value="AB">AB형</option></select>
+          </div>
+        </div>
+
+        <div class="field mt-8"><label class="field-label">가족관계 (옵션)</label><input type="text" class="input" id="cmFamily" placeholder="예: 기혼, 1남1녀 첫째"/></div>
+        
+        <div class="field mt-8"><label class="field-label">MBTI 성향</label>
+          <div class="mbti-grid" id="cmMbti">${MBTI_TYPES.map(t => `<button type="button" class="mbti-chip" data-m="${t}">${t}</button>`).join('')}</div>
+        </div>
+        <button class="btn btn-primary btn-block mt-16" id="cmSave">팀 풀에 추가</button>
+      </div>`, {
+      mount: () => {
+        let selectedMbti = '';
+        $$('[data-m]').forEach(b => b.addEventListener('click', () => { selectedMbti = b.dataset.m; $$('[data-m]').forEach(x => x.classList.toggle('selected', x===b)); }));
+        $('#cmSave').addEventListener('click', () => {
+          const name = $('#cmName').value.trim();
+          if(!name || !selectedMbti) return Toast.show('이름과 MBTI를 입력해주세요.', 'error');
+          const newId = uid('cm');
+          Store.state.customMembers.push({ 
+            id: newId, 
+            name, 
+            mbti: selectedMbti, 
+            age: $('#cmAge').value.trim(),
+            gender: $('#cmGender').value,
+            bloodType: $('#cmBloodType').value,
+            family: $('#cmFamily').value.trim() 
+          });
+          Store.save(); Sheet.close(); Toast.show('추가 완료', 'success'); BuilderState.selected.add(newId); render();
+        });
       }
     });
   });
 };
 
-/* --- INSIGHTS --- */
+/* --- AI INSIGHTS --- */
 Views.insights = () => {
   const teams = Store.state.teams;
-  if(!teams.length) return `<div class="app-header"><div class="left"><span class="h-title">인사이트</span></div></div><div class="scroll"><div style="padding:40px;text-align:center;color:var(--muted)">분석할 팀이 없습니다.</div></div>`;
+  if(!teams.length) return `<div class="app-header"><div class="left"><span class="h-title">AI 팀 리포트</span></div></div><div class="scroll"><div style="padding:40px;text-align:center;color:var(--muted)">분석할 팀이 없습니다.</div></div>`;
   
   const team = teams[teams.length-1];
-  const analysis = analyzeTeam(team.memberIds);
-  
+  const analysis = AIEngine.analyze(team.memberIds);
   const c = 2*Math.PI*60;
-  
-  let recs = [];
-  if(analysis.gaps.includes('실행력')) recs.push({ t:'실행력 보완 필요', d:'아이디어를 구체화하고 끝맺을 S 및 J 성향의 멤버 배치가 시급합니다.', icon:'⚠️' });
-  if(analysis.eiBalance.e > 75) recs.push({ t:'에너지 분산 주의', d:'외향(E) 비율이 너무 높습니다. 회의가 길어질 수 있으니 명확한 타임키퍼 역할이 필요합니다.', icon:'⏱' });
-  if(analysis.strengths.length >= 3) recs.push({ t:'강력한 시너지 기대', d:`${analysis.strengths.join(', ')} 역량이 매우 뛰어난 드림팀입니다.`, icon:'🔥' });
-  if(recs.length===0) recs.push({ t:'균형 잡힌 스쿼드', d:'전반적인 능력치 밸런스가 좋은 안정적인 팀입니다.', icon:'✅' });
 
   return `
-    <div class="app-header"><div class="left"><span class="h-title">AI 팀 리포트</span></div></div>
+    <div class="app-header"><div class="left"><span class="h-title">AI 매시업 리포트</span></div></div>
     <div class="scroll">
       <div class="section">
-        <div class="card" style="text-align:center">
-          <div style="font-size:14px;font-weight:700;color:var(--muted);margin-bottom:16px">${esc(team.name)} 종합 점수</div>
+        <div class="card" style="text-align:center; position:relative; overflow:hidden;">
+          <div style="font-size:14px;font-weight:700;color:var(--muted);margin-bottom:16px">${esc(team.name)} 케미스트리</div>
           <div class="score-ring">
-            <svg viewBox="0 0 140 140">
-              <circle class="track" cx="70" cy="70" r="60"/>
-              <circle class="fill" cx="70" cy="70" r="60" stroke-dasharray="${c}" stroke-dashoffset="${c}"/>
-            </svg>
+            <svg viewBox="0 0 140 140"><circle class="track" cx="70" cy="70" r="60"/><circle class="fill" cx="70" cy="70" r="60" stroke-dasharray="${c}" stroke-dashoffset="${c}"/></svg>
             <div class="score-ring-text"><div class="v">${analysis.overall}</div></div>
           </div>
           <div style="display:flex;justify-content:center;gap:6px;flex-wrap:wrap">
-            ${analysis.strengths.map(s => `<span class="chip chip-good">${s} 강점</span>`).join('')}
-            ${analysis.gaps.map(g => `<span class="chip chip-warn">${g} 부족</span>`).join('')}
+            ${analysis.strengths.map(s => `<span class="chip chip-ai">${s} 특화</span>`).join('')}
+            ${analysis.gaps.map(g => `<span class="chip chip-warn">${g} 보완 필요</span>`).join('')}
           </div>
         </div>
       </div>
       <div class="section">
-        <div class="section-h"><span class="h3">전략 제안</span></div>
-        ${recs.map(r => `
-          <div class="insight-card"><div class="insight-title"><span>${r.icon}</span> ${r.t}</div><div class="insight-body">${r.d}</div></div>
+        <div class="section-h"><span class="h3">데이터 기반 전략 제안</span></div>
+        ${analysis.insights.map(r => `
+          <div class="insight-card ${r.type==='ai'?'ai-insight':''}"><div class="insight-title">${r.t}</div><div class="insight-body">${r.d}</div></div>
         `).join('')}
       </div>
     </div>
@@ -685,281 +662,107 @@ Views.insights.mount = () => {
   setTimeout(() => {
     const fill = $('.score-ring .fill');
     if(fill && Store.state.teams.length){
-      const a = analyzeTeam(Store.state.teams[Store.state.teams.length-1].memberIds);
+      const a = AIEngine.analyze(Store.state.teams[Store.state.teams.length-1].memberIds);
       fill.style.strokeDashoffset = 2*Math.PI*60 * (1 - a.overall/100);
     }
   }, 100);
 };
 
-/* --- TEAM BUILDER --- */
-const BuilderState = { selected: new Set() };
-Views.teamBuilder = () => {
-  BuilderState.selected = new Set(Store.state.profile ? [Store.state.profile.id] : []);
-  return `
-    <div class="app-header">
-      <div class="left"><button class="h-back" onclick="Router.go('teams')"><svg viewBox="0 0 24 24" width="24" stroke="currentColor" fill="none"><path d="M15 18l-6-6 6-6"/></svg></button><span class="h-title">팀 빌딩</span></div>
-      <div class="right"><button class="h-action" id="cmAddContact"><svg viewBox="0 0 24 24" width="20" stroke="currentColor" fill="none" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM23 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></button></div>
-    </div>
-    <div class="scroll" id="builderList" style="padding-bottom:120px"></div>
-    <div class="builder-bar show" id="builderBar">
-      <div class="builder-bar-info"><div class="builder-bar-count" id="builderCount">0명 선택</div></div>
-      <button class="btn btn-accent" id="builderSave">팀 저장하기</button>
-    </div>
-  `;
-};
-Views.teamBuilder.mount = () => {
-  const render = () => {
-    const pool = [Store.state.profile, ...(Store.state.customMembers||[])].filter(Boolean);
-    
-    if (pool.length === 0) {
-      $('#builderList').innerHTML = `<div style="padding:40px;text-align:center;color:var(--muted)">선택할 멤버가 없습니다.<br/>우측 상단 버튼으로 멤버를 추가하세요.</div>`;
-    } else {
-      $('#builderList').innerHTML = pool.map(m => {
-        const sel = BuilderState.selected.has(m.id);
-        return `
-          <button class="builder-row ${sel?'selected':''}" data-pick="${m.id}">
-            ${avatarHTML(m)}
-            <div class="builder-body">
-              <div class="builder-name">${esc(m.name)}</div>
-              <div class="builder-meta">${esc(m.mbti)}${m.age ? ` · ${m.age}세` : ''} ${m.gender||''}</div>
-            </div>
-            <div class="builder-check"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7" stroke-width="3" stroke="currentColor" fill="none"/></svg></div>
-          </button>
-        `;
-      }).join('');
-    }
-    
-    $$('[data-pick]').forEach(b => b.addEventListener('click', () => {
-      Haptic.light();
-      const id = b.dataset.pick;
-      BuilderState.selected.has(id) ? BuilderState.selected.delete(id) : BuilderState.selected.add(id);
-      render();
-    }));
-    $('#builderCount').textContent = `${BuilderState.selected.size}명 선택`;
-  };
-  render();
-
-  $('#builderSave').addEventListener('click', () => {
-    if(BuilderState.selected.size < 2) return Toast.show('최소 2명 이상 선택해주세요.', 'error');
-    Store.state.teams.push({ id: uid('t'), name: `새 프로젝트 팀 (${BuilderState.selected.size}명)`, memberIds: Array.from(BuilderState.selected), createdAt: Date.now() });
-    Store.save(); Toast.show('팀이 생성되었습니다.', 'success'); Router.go('teams');
-  });
-
-  $('#cmAddContact').addEventListener('click', () => {
-    Sheet.open('새 멤버 추가', `
-      <div class="stack">
-        <div class="field"><label class="field-label">이름</label><input class="input" id="cmName" placeholder="새로운 팀원 이름"/></div>
-        
-        <div class="field"><label class="field-label">성별</label>
-          <div class="mbti-grid" style="grid-template-columns:1fr 1fr">
-            <button type="button" class="mbti-chip" data-cg="남성">남성</button>
-            <button type="button" class="mbti-chip" data-cg="여성">여성</button>
-          </div>
-        </div>
-
-        <div class="field"><label class="field-label">혈액형</label>
-          <div class="mbti-grid">
-            ${['A','B','O','AB'].map(t => `<button type="button" class="mbti-chip" data-cb="${t}">${t}</button>`).join('')}
-          </div>
-        </div>
-
-        <div class="field"><label class="field-label">나이</label><input type="number" class="input" id="cmAge" placeholder="나이 입력 (숫자)"/></div>
-        <div class="field"><label class="field-label">가족관계</label><input type="text" class="input" id="cmFamily" placeholder="예: 1남 1녀 중 첫째, 기혼 등"/></div>
-
-        <div class="field mt-8"><label class="field-label">MBTI 성향</label><div class="mbti-grid" id="cmMbti">${MBTI_TYPES.map(t => `<button type="button" class="mbti-chip" data-m="${t}">${t}</button>`).join('')}</div></div>
-        
-        <button class="btn btn-primary btn-block mt-16" id="cmSave">팀 풀(Pool)에 추가</button>
-      </div>
-    `, {
-      mount: () => {
-        let selectedMbti = '';
-        let selectedGender = '';
-        let selectedBlood = '';
-
-        $$('[data-m]').forEach(b => b.addEventListener('click', () => { selectedMbti = b.dataset.m; $$('[data-m]').forEach(x => x.classList.toggle('selected', x===b)); }));
-        $$('[data-cg]').forEach(b => b.addEventListener('click', () => { selectedGender = b.dataset.cg; $$('[data-cg]').forEach(x => x.classList.toggle('selected', x===b)); }));
-        $$('[data-cb]').forEach(b => b.addEventListener('click', () => { selectedBlood = b.dataset.cb; $$('[data-cb]').forEach(x => x.classList.toggle('selected', x===b)); }));
-
-        $('#cmSave').addEventListener('click', () => {
-          const name = $('#cmName').value.trim();
-          const age = $('#cmAge').value.trim();
-          const family = $('#cmFamily').value.trim();
-
-          if(!name || !selectedMbti) return Toast.show('이름과 MBTI를 모두 입력해주세요.', 'error');
-          
-          const newId = uid('cm');
-          Store.state.customMembers.push({ id: newId, name, mbti: selectedMbti, gender: selectedGender, bloodType: selectedBlood, age: age, family: family, traits:['열정'] });
-          Store.save(); Sheet.close(); Toast.show('성공적으로 추가되었습니다.', 'success');
-          BuilderState.selected.add(newId); render();
-        });
-      }
-    });
-  });
-};
-
-/* --- WIZARD (간편 프로필 설정) --- */
+/* --- WIZARD --- */
 const WizState = { data: {} };
 Views.analyze = () => {
-  WizState.data = Store.state.profile || { name:'', mbti:'', gender:'', bloodType:'', age:'', family:'' };
+  WizState.data = Store.state.profile || { name:'', mbti:'', age:'', family:'', gender:'', bloodType:'' };
   const isFirstTime = !Store.state.profile;
-  
-  const backBtnHtml = isFirstTime 
-    ? `<div></div>` 
-    : `<button class="h-back" onclick="Router.go('home')"><svg viewBox="0 0 24 24" width="24" stroke="currentColor" fill="none"><path d="M15 18l-6-6 6-6"/></svg></button>`;
-
+  const backBtnHtml = isFirstTime ? `<div></div>` : `<button class="h-back" onclick="Router.go('home')"><svg viewBox="0 0 24 24" width="24" stroke="currentColor" fill="none"><path d="M15 18l-6-6 6-6"/></svg></button>`;
   return `
-    <div class="app-header"><div class="left">${backBtnHtml}<span class="h-title">프로필 설정</span></div></div>
+    <div class="app-header"><div class="left">${backBtnHtml}<span class="h-title">데이터 프로필</span></div></div>
     <div class="scroll no-tab" style="padding:24px 22px">
-      <h2 class="wiz-q">환영합니다! 👋<br/>당신의 <em>프로필</em>을<br/>완성해주세요.</h2>
+      <h2 class="wiz-q">당신의 <em>업무 성향 데이터</em>를<br/>등록해주세요.</h2>
       <div class="stack mt-16" style="margin-top: 32px; padding-bottom: 80px;">
         <div class="field"><label class="field-label">이름</label><input class="input" id="wizName" value="${esc(WizState.data.name)}" placeholder="본인 이름 입력"/></div>
         
-        <div class="field mt-8"><label class="field-label">성별</label>
-          <div class="mbti-grid" style="grid-template-columns:1fr 1fr">
-            <button type="button" class="mbti-chip ${WizState.data.gender==='남성'?'selected':''}" data-wgender="남성">남성</button>
-            <button type="button" class="mbti-chip ${WizState.data.gender==='여성'?'selected':''}" data-wgender="여성">여성</button>
+        <div class="field mt-8"><label class="field-label">인적사항 (나이/성별/혈액형)</label>
+          <div style="display:flex;gap:8px">
+            <input type="number" class="input" id="wizAge" value="${esc(WizState.data.age)}" placeholder="나이" style="width:70px"/>
+            <select class="input" id="wizGender" style="flex:1; background:var(--card);">
+              <option value="">성별</option>
+              <option value="남성" ${WizState.data.gender==='남성'?'selected':''}>남성</option>
+              <option value="여성" ${WizState.data.gender==='여성'?'selected':''}>여성</option>
+            </select>
+            <select class="input" id="wizBloodType" style="flex:1; background:var(--card);">
+              <option value="">혈액형</option>
+              <option value="A" ${WizState.data.bloodType==='A'?'selected':''}>A형</option>
+              <option value="B" ${WizState.data.bloodType==='B'?'selected':''}>B형</option>
+              <option value="O" ${WizState.data.bloodType==='O'?'selected':''}>O형</option>
+              <option value="AB" ${WizState.data.bloodType==='AB'?'selected':''}>AB형</option>
+            </select>
           </div>
         </div>
 
-        <div class="field mt-8"><label class="field-label">혈액형</label>
-          <div class="mbti-grid">
-            ${['A','B','O','AB'].map(t => `<button type="button" class="mbti-chip ${WizState.data.bloodType===t?'selected':''}" data-wblood="${t}">${t}</button>`).join('')}
-          </div>
-        </div>
-
-        <div class="field mt-8"><label class="field-label">나이</label><input type="number" class="input" id="wizAge" value="${esc(WizState.data.age)}" placeholder="나이 입력 (숫자)"/></div>
-        <div class="field mt-8"><label class="field-label">가족관계</label><input type="text" class="input" id="wizFamily" value="${esc(WizState.data.family)}" placeholder="예: 1남 1녀 중 둘째, 기혼 등"/></div>
-
-        <div class="field mt-8"><label class="field-label">MBTI</label><div class="mbti-grid">${MBTI_TYPES.map(t => `<button type="button" class="mbti-chip ${WizState.data.mbti===t?'selected':''}" data-wmbti="${t}">${t}</button>`).join('')}</div></div>
+        <div class="field mt-8"><label class="field-label">업무 및 조직 내 역할 힌트 (가족관계 등)</label><input type="text" class="input" id="wizFamily" value="${esc(WizState.data.family)}" placeholder="예: 1남 1녀 중 첫째, 10년차 리더 등"/></div>
+        <div class="field mt-8"><label class="field-label">MBTI 성격 유형</label><div class="mbti-grid">${MBTI_TYPES.map(t => `<button type="button" class="mbti-chip ${WizState.data.mbti===t?'selected':''}" data-wmbti="${t}">${t}</button>`).join('')}</div></div>
       </div>
     </div>
-    <div class="wiz-actions"><button class="btn btn-primary btn-block" id="wizSave">${isFirstTime ? '시작하기' : '저장하기'}</button></div>
+    <div class="wiz-actions"><button class="btn btn-ai btn-block" id="wizSave">${isFirstTime ? 'AI 분석 시작하기' : '데이터 업데이트'}</button></div>
   `;
 };
 Views.analyze.mount = () => {
   $$('[data-wmbti]').forEach(b => b.addEventListener('click', () => { WizState.data.mbti = b.dataset.wmbti; $$('[data-wmbti]').forEach(x => x.classList.toggle('selected', x===b)); }));
-  $$('[data-wgender]').forEach(b => b.addEventListener('click', () => { WizState.data.gender = b.dataset.wgender; $$('[data-wgender]').forEach(x => x.classList.toggle('selected', x===b)); }));
-  $$('[data-wblood]').forEach(b => b.addEventListener('click', () => { WizState.data.bloodType = b.dataset.wblood; $$('[data-wblood]').forEach(x => x.classList.toggle('selected', x===b)); }));
-
   $('#wizSave').addEventListener('click', () => {
     const name = $('#wizName').value.trim();
-    const age = $('#wizAge').value.trim();
-    const family = $('#wizFamily').value.trim();
-
-    if(!name || !WizState.data.mbti) return Toast.show('이름과 MBTI를 모두 입력해주세요.', 'error');
+    if(!name || !WizState.data.mbti) return Toast.show('필수 정보를 입력해주세요.', 'error');
     Store.state.profile = { 
       id: 'p_me', 
       name, 
       mbti: WizState.data.mbti, 
-      gender: WizState.data.gender,
-      bloodType: WizState.data.bloodType,
-      age: age,
-      family: family,
-      traits:['열정','협업'] 
+      age: $('#wizAge').value.trim(),
+      gender: $('#wizGender').value,
+      bloodType: $('#wizBloodType').value,
+      family: $('#wizFamily').value.trim() 
     };
-    Store.save(); Haptic.success(); Toast.show('프로필이 저장되었습니다.', 'success'); Router.go('home');
+    Store.save(); Haptic.success(); Toast.show('프로필 연동 완료', 'success'); Router.go('home');
   });
 };
 
 /* --- SETTINGS --- */
 Views.settings = () => `
-  <div class="app-header"><div class="left"><span class="h-title">설정</span></div></div>
+  <div class="app-header"><div class="left"><span class="h-title">시스템 설정</span></div></div>
   <div class="scroll">
     <div class="section">
       <div style="font-size:13px;font-weight:700;color:var(--muted);margin:0 0 8px 16px">화면 설정</div>
       <div class="theme-seg">
-        <button class="theme-opt ${Store.state.settings.theme==='light'?'active':''}" data-theme="light"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg><span>라이트</span></button>
-        <button class="theme-opt ${Store.state.settings.theme==='dark'?'active':''}" data-theme="dark"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg><span>다크</span></button>
-        <button class="theme-opt ${Store.state.settings.theme==='system'?'active':''}" data-theme="system"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg><span>시스템 동기화</span></button>
+        <button class="theme-opt ${Store.state.settings.theme==='light'?'active':''}" data-theme="light">라이트</button>
+        <button class="theme-opt ${Store.state.settings.theme==='dark'?'active':''}" data-theme="dark">다크</button>
+        <button class="theme-opt ${Store.state.settings.theme==='system'?'active':''}" data-theme="system">시스템</button>
       </div>
     </div>
     <div class="section mt-16">
-      <div style="font-size:13px;font-weight:700;color:var(--muted);margin:0 0 8px 16px">데이터 관리</div>
+      <div style="font-size:13px;font-weight:700;color:var(--muted);margin:0 0 8px 16px">데이터 거버넌스</div>
       <div style="border-radius:20px;overflow:hidden;box-shadow:var(--shadow-sm)">
-        <button class="setting-row" id="btnExport">
-          <div class="setting-icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></div>
-          <div class="setting-body"><div class="setting-title">데이터 백업 (내보내기)</div><div class="setting-sub">로컬 기기에 .json 파일 저장</div></div>
-        </button>
-        <button class="setting-row" id="btnImport">
-          <div class="setting-icon"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 14l5-5 5 5M12 9v12"/></svg></div>
-          <div class="setting-body"><div class="setting-title">데이터 복원 (가져오기)</div><div class="setting-sub">백업 파일 불러오기</div></div>
-        </button>
         <button class="setting-row" id="btnReset" style="border-bottom:none">
           <div class="setting-icon" style="background:#9B2D1F1f"><svg viewBox="0 0 24 24" stroke="var(--bad)"><path d="M3 6h18M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2M5 6l1 14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2l1-14"/></svg></div>
-          <div class="setting-body"><div class="setting-title" style="color:var(--bad)">모든 데이터 초기화</div><div class="setting-sub">앱을 처음 상태로 완전히 되돌립니다.</div></div>
+          <div class="setting-body"><div class="setting-title" style="color:var(--bad)">모든 데이터 초기화</div><div class="setting-sub">로컬에 저장된 분석 데이터를 영구 삭제합니다.</div></div>
         </button>
       </div>
     </div>
   </div>
 `;
 Views.settings.mount = () => {
-  $$('[data-theme]').forEach(b => b.addEventListener('click', () => {
-    Store.state.settings.theme = b.dataset.theme; Store.save(); applyTheme();
-    $$('[data-theme]').forEach(x => x.classList.toggle('active', x===b));
-  }));
-  
-  $('#btnExport').addEventListener('click', () => {
-    const blob = new Blob([JSON.stringify(Store.state, null, 2)], { type:'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `OneTeam_Backup_${new Date().toISOString().slice(0,10)}.json`;
-    a.click(); URL.revokeObjectURL(url);
-    Toast.show('백업 파일이 기기에 저장되었습니다.', 'success');
-  });
-
-  $('#btnImport').addEventListener('click', () => $('#importFile').click());
-  $('#importFile').addEventListener('change', (e) => {
-    const file = e.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = ev => {
-      try {
-        const data = JSON.parse(ev.target.result);
-        if(!data.teams) throw new Error();
-        Store.state = data; Store.save(); applyTheme();
-        Toast.show('데이터가 성공적으로 복원되었습니다.', 'success'); Router.go('home');
-      } catch(err) { Toast.show('잘못된 백업 파일 형식입니다.', 'error'); }
-      e.target.value = '';
-    };
-    reader.readAsText(file);
-  });
-
-  $('#btnReset').addEventListener('click', () => {
-    Dialog.open({
-      title:'정말 초기화 하시겠습니까?', body:'저장된 팀과 프로필 데이터가 복구할 수 없이 삭제됩니다.', danger:true, confirmText:'초기화',
-      onConfirm: () => {
-        Store.state = deepClone(DEFAULT_STATE); Store.save(); applyTheme();
-        Toast.show('초기화가 완료되었습니다.', 'success'); Router.go('splash');
-      }
-    });
-  });
+  $$('[data-theme]').forEach(b => b.addEventListener('click', () => { Store.state.settings.theme = b.dataset.theme; Store.save(); applyTheme(); $$('[data-theme]').forEach(x => x.classList.toggle('active', x===b)); }));
+  $('#btnReset').addEventListener('click', () => { Dialog.open({ title:'초기화 경고', body:'저장된 데이터가 복구할 수 없이 삭제됩니다.', danger:true, confirmText:'초기화', onConfirm: () => { Store.state = deepClone(DEFAULT_STATE); Store.save(); applyTheme(); Router.go('splash'); } }); });
 };
 
-/* ===================================================================
-   SYSTEM BOOTSTRAP
-   =================================================================== */
 function applyTheme() {
-  let t = Store.state.settings.theme || 'system';
-  if(t === 'system') t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  let t = Store.state.settings.theme || 'system'; if(t === 'system') t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', t);
-  const metaTheme = $('#meta-theme');
-  if(metaTheme) metaTheme.setAttribute('content', t === 'dark' ? '#0F0E0C' : '#0a0a0a');
+  const metaTheme = $('#meta-theme'); if(metaTheme) metaTheme.setAttribute('content', t === 'dark' ? '#0F0E0C' : '#0a0a0a');
 }
-
 function boot(){
-  registerInlineServiceWorker();
-  Store.load();
-  applyTheme();
-  
-  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
-    if(Store.state.settings.theme === 'system') applyTheme();
-  });
-  
+  Store.load(); applyTheme();
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if(Store.state.settings.theme === 'system') applyTheme(); });
   $('#scrim').addEventListener('click', () => { if($('#sheet').classList.contains('open')) Sheet.close(); else Dialog.close(); });
-  
   Router.go('splash');
 }
-
 document.addEventListener('DOMContentLoaded', boot);
 </script>
 </body>
