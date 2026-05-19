@@ -1447,52 +1447,44 @@ const WizState = { data: {} };
 Views.analyze = () => {
   WizState.data = Store.state.profile || { name:'', mbti:'', gender:'', bloodType:'', family:'', hobbies:'' };
   const isFirstTime = !Store.state.profile;
-  const backBtnHtml = isFirstTime ? '' : `<button class="h-back" onclick="Router.go('home')" style="background:var(--line-2); color:var(--ink); border:1px solid var(--line); box-shadow:none;"><svg viewBox="0 0 24 24" width="24"><path d="M15 19l-7-7 7-7"/></svg></button>`;
-  
+  const backBtnHtml = isFirstTime ? '' : `<button class="h-back" onclick="Router.back('home')" aria-label="뒤로"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M15 19l-7-7 7-7"/></svg></button>`;
+
   return `
-    <div style="display:flex; flex-direction:column; height:100%; width:100%;">
-      <div style="background:var(--card-2); padding:calc(16px + var(--safe-top)) 24px 40px; border-bottom-left-radius:32px; border-bottom-right-radius:32px; position:relative; overflow:hidden; flex-shrink:0; box-shadow:var(--shadow-sm); border-bottom:1px solid var(--line);">
-        <div style="position:absolute; inset:0; background:var(--ai-grad); opacity:0.15; filter:blur(40px);"></div>
-        
-        <div style="position:relative; z-index:2; display:flex; align-items:center; height:44px; margin-bottom:20px; margin-left:-8px;">
-           ${backBtnHtml}
-        </div>
-        
-        <div style="position:relative; z-index:2;">
-          <h2 class="wiz-q" style="color:var(--ink);">당신의 <span style="background:var(--ai-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">업무 DNA</span>를<br/>알려주세요.</h2>
-          <p style="color:var(--muted); font-size:15px; font-weight:600; margin-top:12px;">AI가 가장 완벽한 시너지의 스쿼드를 짜드릴게요.</p>
-        </div>
+    <div class="scroll no-tab wizard-scroll" style="padding-top:calc(12px + var(--safe-top)); padding-bottom:calc(40px + var(--safe-bottom) + var(--kb-inset));">
+      <div style="display:flex; align-items:center; height:44px; margin-left:-8px; margin-bottom:16px;">
+        ${backBtnHtml}
       </div>
 
-      <div class="scroll no-tab" style="padding:32px 24px calc(140px + var(--kb-inset)); flex:1; background:transparent;">
-        <div class="stack">
-          <div class="field"><label class="field-label">호칭</label><input class="input" id="wizName" value="${esc(WizState.data.name)}" placeholder="이름 또는 닉네임" autocomplete="nickname" enterkeyhint="next"/></div>
-          
-          <div class="field mt-16"><label class="field-label">성별</label>
-            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
-              ${['남성','여성','선택안함'].map(g => `<button type="button" class="mbti-chip ${WizState.data.gender===g?'selected':''}" data-wgender="${g}">${g}</button>`).join('')}
-            </div>
-          </div>
+      <div class="wizard-intro">
+        <h2 class="wiz-q">당신의 <span class="wiz-q-accent">성향 DNA</span>를<br/>알려주세요.</h2>
+        <p class="wiz-sub">AI가 가장 완벽한 시너지의 스쿼드를 짜드릴게요.</p>
+      </div>
 
-          <div class="field mt-16"><label class="field-label">혈액형</label>
-            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
-              ${['A형','B형','O형','AB형'].map(b => `<button type="button" class="mbti-chip ${WizState.data.bloodType===b?'selected':''}" data-wblood="${b}">${b}</button>`).join('')}
-            </div>
-          </div>
+      <div class="stack" style="margin-top:28px;">
+        <div class="field"><label class="field-label">호칭</label><input class="input" id="wizName" value="${esc(WizState.data.name)}" placeholder="이름 또는 닉네임" autocomplete="nickname" enterkeyhint="next"/></div>
 
-          <div class="field mt-16"><label class="field-label">MBTI</label>
-            <div class="mbti-grid">${MBTI_TYPES.map(t => `<button type="button" class="mbti-chip ${WizState.data.mbti===t?'selected':''}" data-wmbti="${t}">${t}</button>`).join('')}</div>
+        <div class="field mt-16"><label class="field-label">성별</label>
+          <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:10px;">
+            ${['남성','여성','선택안함'].map(g => `<button type="button" class="mbti-chip ${WizState.data.gender===g?'selected':''}" data-wgender="${g}">${g}</button>`).join('')}
           </div>
-          
-          <div class="field mt-16"><label class="field-label">가족 관계</label><input class="input" id="wizFamily" value="${esc(WizState.data.family)}" placeholder="예: 기혼, 자녀 1명" autocomplete="off" enterkeyhint="next"/></div>
-
-          <div class="field mt-16"><label class="field-label">취미 / 관심사</label><input class="input" id="wizHobbies" value="${esc(WizState.data.hobbies)}" placeholder="예: 풋살, 탁구, AI 음악 제작" autocomplete="off" enterkeyhint="done"/></div>
         </div>
+
+        <div class="field mt-16"><label class="field-label">혈액형</label>
+          <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:10px;">
+            ${['A형','B형','O형','AB형'].map(b => `<button type="button" class="mbti-chip ${WizState.data.bloodType===b?'selected':''}" data-wblood="${b}">${b}</button>`).join('')}
+          </div>
+        </div>
+
+        <div class="field mt-16"><label class="field-label">MBTI</label>
+          <div class="mbti-grid">${MBTI_TYPES.map(t => `<button type="button" class="mbti-chip ${WizState.data.mbti===t?'selected':''}" data-wmbti="${t}">${t}</button>`).join('')}</div>
+        </div>
+
+        <div class="field mt-16"><label class="field-label">가족 관계</label><input class="input" id="wizFamily" value="${esc(WizState.data.family)}" placeholder="예: 기혼, 자녀 1명" autocomplete="off" enterkeyhint="next"/></div>
+
+        <div class="field mt-16"><label class="field-label">취미 / 관심사</label><input class="input" id="wizHobbies" value="${esc(WizState.data.hobbies)}" placeholder="예: 풋살, 탁구, AI 음악 제작" autocomplete="off" enterkeyhint="done"/></div>
       </div>
-      
-      <div class="wiz-actions" style="background:linear-gradient(transparent, var(--paper) 30%); z-index:30;">
-        <button class="btn btn-ai btn-block" id="wizSave" style="height:64px; border-radius:24px; font-size:18px; box-shadow:0 12px 24px rgba(255,51,0,0.3);">${isFirstTime ? '시작하기 🚀' : '업데이트 완료'}</button>
-      </div>
+
+      <button class="btn btn-ai btn-block" id="wizSave" style="height:64px; margin-top:32px; border-radius:24px; font-size:18px; box-shadow:0 12px 24px rgba(255,51,0,0.3);">${isFirstTime ? '시작하기 🚀' : '업데이트 완료'}</button>
     </div>
   `;
 };
