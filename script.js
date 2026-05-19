@@ -14,7 +14,7 @@ const pickColor = seed => AVATAR_PALETTE[hash(String(seed))%AVATAR_PALETTE.lengt
 const initial = name => (name||'?').trim().charAt(0);
 const clamp = (n,min,max) => Math.max(min, Math.min(max, n));
 
-const DEFAULT_STATE = { settings: { theme: 'dark' }, profile: null, customMembers: [], teams: [] };
+const DEFAULT_STATE = { settings: { theme: 'dark' }, profile: null, customMembers: [], teams: [], penalty: false };
 const deepClone = obj => JSON.parse(JSON.stringify(obj));
 
 const Store = {
@@ -123,21 +123,22 @@ const AIEngine = {
   }
 };
 
-/* --- CHART RENDERER --- */
-function renderRadarChart(data){
-  const size = 260, cx = size/2, cy = size/2, r = 90;
-  const angleAt = i => -Math.PI/2 + (i * 2*Math.PI/5);
-  const pt = (i, val) => [cx + r*(val/100)*Math.cos(angleAt(i)), cy + r*(val/100)*Math.sin(angleAt(i))];
-  const rings = [0.25, 0.5, 0.75, 1].map(k => `<polygon class="grid" points="${[0,1,2,3,4].map(i => `${cx + r*k*Math.cos(angleAt(i))},${cy + r*k*Math.sin(angleAt(i))}`).join(' ')}"/>`).join('');
-  const axes = [0,1,2,3,4].map(i => `<line class="axis" x1="${cx}" y1="${cy}" x2="${pt(i,100)[0]}" y2="${pt(i,100)[1]}"/>`).join('');
-  const dataPts = data.map((d,i) => pt(i, d.value).join(',')).join(' ');
-  const points = data.map((d,i) => `<circle class="point" cx="${pt(i, d.value)[0]}" cy="${pt(i, d.value)[1]}" r="5"/>`).join('');
-  const labels = data.map((d,i) => {
-    const [x,y] = [cx + (r+28)*Math.cos(angleAt(i)), cy + (r+28)*Math.sin(angleAt(i))];
-    const anchor = Math.abs(x-cx)<10 ? 'middle' : x>cx ? 'start' : 'end';
-    return `<text class="label" x="${x}" y="${y}" text-anchor="${anchor}" dominant-baseline="middle">${d.label}</text>`;
-  }).join('');
-  return `<div class="radar-wrap"><div class="radar"><svg viewBox="0 0 ${size} ${size}">${rings}${axes}<polygon class="area" points="${dataPts}"/>${points}${labels}</svg></div></div>`;
+/* --- SOUND GENERATOR --- */
+function playPebble() {
+  try {
+    const audioCtx = window.sharedAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
+    window.sharedAudioCtx = audioCtx;
+    if(audioCtx.state === 'suspended') audioCtx.resume();
+    const o = audioCtx.createOscillator();
+    const g = audioCtx.createGain();
+    o.type = 'sine'; // 조약돌의 둥글둥글한 소리를 위해 사인파 적용
+    o.frequency.setValueAtTime(900, audioCtx.currentTime);
+    o.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.05); // 짧게 떨어지는 주파수
+    g.gain.setValueAtTime(0.8, audioCtx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05); // 매우 짧은 감쇠율
+    o.connect(g); g.connect(audioCtx.destination);
+    o.start(); o.stop(audioCtx.currentTime + 0.05);
+  } catch(e) {}
 }
 
 /* ===================================================================
@@ -176,11 +177,8 @@ Views.splash = () => `
 
 Views.splash.mount = () => {
   const splash = $('#splash');
-  
-  // 마이크로 햅틱 피드백으로 정밀한 첫인상 부여
   setTimeout(() => { Haptic.light(); }, 200);
 
-  // 2.6초간 완벽히 균형 잡힌 다크 인터랙션을 보여준 후 부드럽게 대시보드로 진입
   setTimeout(() => {
     splash.classList.add('out'); 
     setTimeout(() => { 
@@ -202,7 +200,7 @@ Views.home = () => {
   }
   const hero = p ? `<div class="card mb-24" style="background:var(--card-2); color:var(--ink); border:1px solid var(--line); padding:32px 24px;"><div style="display:flex;align-items:center;gap:20px;">${avatarHTML(p)}<div style="flex:1"><div style="font-size:24px;font-weight:900;">${esc(p.name)}님</div>${details}</div></div></div>` : '';
   return `
-    <div class="app-header"><div class="left"><span class="h-title">홈</span></div></div>
+    <div class="app-header"><div class="left"><span class="h-title">어서와 처음이지~?</span></div></div>
     <div class="scroll" style="padding:16px 22px;">
       ${hero}
       <div class="section-h"><span class="h3">액션 스튜디오</span></div>
@@ -226,6 +224,149 @@ Views.home = () => {
   `;
 };
 Views.home.mount = () => { $$('[data-team]').forEach(b => b.addEventListener('click', () => { Haptic.light(); Router.go('teamDetail', {id: b.dataset.team}); })); };
+
+/* --- TETRIS PENALTY ROOM --- */
+Views.tetris = () => `
+  <div class="screen" style="background:#0a0a0c; z-index:500; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
+    <h2 style="color:var(--bad); font-size:24px; font-weight:900; margin-bottom:8px;">🚨 병맛 형벌장 🚨</h2>
+    <p style="color:var(--muted); font-size:14px; margin-bottom:20px; text-align:center; line-height:1.5;">매시업 점수가 50점 미만입니다.<br>테트리스 3줄을 파괴해야 탈출 가능! (<span id="tetrisLines" style="color:#fff;font-weight:bold;">0</span> / 3)</p>
+    <canvas id="tCanvas" width="200" height="400" style="background:#111; border:2px solid var(--line-2); border-radius:8px; box-shadow:0 0 30px rgba(255,51,0,0.2);"></canvas>
+    
+    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-top:24px; width:240px;">
+      <button class="btn btn-secondary" id="tLeft" style="height:56px; font-size:20px; border-radius:16px;">⬅️</button>
+      <button class="btn btn-secondary" id="tRotate" style="height:56px; font-size:20px; border-radius:16px;">🔄</button>
+      <button class="btn btn-secondary" id="tRight" style="height:56px; font-size:20px; border-radius:16px;">➡️</button>
+      <div style="grid-column: 1 / 4;">
+        <button class="btn btn-primary btn-block" id="tDrop" style="height:60px; font-size:18px; border-radius:16px; background:var(--line-2); border:none;">⏬ 수직 낙하 (얍!)</button>
+      </div>
+    </div>
+  </div>
+`;
+Views.tetris.mount = () => {
+  const cvs = document.getElementById('tCanvas');
+  const ctx = cvs.getContext('2d');
+  const ROWS = 20, COLS = 10, SQ = 20;
+  let board = Array.from({length: ROWS}, () => Array(COLS).fill(0));
+  let lines = 0;
+
+  const pieces = [ [[1,1,1,1]], [[1,1],[1,1]], [[0,1,0],[1,1,1]], [[1,0,0],[1,1,1]], [[0,0,1],[1,1,1]], [[0,1,1],[1,1,0]], [[1,1,0],[0,1,1]] ];
+  const colors = ['#FF3300', '#DFFF00', '#00C853', '#00B0FF', '#7000FF', '#FF007F', '#FF9F0A'];
+
+  let p = randomPiece();
+  let dropStart = Date.now();
+  let req;
+
+  function randomPiece() {
+    const r = Math.floor(Math.random() * pieces.length);
+    return { shape: pieces[r], color: colors[r], x: 3, y: 0 };
+  }
+
+  function draw() {
+    ctx.fillStyle = '#0a0a0c'; ctx.fillRect(0,0,200,400);
+    for(let r=0; r<ROWS; r++){
+      for(let c=0; c<COLS; c++){
+        if(board[r][c]) {
+          ctx.fillStyle = board[r][c];
+          ctx.fillRect(c*SQ, r*SQ, SQ-1, SQ-1);
+        }
+      }
+    }
+    if(p) {
+      ctx.fillStyle = p.color;
+      for(let r=0; r<p.shape.length; r++) {
+        for(let c=0; c<p.shape[r].length; c++) {
+          if(p.shape[r][c]) ctx.fillRect((p.x+c)*SQ, (p.y+r)*SQ, SQ-1, SQ-1);
+        }
+      }
+    }
+  }
+
+  function collide(x, y, shape) {
+    for(let r=0; r<shape.length; r++) {
+      for(let c=0; c<shape[r].length; c++) {
+        if(!shape[r][c]) continue;
+        let nx = x + c; let ny = y + r;
+        if(nx < 0 || nx >= COLS || ny >= ROWS) return true;
+        if(ny < 0) continue;
+        if(board[ny][nx]) return true;
+      }
+    }
+    return false;
+  }
+
+  function merge() {
+    for(let r=0; r<p.shape.length; r++) {
+      for(let c=0; c<p.shape[r].length; c++) {
+        if(p.shape[r][c] && p.y+r >= 0) {
+          board[p.y+r][p.x+c] = p.color;
+        }
+      }
+    }
+    playPebble(); // 블록 고정 시 조약돌 소리
+    
+    let clearedThisTurn = 0;
+    for(let r=ROWS-1; r>=0; r--) {
+      let full = true;
+      for(let c=0; c<COLS; c++) if(!board[r][c]) full = false;
+      if(full) {
+        board.splice(r, 1);
+        board.unshift(Array(COLS).fill(0));
+        clearedThisTurn++;
+        r++;
+      }
+    }
+    
+    if(clearedThisTurn > 0) {
+      lines += clearedThisTurn;
+      Haptic.heavy();
+      document.getElementById('tetrisLines').innerText = lines;
+      if(lines >= 3) {
+        cancelAnimationFrame(req);
+        Store.state.penalty = false; 
+        Store.save();
+        Toast.show('형벌 종료! 이제 매시업이 가능합니다.', '🎉', 3000);
+        Router.go('home');
+        return;
+      }
+    }
+    p = randomPiece();
+    if(collide(p.x, p.y, p.shape)) {
+       board = Array.from({length: ROWS}, () => Array(COLS).fill(0)); // Game over reset
+       Toast.show('블럭이 천장에 닿았습니다. 처음부터 다시!', '💀');
+    }
+  }
+
+  function drop() {
+    if(!collide(p.x, p.y+1, p.shape)) p.y++;
+    else merge();
+    dropStart = Date.now();
+  }
+
+  function update() {
+    let now = Date.now();
+    if(now - dropStart > 600) { drop(); draw(); }
+    req = requestAnimationFrame(update);
+  }
+
+  // 조작부 (이벤트 시 조약돌 사운드 재생)
+  const bindCtrl = (id, fn) => {
+    document.getElementById(id).addEventListener('pointerdown', (e) => { e.preventDefault(); fn(); draw(); playPebble(); });
+  };
+
+  bindCtrl('tLeft', () => { if(!collide(p.x-1, p.y, p.shape)) p.x--; });
+  bindCtrl('tRight', () => { if(!collide(p.x+1, p.y, p.shape)) p.x++; });
+  bindCtrl('tRotate', () => { 
+    let rotated = p.shape[0].map((_, i) => p.shape.map(row => row[i]).reverse());
+    if(!collide(p.x, p.y, rotated)) p.shape = rotated; 
+  });
+  bindCtrl('tDrop', () => {
+    while(!collide(p.x, p.y+1, p.shape)) p.y++;
+    merge();
+  });
+
+  draw();
+  update();
+};
 
 /* --- TEAMS & DETAIL --- */
 Views.teams = () => `
@@ -349,6 +490,11 @@ Views.teamBuilder = () => {
   `;
 };
 Views.teamBuilder.mount = () => {
+  if (Store.state.penalty) {
+    Toast.show('형벌을 마치지 않았습니다! 테트리스장으로 강제 연행됩니다.', '🚨', 3000);
+    return Router.go('tetris');
+  }
+
   const render = () => {
     const pool = [Store.state.profile, ...(Store.state.customMembers||[])].filter(Boolean);
     if (pool.length === 0) { $('#builderList').innerHTML = `<div style="padding:60px 20px;text-align:center;color:var(--muted); font-weight:700;">풀에 멤버가 없어요.<br>우측 상단 + 버튼으로 팀원을 추가해보세요!</div>`; } 
@@ -380,10 +526,24 @@ Views.teamBuilder.mount = () => {
     render();
   });
 
+  // 패널티 테트리스 연동 로직
   $('#builderSave').addEventListener('click', () => {
     if(BuilderState.selected.size < 2) return Toast.show('스쿼드는 최소 2명이어야 해요!', '🚨');
+    
+    const currentSelected = Array.from(BuilderState.selected);
+    const analysis = AIEngine.analyze(currentSelected);
+
+    // 스쿼드 점수 50점 미만 시 형벌장 이동
+    if (analysis.overall < 50) {
+      Store.state.penalty = true;
+      Store.save();
+      Haptic.heavy();
+      Toast.show('조합 점수 50점 미만! 형벌의 방으로 이동합니다.', '⚡', 3500);
+      return Router.go('tetris');
+    }
+
     const newTeamId = uid('t');
-    Store.state.teams.push({ id: newTeamId, name: `도파민 스쿼드 #${Math.floor(Math.random()*999)}`, memberIds: Array.from(BuilderState.selected), createdAt: Date.now() });
+    Store.state.teams.push({ id: newTeamId, name: `도파민 스쿼드 #${Math.floor(Math.random()*999)}`, memberIds: currentSelected, createdAt: Date.now() });
     Store.save(); Haptic.success(); Router.go('teamDetail', {id: newTeamId});
   });
 
@@ -544,7 +704,7 @@ Views.settings.mount = () => {
     b.style.background='var(--card)'; b.style.color='var(--ink)';
   }));
   $('#btnReset').addEventListener('click', () => { 
-    Sheet.open('정말 초기화할까요?', '<div class="stack"><p style="color:var(--muted); font-size:15px; font-weight:600; text-align:center;">저장된 프로필과 팀 데이터가 모두 날아갑니다.</p><button class="btn btn-block" style="background:var(--bad); color:#fff; height:60px;" id="btnConfirmReset">네, 폭파시게요 💣</button></div>', {
+    Sheet.open('정말 초기화할까요?', '<div class="stack"><p style="color:var(--muted); font-size:15px; font-weight:600; text-align:center;">저장된 프로필과 팀 데이터가 모두 날아갑니다.</p><button class="btn btn-block" style="background:var(--bad); color:#fff; height:60px;" id="btnConfirmReset">네, 폭파시킬게요 💣</button></div>', {
       mount: () => { $('#btnConfirmReset').onclick = () => { Store.state = deepClone(DEFAULT_STATE); Store.save(); applyTheme(); Sheet.close(); Router.go('splash'); }; }
     });
   });

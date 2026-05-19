@@ -38,8 +38,10 @@ button{font:inherit;color:inherit;background:none;border:0;cursor:pointer;outlin
 input, select{font:inherit;color:inherit;outline:none;}
 ::-webkit-scrollbar{display:none;}
 
+/* 이탤릭체 전면 금지 */
 em, i { font-style: normal !important; }
 
+/* 글로벌 트렌디 아이콘 (토스/네이버 스타일) */
 svg {
   fill: none;
   stroke: currentColor;
@@ -62,7 +64,7 @@ svg {
 
 .app-header{flex-shrink:0;padding:calc(10px + var(--safe-top)) 22px 10px;display:flex;align-items:center;justify-content:space-between;min-height:calc(56px + var(--safe-top)); z-index:10; backdrop-filter:blur(10px); -webkit-backdrop-filter:blur(10px);}
 .app-header .left{display:flex;align-items:center;gap:12px;flex:1}
-.h-title{font-size:18px;font-weight:800;letter-spacing:-.03em;}
+.h-title{font-size:20px;font-weight:900;letter-spacing:-.03em;}
 .h-action, .h-back{width:40px;height:40px;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:transform .2s, background .2s; margin-left:-8px; background:var(--card); box-shadow:var(--shadow-sm);}
 .h-action:active, .h-back:active{transform:scale(0.9);}
 .scroll{flex:1;overflow-y:auto;padding-bottom:calc(96px + var(--safe-bottom));}
@@ -140,18 +142,19 @@ svg {
 .builder-bar{position:absolute;bottom:0;left:0;right:0;padding:20px 22px calc(20px + var(--safe-bottom));background:var(--sheet-bg); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border-top:1px solid var(--line); display:flex;justify-content:space-between;align-items:center;transform:translateY(100%);transition:transform .4s var(--ease-spring);z-index:20;}
 .builder-bar.show{transform:translateY(0);}
 
-/* ============ INSIGHTS (HOLO CARD & RADAR) ============ */
+/* ============ INSIGHTS (HOLO CARD & REFINED RADAR) ============ */
 .holo-card{ background:var(--card-2); color:var(--ink); border:1px solid var(--line); border-radius:32px; padding:32px 24px; position:relative; overflow:hidden; box-shadow:var(--shadow-lg); text-align:center;}
 .holo-card::before{ content:''; position:absolute; top:-50%; left:-50%; width:200%; height:200%; background:conic-gradient(from 0deg, transparent, var(--accent), var(--accent-2), transparent); animation:spinHolo 4s linear infinite; opacity:0.15; pointer-events:none;}
 @keyframes spinHolo{ 100%{transform:rotate(360deg)} }
 
-.radar-wrap{position:relative;width:100%;max-width:260px;margin:24px auto;aspect-ratio:1; filter:drop-shadow(0 10px 20px rgba(255,51,0,0.2));}
+.radar-wrap{position:relative;width:100%;max-width:260px;margin:24px auto;aspect-ratio:1;}
 .radar svg{width:100%;height:100%;overflow:visible}
-.radar .grid{fill:none;stroke:var(--line-2);stroke-width:1}
-.radar .axis{stroke:var(--line-2);stroke-width:1}
-.radar .area{fill:url(#radarGrad); fill-opacity:0.6; stroke:var(--accent); stroke-width:3; stroke-linejoin:round; filter:drop-shadow(0 0 10px rgba(255,51,0,0.5));}
-.radar .point{fill:var(--ink);stroke:var(--accent);stroke-width:3}
-.radar .label{font-size:12px;font-weight:800;fill:var(--muted)}
+.radar .grid{fill:none;stroke:rgba(255,255,255,0.1);stroke-width:1;} 
+.radar .axis{stroke:rgba(255,255,255,0.1);stroke-width:1;}
+/* 레이더 오각형을 순백색으로 채우고 눈에 띄게 그림자 처리 (테두리 삭제) */
+.radar .area{fill:#FFFFFF !important; fill-opacity:1 !important; stroke:none !important; filter:drop-shadow(0 0 20px rgba(255,255,255,0.85));} 
+.radar .point{fill:#000000;stroke:#FFFFFF;stroke-width:2.5}
+.radar .label{font-size:13px;font-weight:800;fill:rgba(255,255,255,0.85); letter-spacing:-0.02em;}
 
 .insight-list { display:flex; flex-direction:column; gap:16px; margin-top:24px; }
 .insight-item { background:var(--card); border-radius:20px; padding:20px; box-shadow:var(--shadow-sm); display:flex; gap:16px; border:1px solid var(--line);}
@@ -183,37 +186,38 @@ svg {
 @keyframes typing { from { width: 0 } to { width: 100% } }
 @keyframes blink-caret { from, to { border-color: transparent } 50% { border-color: var(--accent); } }
 
-/* ============ REFINED TRENDY SPLASH (VERTICAL ALIGNED) ============ */
+/* ============ REFINED TRENDY SPLASH (PERFECT VERTICAL CENTERED) ============ */
 .screen#splash {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center; /* 완벽한 수직 수평 정렬 */
+  justify-content: center; /* 수직 정중앙 완벽 정렬 */
   background: #060608; 
-  position: relative;
+  position: absolute;
+  inset: 0;
   overflow: hidden;
   z-index: 100;
-  padding: 32px;
+  padding: 0; /* 패딩 바이어스 제거 */
 }
 
-/* 정교한 컨테이너 결합 래퍼 */
+/* 요소 전체를 감싸서 함께 중앙으로 배치 */
 .splash-wrapper {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
+  margin: 0; /* 불필요한 여백 모두 제거 */
 }
 
-/* 미니멀 시각 앵커 엠블렘 (화려한 회전 탈피, 토스형 스케일 인터랙션) */
 #splash-emblem {
   position: relative;
-  width: 72px;
-  height: 72px;
+  width: 80px;
+  height: 80px;
   display: flex;
   align-items: center;
   justify-content: center;
-  margin-bottom: 32px;
+  margin-bottom: 28px;
 }
 
 .emblem-ring {
@@ -222,51 +226,49 @@ svg {
   border-radius: 50%;
   background: var(--ai-grad);
   opacity: 0.15;
-  filter: blur(12px);
+  filter: blur(14px);
   transform: scale(0.6);
   animation: smoothScale 2.2s cubic-bezier(0.25, 1, 0.5, 1) infinite alternate;
 }
 
 #emblem-core {
-  width: 24px;
-  height: 24px;
-  border-radius: 7px; /* 트렌디한 스쿼클 느낌 */
+  width: 26px;
+  height: 26px;
+  border-radius: 8px; 
   background: var(--ai-grad);
-  box-shadow: 0 8px 24px rgba(255, 51, 0, 0.4);
+  box-shadow: 0 8px 24px rgba(255, 51, 0, 0.5);
   transform: scale(0) rotate(-45deg);
   animation: corePopIn 1.2s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
 }
 
-/* 반전 타이포그래피 모던 시퀀스 */
 #splash-text {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
 }
 
 .splash-copy {
-  font-size: 24px;
-  font-weight: 800;
+  font-size: 26px;
+  font-weight: 850;
   letter-spacing: -0.04em;
   color: #FFFFFF;
   opacity: 0;
-  transform: translateY(12px);
-  animation: trendyFadeUp 1s cubic-bezier(0.25, 1, 0.5, 1) 0.5s forwards;
+  transform: translateY(16px);
+  animation: trendyFadeUp 1s cubic-bezier(0.25, 1, 0.5, 1) 0.4s forwards;
 }
 
 .splash-title {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 800;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
   color: var(--muted);
   opacity: 0;
-  transform: translateY(8px);
-  animation: trendyFadeUp 0.8s cubic-bezier(0.25, 1, 0.5, 1) 1s forwards;
+  transform: translateY(10px);
+  animation: trendyFadeUp 0.8s cubic-bezier(0.25, 1, 0.5, 1) 0.9s forwards;
 }
 
-/* 화면 전체 트렌디 디졸브 아웃 */
 .screen#splash.out {
   animation: trendyFadeOut 0.6s cubic-bezier(0.25, 1, 0.5, 1) forwards;
   pointer-events: none;
@@ -276,16 +278,13 @@ svg {
 @keyframes corePopIn {
   to { transform: scale(1) rotate(0deg); }
 }
-
 @keyframes smoothScale {
-  0% { transform: scale(0.8); opacity: 0.1; }
-  100% { transform: scale(1.3); opacity: 0.25; }
+  0% { transform: scale(0.8); opacity: 0.12; }
+  100% { transform: scale(1.4); opacity: 0.3; }
 }
-
 @keyframes trendyFadeUp {
   to { opacity: 1; transform: translateY(0); }
 }
-
 @keyframes trendyFadeOut {
-  to { opacity: 0; transform: scale(1.03); visibility: hidden; }
+  to { opacity: 0; transform: scale(1.02); visibility: hidden; }
 }
