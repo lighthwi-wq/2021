@@ -260,7 +260,21 @@ Views.splash = () => `
     <div class="splash-wrapper">
       <div id="splash-emblem">
         <div class="emblem-ring"></div>
-        <div id="emblem-core"></div>
+        <div id="emblem-blocks" aria-hidden="true">
+          <div class="t-piece t-giyeok">
+            <span class="t-block" style="grid-area:1/1"></span>
+            <span class="t-block" style="grid-area:1/2"></span>
+            <span class="t-block" style="grid-area:1/3"></span>
+            <span class="t-block" style="grid-area:2/3"></span>
+          </div>
+          <div class="t-piece t-nieun">
+            <span class="t-block" style="grid-area:2/1"></span>
+            <span class="t-block" style="grid-area:3/1"></span>
+            <span class="t-block" style="grid-area:3/2"></span>
+            <span class="t-block" style="grid-area:3/3"></span>
+          </div>
+          <div class="lock-flash" aria-hidden="true"></div>
+        </div>
       </div>
       <div id="splash-text">
         <div class="splash-copy">너랑 나랑 맞을까?</div>
