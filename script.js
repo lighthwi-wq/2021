@@ -2,7 +2,7 @@
 
 const STORAGE_KEY = 'oneteam_db_mz_v1';
 const MBTI_TYPES = ['INTJ','INTP','ENTJ','ENTP','INFJ','INFP','ENFJ','ENFP','ISTJ','ISFJ','ESTJ','ESFJ','ISTP','ISFP','ESTP','ESFP'];
-const MBTI_LABELS = { INTJ:'갓벽주의 전략가', INTP:'방구석 아인슈타인', ENTJ:'도파민 폭주 기관차', ENTP:'팩폭 장인', INFJ:'겉바속촉 예언자', INFP:'망상 풀가동 요정', ENFJ:'인간 리트리버', ENFP:'인싸 중의 인싸', ISTJ:'엑셀 인간화', ISFJ:'프로수발러', ESTJ:'효율 집착 광공', ESFJ:'핵인싸 총무', ISTP:'효율 낭만파', ISFP:'누워있는 예술가', ESTP:'브레이크 고장', ESFP:'인간 핫식스' };
+const MBTI_LABELS = { INTJ:'갓벽주의 전략가', INTP:'방구석 아인슈타인', ENTJ:'도파민 폭주 기관차', ENTP:'팩폭 장인', INFJ:'겉바속촉 예언자', INFP:'망상 풀가동 요정', ENFJ:'인간 리트리버', ENFP:'인싸 중의 인싸', ISTJ:'엑셀 인간화', ISFJ:'프로수발러', ESTJ:'효율 집착 광공', ESFJ:'핵인싸 총무', ISTP:'효율 낭만파', ISFP:'누워있는 예술가', ESTP:'브레이크 고장', ESFP:'인간 ホットシックス' };
 const AVATAR_PALETTE = ['#FF3300','#4A154B','#00C853','#FF007F','#7000FF','#FF9100','#00B0FF','#1A1A1A'];
 
 const $ = (sel, root=document) => root.querySelector(sel);
@@ -14,7 +14,7 @@ const pickColor = seed => AVATAR_PALETTE[hash(String(seed))%AVATAR_PALETTE.lengt
 const initial = name => (name||'?').trim().charAt(0);
 const clamp = (n,min,max) => Math.max(min, Math.min(max, n));
 
-const DEFAULT_STATE = { settings: { theme: 'system' }, profile: null, customMembers: [], teams: [] };
+const DEFAULT_STATE = { settings: { theme: 'dark' }, profile: null, customMembers: [], teams: [] };
 const deepClone = obj => JSON.parse(JSON.stringify(obj));
 
 const Store = {
@@ -158,14 +158,46 @@ const Router = {
 const avatarHTML = m => `<div class="avatar avatar-md" style="background:${pickColor(m.id)}">${esc(initial(m.name))}</div>`;
 const Views = {};
 
-/* --- SPLASH --- */
+/* --- GODO SPLASH --- */
 Views.splash = () => `
-  <div class="screen" style="align-items:center;justify-content:center; background:var(--ink);">
-    <div style="font-size:40px;font-weight:900;letter-spacing:-0.05em; color:var(--paper); position:relative; z-index:2;">One Team.</div>
-    <div style="position:absolute; inset:0; background:var(--ai-grad); opacity:0.3; filter:blur(60px); animation:spinHolo 10s linear infinite;"></div>
+  <div class="screen" id="splash">
+    <div id="splash-emblem">
+      <div class="emblem-arc"></div>
+      <div class="emblem-arc"></div>
+      <div class="emblem-arc"></div>
+      <div id="emblem-core"></div>
+    </div>
+    <div id="splash-text">
+      <div class="splash-title">One Team.</div>
+      <div class="splash-subtitle typing-effect">AI 팀원 매시업.</div>
+    </div>
   </div>
 `;
-Views.splash.mount = () => { setTimeout(() => { Store.state.profile && Store.state.profile.name ? Router.go('home') : Router.go('analyze'); }, 1500); };
+
+Views.splash.mount = () => {
+  const splash = $('#splash');
+  const title = $('.splash-title', splash);
+  const subtitle = $('.splash-subtitle', splash);
+
+  Haptic.heavy(); // 임팩트 있는 스플래시 시작
+
+  // 1. 엠블렘 애니메이션은 CSS로 자동 시작
+
+  // 2. 타이포그래피 애니메이션 시퀀스 제어
+  // 메인 타이틀 등장 (2초 후)
+  setTimeout(() => { title.style.animationPlayState = 'running'; }, 2000);
+  
+  // 서브 타이틀 등장 (2.5초 후)
+  setTimeout(() => { subtitle.style.animationPlayState = 'running'; }, 2500);
+
+  // 3. 메인 화면으로 전환
+  // 모든 애니메이션이 끝난 후 (dur-slow +dur_extra)
+  setTimeout(() => {
+    splash.classList.add('out'); // 페이드아웃 시작
+    // 페이드아웃 애니메이션 완료 후 라우팅
+    setTimeout(() => { Router.go('home'); }, 480); // dur-slow와 동일하게 설정
+  }, 4500); // 전체 스플래시 유지 시간
+};
 
 /* --- HOME --- */
 Views.home = () => {
@@ -174,18 +206,18 @@ Views.home = () => {
   if (p) {
     const extra = [p.gender, p.bloodType, p.family, p.hobbies ? `🎨 ${p.hobbies}` : ''].filter(Boolean).join(' · ');
     details = `
-      <div style="font-size:15px;color:color-mix(in srgb, var(--paper) 70%, transparent);margin-top:4px;font-weight:700;">${esc(p.mbti)} · ${MBTI_LABELS[p.mbti]}</div>
-      ${extra ? `<div style="font-size:13px;color:color-mix(in srgb, var(--paper) 50%, transparent);margin-top:4px;font-weight:500;">${esc(extra)}</div>` : ''}
+      <div style="font-size:15px;color:var(--muted);margin-top:4px;font-weight:700;">${esc(p.mbti)} · ${MBTI_LABELS[p.mbti]}</div>
+      ${extra ? `<div style="font-size:13px;color:var(--muted-2);margin-top:4px;font-weight:500;">${esc(extra)}</div>` : ''}
     `;
   }
-  const hero = p ? `<div class="card mb-24" style="background:var(--ink); color:var(--paper); border:none; padding:32px 24px;"><div style="display:flex;align-items:center;gap:20px;">${avatarHTML(p)}<div style="flex:1"><div style="font-size:24px;font-weight:900;">${esc(p.name)}님</div>${details}</div></div></div>` : '';
+  const hero = p ? `<div class="card mb-24" style="background:var(--card-2); color:var(--ink); border:1px solid var(--line); padding:32px 24px;"><div style="display:flex;align-items:center;gap:20px;">${avatarHTML(p)}<div style="flex:1"><div style="font-size:24px;font-weight:900;">${esc(p.name)}님</div>${details}</div></div></div>` : '';
   return `
     <div class="app-header"><div class="left"><span class="h-title">홈</span></div></div>
     <div class="scroll" style="padding:16px 22px;">
       ${hero}
       <div class="section-h"><span class="h3">액션 스튜디오</span></div>
       <div class="stack mb-24">
-        <button class="btn btn-primary" onclick="Router.go('teamBuilder')" style="height:72px; font-size:18px; justify-content:flex-start; padding:0 24px; background:var(--card); color:var(--ink); border:1px solid var(--line); box-shadow:var(--shadow-sm);">
+        <button class="btn btn-primary" onclick="Router.go('teamBuilder')" style="height:72px; font-size:18px; justify-content:flex-start; padding:0 24px; box-shadow:var(--shadow-sm);">
           <span style="font-size:24px; margin-right:12px;">✨</span> AI 팀 매시업 만들기
         </button>
         <button class="btn btn-secondary" onclick="Router.go('analyze')" style="height:60px; justify-content:flex-start; padding:0 24px; font-size:16px;">
@@ -193,7 +225,10 @@ Views.home = () => {
         </button>
       </div>
       
-      <div class="section-h"><span class="h3">최근 스쿼드</span><button class="link" onclick="Router.go('teams')">전체보기 <svg viewBox="0 0 24 24" width="16" stroke="currentColor" fill="none"><path d="M9 18l6-6-6-6"/></svg></button></div>
+      <div class="section-h">
+        <span class="h3">최근 스쿼드</span>
+        <button class="link" onclick="Router.go('teams')">전체보기 <svg viewBox="0 0 24 24" width="16"><path d="M9 18l6-6-6-6"/></svg></button>
+      </div>
       <div class="stack">
         ${Store.state.teams.slice(0,2).map(t => `<button class="team-card" data-team="${t.id}"><div class="team-card-name"><span>${esc(t.name)}</span><span style="color:var(--accent); font-weight:900;">${AIEngine.analyze(t.memberIds).overall}점</span></div><div class="team-card-meta">${t.memberIds.length}명의 능력자들</div><div class="team-avatars">${t.memberIds.slice(0,5).map(id => avatarHTML(Store.member(id))).join('')}</div></button>`).join('') || '<div style="text-align:center;padding:40px;color:var(--muted); font-weight:700; background:var(--card); border-radius:24px; border:1px dashed var(--line-2);">아직 스쿼드가 없어요!</div>'}
       </div>
@@ -231,7 +266,14 @@ Views.teamDetail = ({id}) => {
   }, 1200);
 
   return `
-    <div class="app-header"><div class="left"><button class="h-back" onclick="Router.go('teams')"><svg viewBox="0 0 24 24" width="24" stroke="currentColor" fill="none" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button></div><div class="right"><button class="h-action" id="btnMore"><svg viewBox="0 0 24 24" width="20" stroke="currentColor" fill="none" stroke-width="2"><circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/></svg></button></div></div>
+    <div class="app-header">
+      <div class="left">
+        <button class="h-back" onclick="Router.go('teams')"><svg viewBox="0 0 24 24" width="24"><path d="M15 19l-7-7 7-7"/></svg></button>
+      </div>
+      <div class="right">
+        <button class="h-action" id="btnMore"><svg viewBox="0 0 24 24" width="24"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
+      </div>
+    </div>
     <div class="scroll no-tab" style="padding:0 22px;">
       <h2 style="font-size:28px; font-weight:900; margin-bottom:24px; letter-spacing:-0.04em;">${esc(team.name)}</h2>
       
@@ -242,7 +284,10 @@ Views.teamDetail = ({id}) => {
     </div>
     
     <div style="position:fixed; bottom:0; left:0; right:0; padding:16px 22px calc(16px + var(--safe-bottom)); background:linear-gradient(transparent, var(--paper) 40%); pointer-events:none;">
-      <button class="btn btn-ai btn-block" onclick="Toast.show('이미지가 갤러리에 저장되었습니다! 📸')" style="pointer-events:auto; box-shadow:0 12px 30px rgba(255,51,0,0.3);"><svg viewBox="0 0 24 24" width="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg> 결과 자랑하기 (스토리 공유)</button>
+      <button class="btn btn-ai btn-block" onclick="Toast.show('이미지가 갤러리에 저장되었습니다! 📸')" style="pointer-events:auto; box-shadow:0 12px 30px rgba(255,51,0,0.3);">
+        <svg viewBox="0 0 24 24" width="20"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+        결과 자랑하기 (스토리 공유)
+      </button>
     </div>
   `;
 };
@@ -253,8 +298,8 @@ function renderInsights(team) {
   
   return `
     <div class="holo-card w-100">
-      <div style="font-size:16px; font-weight:800; opacity:0.8;">AI 종합 시너지 스코어</div>
-      <div style="font-size:64px; font-weight:900; letter-spacing:-0.05em; margin:8px 0; text-shadow:0 4px 20px color-mix(in srgb, var(--paper) 30%, transparent);">${analysis.overall}</div>
+      <div style="font-size:16px; font-weight:800; color:var(--muted);">AI 종합 시너지 스코어</div>
+      <div style="font-size:64px; font-weight:900; letter-spacing:-0.05em; margin:8px 0; text-shadow:0 4px 20px rgba(0,0,0,0.5);">${analysis.overall}</div>
       <div style="font-size:18px; font-weight:800; color:var(--accent-3);">${analysis.title}</div>
       ${renderRadarChart(radarData)}
     </div>
@@ -296,10 +341,14 @@ Views.teamBuilder = () => {
   BuilderState.recommended = new Set();
   return `
     <div class="app-header">
-      <div class="left"><button class="h-back" onclick="Router.go('home')"><svg viewBox="0 0 24 24" width="24" stroke="currentColor" fill="none" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button><span class="h-title">멤버 픽업</span></div>
+      <div class="left"><button class="h-back" onclick="Router.go('home')"><svg viewBox="0 0 24 24" width="24"><path d="M15 19l-7-7 7-7"/></svg></button><span class="h-title">멤버 픽업</span></div>
       <div class="right">
-        <button class="h-action" id="btnAiRecommend" style="color:var(--accent); margin-right:8px; background:rgba(255,51,0,0.1); border:1px solid rgba(255,51,0,0.2);"><svg viewBox="0 0 24 24" width="20" stroke="currentColor" fill="none" stroke-width="2.5"><path d="M12 2v4m0 12v4M4.93 4.93l2.83 2.83m8.48 8.48l2.83 2.83M2 12h4m12 0h4M4.93 19.07l2.83-2.83m8.48-8.48l2.83-2.83"/></svg></button>
-        <button class="h-action" id="cmAddContact"><svg viewBox="0 0 24 24" width="20" stroke="currentColor" fill="none" stroke-width="2.5"><path d="M12 5v14m-7-7h14"/></svg></button>
+        <button class="h-action" id="btnAiRecommend" style="color:var(--accent); margin-right:8px; background:rgba(255,51,0,0.1); border:1px solid rgba(255,51,0,0.2);">
+          <svg viewBox="0 0 24 24" width="20"><path d="M12 2l2.4 7.6 7.6 2.4-7.6 2.4L12 22l-2.4-7.6-7.6-2.4 7.6-2.4L12 2z"/></svg>
+        </button>
+        <button class="h-action" id="cmAddContact">
+          <svg viewBox="0 0 24 24" width="20"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M19 8v6M16 11h6"/></svg>
+        </button>
       </div>
     </div>
     <div class="scroll" id="builderList" style="padding:16px 16px 120px;"></div>
@@ -318,7 +367,7 @@ Views.teamBuilder.mount = () => {
         const sel = BuilderState.selected.has(m.id), aiRec = BuilderState.recommended.has(m.id);
         const extra = [m.gender, m.bloodType, m.hobbies].filter(Boolean).join(' · ');
         const metaText = extra ? `${esc(m.mbti)} (${extra})` : `${esc(m.mbti)} · ${MBTI_LABELS[m.mbti]}`;
-        return `<button class="team-card builder-row ${sel?'selected':''} ${aiRec?'ai-recommended':''}" data-pick="${m.id}" style="margin-bottom:12px; padding:16px;">${avatarHTML(m)}<div class="builder-body"><div class="builder-name">${esc(m.name)}</div><div class="builder-meta">${metaText}</div></div><div class="check-ring"><svg viewBox="0 0 24 24" width="16" stroke-width="4" stroke="currentColor" fill="none"><path d="M5 12l5 5L20 7"/></svg></div></button>`;
+        return `<button class="team-card builder-row ${sel?'selected':''} ${aiRec?'ai-recommended':''}" data-pick="${m.id}" style="margin-bottom:12px; padding:16px;">${avatarHTML(m)}<div class="builder-body"><div class="builder-name">${esc(m.name)}</div><div class="builder-meta">${metaText}</div></div><div class="check-ring"><svg viewBox="0 0 24 24" width="16"><path d="M5 12l4 4L19 7"/></svg></div></button>`;
       }).join('');
     }
     $$('[data-pick]').forEach(b => b.addEventListener('click', () => { Haptic.light(); const id = b.dataset.pick; BuilderState.selected.has(id) ? BuilderState.selected.delete(id) : BuilderState.selected.add(id); render(); }));
@@ -410,11 +459,11 @@ const WizState = { data: {} };
 Views.analyze = () => {
   WizState.data = Store.state.profile || { name:'', mbti:'', gender:'', bloodType:'', family:'', hobbies:'' };
   const isFirstTime = !Store.state.profile;
-  const backBtnHtml = isFirstTime ? '' : `<button class="h-back" onclick="Router.go('home')" style="background:color-mix(in srgb, var(--paper) 10%, transparent); color:var(--paper); border:1px solid color-mix(in srgb, var(--paper) 10%, transparent); box-shadow:none;"><svg viewBox="0 0 24 24" width="24" stroke="currentColor" fill="none" stroke-width="2"><path d="M15 18l-6-6 6-6"/></svg></button>`;
+  const backBtnHtml = isFirstTime ? '' : `<button class="h-back" onclick="Router.go('home')" style="background:var(--line-2); color:var(--ink); border:1px solid var(--line); box-shadow:none;"><svg viewBox="0 0 24 24" width="24"><path d="M15 19l-7-7 7-7"/></svg></button>`;
   
   return `
     <div style="display:flex; flex-direction:column; height:100%; width:100%;">
-      <div style="background:var(--ink); padding:calc(16px + var(--safe-top)) 24px 40px; border-bottom-left-radius:32px; border-bottom-right-radius:32px; position:relative; overflow:hidden; flex-shrink:0; box-shadow:var(--shadow-sm);">
+      <div style="background:var(--card-2); padding:calc(16px + var(--safe-top)) 24px 40px; border-bottom-left-radius:32px; border-bottom-right-radius:32px; position:relative; overflow:hidden; flex-shrink:0; box-shadow:var(--shadow-sm); border-bottom:1px solid var(--line);">
         <div style="position:absolute; inset:0; background:var(--ai-grad); opacity:0.15; filter:blur(40px);"></div>
         
         <div style="position:relative; z-index:2; display:flex; align-items:center; height:40px; margin-bottom:24px; margin-left:-8px;">
@@ -422,8 +471,8 @@ Views.analyze = () => {
         </div>
         
         <div style="position:relative; z-index:2;">
-          <h2 class="wiz-q" style="color:var(--paper);">당신의 <em style="background:var(--ai-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">업무 DNA</em>를<br/>알려주세요.</h2>
-          <p style="color:color-mix(in srgb, var(--paper) 60%, transparent); font-size:15px; font-weight:600; margin-top:12px;">AI가 가장 완벽한 시너지의 스쿼드를 짜드릴게요.</p>
+          <h2 class="wiz-q" style="color:var(--ink);">당신의 <span style="background:var(--ai-grad);-webkit-background-clip:text;-webkit-text-fill-color:transparent;">업무 DNA</span>를<br/>알려주세요.</h2>
+          <p style="color:var(--muted); font-size:15px; font-weight:600; margin-top:12px;">AI가 가장 완벽한 시너지의 스쿼드를 짜드릴게요.</p>
         </div>
       </div>
 
@@ -487,14 +536,14 @@ Views.settings = () => `
   <div class="app-header"><div class="left"><span class="h-title">화학실</span></div></div>
   <div class="scroll" style="padding:16px 22px;">
     <div class="card" style="padding:16px; display:flex; flex-direction:column; gap:8px;">
-      <div style="font-size:14px;font-weight:800;color:var(--muted);margin-bottom:8px;">UI 테마 모드</div>
+      <div style="font-size:14px;font-weight:800;color:var(--muted);margin-bottom:8px;">UI 테마 모드 (기본 다크로 맵핑됨)</div>
       <div style="display:flex;gap:8px; background:var(--card-2); padding:6px; border-radius:18px;">
-        ${['light','dark','system'].map(t => `<button class="theme-opt ${Store.state.settings.theme===t?'active':''}" data-theme="${t}" style="flex:1; padding:12px; border-radius:14px; font-weight:800; font-size:14px; transition:all .2s; background:${Store.state.settings.theme===t?'var(--ink)':'transparent'}; color:${Store.state.settings.theme===t?'var(--paper)':'var(--muted)'};">${t==='light'?'☀️ 라이트':t==='dark'?'🌙 다크':'⚙️ 시스템'}</button>`).join('')}
+        ${['light','dark','system'].map(t => `<button class="theme-opt ${Store.state.settings.theme===t?'active':''}" data-theme="${t}" style="flex:1; padding:12px; border-radius:14px; font-weight:800; font-size:14px; transition:all .2s; background:${Store.state.settings.theme===t?'var(--card)':'transparent'}; color:${Store.state.settings.theme===t?'var(--ink)':'var(--muted)'};">${t==='light'?'☀️ 라이트':t==='dark'?'🌙 다크':'⚙️ 시스템'}</button>`).join('')}
       </div>
     </div>
     
     <div class="mt-16">
-      <button class="btn btn-block" id="btnReset" style="background:#FF17441f; color:var(--bad); height:60px;">데이터 전체 초기화 💣</button>
+      <button class="btn btn-block" id="btnReset" style="background:rgba(255,69,58,0.1); color:var(--bad); height:60px;">데이터 전체 초기화 💣</button>
     </div>
   </div>
 `;
@@ -502,7 +551,7 @@ Views.settings.mount = () => {
   $$('[data-theme]').forEach(b => b.addEventListener('click', () => { 
     Haptic.light(); Store.state.settings.theme = b.dataset.theme; Store.save(); applyTheme(); 
     $$('[data-theme]').forEach(x => { x.style.background='transparent'; x.style.color='var(--muted)'; });
-    b.style.background='var(--ink)'; b.style.color='var(--paper)';
+    b.style.background='var(--card)'; b.style.color='var(--ink)';
   }));
   $('#btnReset').addEventListener('click', () => { 
     Sheet.open('정말 초기화할까요?', '<div class="stack"><p style="color:var(--muted); font-size:15px; font-weight:600; text-align:center;">저장된 프로필과 팀 데이터가 모두 날아갑니다.</p><button class="btn btn-block" style="background:var(--bad); color:#fff; height:60px;" id="btnConfirmReset">네, 폭파시킬게요 💣</button></div>', {
@@ -512,9 +561,8 @@ Views.settings.mount = () => {
 };
 
 function applyTheme() {
-  let t = Store.state.settings.theme || 'system'; if(t === 'system') t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+  let t = Store.state.settings.theme || 'dark'; if(t === 'system') t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', t);
-  const metaTheme = $('#meta-theme'); if(metaTheme) metaTheme.setAttribute('content', t === 'dark' ? '#09090B' : '#0a0a0a');
 }
 function boot(){
   Store.load(); applyTheme();
