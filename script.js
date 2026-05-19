@@ -43,15 +43,42 @@ const Toast = {
 };
 
 const Sheet = {
-  open(title, bodyHTML, opts={}){ 
-    $('#sheetHead').innerHTML = esc(title); 
-    $('#sheetBody').innerHTML = bodyHTML; 
-    $('#sheet').classList.add('open'); $('#scrim').classList.add('open'); 
+  open(title, bodyHTML, opts={}){
+    $('#sheetHead').innerHTML = esc(title);
+    $('#sheetBody').innerHTML = bodyHTML;
+    $('#sheet').classList.add('open'); $('#scrim').classList.add('open');
     Haptic.light();
-    if(opts.mount) opts.mount(); 
+    if(opts.mount) opts.mount();
   },
   close(){ $('#sheet').classList.remove('open'); $('#scrim').classList.remove('open'); }
 };
+
+function bindSheetSwipeDown() {
+  const sheet = $('#sheet'); if (!sheet) return;
+  let start = null, dy = 0;
+  const handle = sheet.querySelector('.sheet-handle');
+  const onDown = (e) => {
+    if (e.target !== handle && !e.target.closest('.sheet-handle')) return;
+    start = e.clientY; dy = 0;
+    sheet.style.transition = 'none';
+  };
+  const onMove = (e) => {
+    if (start === null) return;
+    dy = Math.max(0, e.clientY - start);
+    sheet.style.transform = `translateY(${dy}px)`;
+  };
+  const onUp = () => {
+    if (start === null) return;
+    sheet.style.transition = '';
+    sheet.style.transform = '';
+    if (dy > 80) Sheet.close();
+    start = null; dy = 0;
+  };
+  sheet.addEventListener('pointerdown', onDown);
+  window.addEventListener('pointermove', onMove);
+  window.addEventListener('pointerup', onUp);
+  window.addEventListener('pointercancel', onUp);
+}
 
 /* ===================================================================
    MZ VIBE AI ENGINE
@@ -123,36 +150,104 @@ const AIEngine = {
   }
 };
 
-/* --- SOUND GENERATOR --- */
-function playPebble() {
-  try {
-    const audioCtx = window.sharedAudioCtx || new (window.AudioContext || window.webkitAudioContext)();
-    window.sharedAudioCtx = audioCtx;
-    if(audioCtx.state === 'suspended') audioCtx.resume();
-    const o = audioCtx.createOscillator();
-    const g = audioCtx.createGain();
-    o.type = 'sine'; // 조약돌의 둥글둥글한 소리를 위해 사인파 적용
-    o.frequency.setValueAtTime(900, audioCtx.currentTime);
-    o.frequency.exponentialRampToValueAtTime(300, audioCtx.currentTime + 0.05); // 짧게 떨어지는 주파수
-    g.gain.setValueAtTime(0.8, audioCtx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.05); // 매우 짧은 감쇠율
-    o.connect(g); g.connect(audioCtx.destination);
-    o.start(); o.stop(audioCtx.currentTime + 0.05);
-  } catch(e) {}
-}
+/* ===================================================================
+   ARCADE SOUND ENGINE (Web Audio API synth)
+   =================================================================== */
+const SFX = {
+  _ctx: null,
+  _master: null,
+  _muted: false,
+  ctx() {
+    if (!this._ctx) {
+      try {
+        const AC = window.AudioContext || window.webkitAudioContext;
+        this._ctx = new AC();
+        this._master = this._ctx.createGain();
+        this._master.gain.value = 0.5;
+        this._master.connect(this._ctx.destination);
+      } catch (e) { return null; }
+    }
+    if (this._ctx.state === 'suspended') { try { this._ctx.resume(); } catch(_){} }
+    return this._ctx;
+  },
+  setMuted(m) { this._muted = !!m; if (this._master) this._master.gain.value = m ? 0 : 0.5; },
+  _tone({ freq = 440, dur = 0.08, type = 'square', vol = 0.3, slide = 0, attack = 0.002, decay = 0 }) {
+    if (this._muted) return;
+    const ctx = this.ctx(); if (!ctx) return;
+    const t = ctx.currentTime;
+    const o = ctx.createOscillator();
+    const g = ctx.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(freq, t);
+    if (slide) o.frequency.exponentialRampToValueAtTime(Math.max(40, freq + slide), t + dur);
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(vol, t + attack);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur + decay);
+    o.connect(g); g.connect(this._master);
+    o.start(t); o.stop(t + dur + decay + 0.02);
+  },
+  _noise({ dur = 0.06, vol = 0.2, hp = 800 }) {
+    if (this._muted) return;
+    const ctx = this.ctx(); if (!ctx) return;
+    const t = ctx.currentTime;
+    const buf = ctx.createBuffer(1, ctx.sampleRate * dur, ctx.sampleRate);
+    const d = buf.getChannelData(0);
+    for (let i = 0; i < d.length; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / d.length);
+    const src = ctx.createBufferSource(); src.buffer = buf;
+    const filt = ctx.createBiquadFilter(); filt.type = 'highpass'; filt.frequency.value = hp;
+    const g = ctx.createGain(); g.gain.value = vol;
+    src.connect(filt); filt.connect(g); g.connect(this._master);
+    src.start(t);
+  },
+  move()      { this._tone({ freq: 220, dur: 0.04, type: 'square', vol: 0.18, slide: 40 }); },
+  rotate()    { this._tone({ freq: 520, dur: 0.06, type: 'triangle', vol: 0.22, slide: 220 }); },
+  softDrop()  { this._tone({ freq: 180, dur: 0.03, type: 'square', vol: 0.14 }); },
+  hardDrop()  {
+    this._tone({ freq: 110, dur: 0.10, type: 'sawtooth', vol: 0.28, slide: -60 });
+    this._noise({ dur: 0.10, vol: 0.18, hp: 400 });
+  },
+  lock()      { this._tone({ freq: 90, dur: 0.05, type: 'square', vol: 0.22 }); },
+  lineClear(n) {
+    const ctx = this.ctx(); if (!ctx) return;
+    const base = [523, 659, 784, 1046];
+    for (let i = 0; i < Math.min(n, 4); i++) {
+      setTimeout(() => this._tone({ freq: base[i], dur: 0.12, type: 'square', vol: 0.26 }), i * 60);
+    }
+    if (n >= 4) setTimeout(() => this._tone({ freq: 1319, dur: 0.25, type: 'sawtooth', vol: 0.3, slide: 200 }), 240);
+  },
+  levelUp() {
+    [440, 554, 659, 880].forEach((f, i) => setTimeout(() => this._tone({ freq: f, dur: 0.08, type: 'square', vol: 0.24 }), i * 70));
+  },
+  gameOver() {
+    [392, 349, 311, 261, 196].forEach((f, i) => setTimeout(() => this._tone({ freq: f, dur: 0.18, type: 'sawtooth', vol: 0.28 }), i * 120));
+  },
+  win() {
+    [523, 659, 784, 1046, 1319].forEach((f, i) => setTimeout(() => this._tone({ freq: f, dur: 0.14, type: 'triangle', vol: 0.3 }), i * 90));
+  },
+  tap()       { this._tone({ freq: 880, dur: 0.03, type: 'sine', vol: 0.12 }); },
+};
+
+function playPebble() { SFX.tap(); }
 
 /* ===================================================================
    ROUTING & VIEWS
    =================================================================== */
 const Router = {
   current: null,
-  go(name, params={}){
+  history: [],
+  go(name, params={}, opts={}){
+    if (this.current && !opts.replace) this.history.push(this.current);
     this.current = { name, params };
     $('#stage').innerHTML = `<div class="screen fade-in">${Views[name](params)}</div>`;
     if(Views[name].mount) Views[name].mount(params);
     const showTabs = ['home','teams','settings'].includes(name);
     $('#tabBar').classList.toggle('hidden', !showTabs);
     $$('.tab').forEach(t => t.classList.toggle('active', t.dataset.tab === name));
+  },
+  back(fallback='home'){
+    const prev = this.history.pop();
+    if (prev) { this.current = null; this.go(prev.name, prev.params, { replace: true }); }
+    else this.go(fallback);
   }
 };
 
@@ -177,14 +272,18 @@ Views.splash = () => `
 
 Views.splash.mount = () => {
   const splash = $('#splash');
+  let done = false;
+  const go = () => {
+    if (done) return; done = true;
+    splash.classList.add('out');
+    Router.history = [];
+    setTimeout(() => {
+      Store.state.profile && Store.state.profile.name ? Router.go('home') : Router.go('analyze');
+    }, 600);
+  };
   setTimeout(() => { Haptic.light(); }, 200);
-
-  setTimeout(() => {
-    splash.classList.add('out'); 
-    setTimeout(() => { 
-      Store.state.profile && Store.state.profile.name ? Router.go('home') : Router.go('analyze'); 
-    }, 600); 
-  }, 2600); 
+  splash.addEventListener('pointerdown', () => { SFX.tap(); go(); }, { once: true });
+  setTimeout(go, 2600);
 };
 
 /* --- HOME --- */
@@ -201,7 +300,7 @@ Views.home = () => {
   const hero = p ? `<div class="card mb-24" style="background:var(--card-2); color:var(--ink); border:1px solid var(--line); padding:32px 24px;"><div style="display:flex;align-items:center;gap:20px;">${avatarHTML(p)}<div style="flex:1"><div style="font-size:24px;font-weight:900;">${esc(p.name)}님</div>${details}</div></div></div>` : '';
   return `
     <div class="app-header"><div class="left"><span class="h-title">어서와 처음이지~?</span></div></div>
-    <div class="scroll" style="padding:16px 22px;">
+    <div class="scroll">
       ${hero}
       <div class="section-h"><span class="h3">액션 스튜디오</span></div>
       <div class="stack mb-24">
@@ -225,153 +324,607 @@ Views.home = () => {
 };
 Views.home.mount = () => { $$('[data-team]').forEach(b => b.addEventListener('click', () => { Haptic.light(); Router.go('teamDetail', {id: b.dataset.team}); })); };
 
-/* --- TETRIS PENALTY ROOM --- */
+/* ===================================================================
+   TETRIS PENALTY ARCADE
+   - 진짜 모바일 아케이드 게임 (사운드/햅틱/스코어/넥스트/홀드/고스트/레벨업)
+   =================================================================== */
+const TETRIS_GOAL_LINES = 3;
+
 Views.tetris = () => `
-  <div class="screen" style="background:#0a0a0c; z-index:500; display:flex; flex-direction:column; align-items:center; justify-content:center; padding:20px;">
-    <h2 style="color:var(--bad); font-size:24px; font-weight:900; margin-bottom:8px;">🚨 병맛 형벌장 🚨</h2>
-    <p style="color:var(--muted); font-size:14px; margin-bottom:20px; text-align:center; line-height:1.5;">매시업 점수가 50점 미만입니다.<br>테트리스 3줄을 파괴해야 탈출 가능! (<span id="tetrisLines" style="color:#fff;font-weight:bold;">0</span> / 3)</p>
-    <canvas id="tCanvas" width="200" height="400" style="background:#111; border:2px solid var(--line-2); border-radius:8px; box-shadow:0 0 30px rgba(255,51,0,0.2);"></canvas>
-    
-    <div style="display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; margin-top:24px; width:240px;">
-      <button class="btn btn-secondary" id="tLeft" style="height:56px; font-size:20px; border-radius:16px;">⬅️</button>
-      <button class="btn btn-secondary" id="tRotate" style="height:56px; font-size:20px; border-radius:16px;">🔄</button>
-      <button class="btn btn-secondary" id="tRight" style="height:56px; font-size:20px; border-radius:16px;">➡️</button>
-      <div style="grid-column: 1 / 4;">
-        <button class="btn btn-primary btn-block" id="tDrop" style="height:60px; font-size:18px; border-radius:16px; background:var(--line-2); border:none;">⏬ 수직 낙하 (얍!)</button>
+  <div class="screen" id="tetris-screen">
+    <div class="tetris-topbar">
+      <button class="h-back" id="tBack" aria-label="나가기">
+        <svg viewBox="0 0 24 24" width="20"><path d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <div class="tetris-title">PENALTY ARCADE</div>
+      <button class="tetris-pause" id="tPause" aria-label="일시정지">
+        <svg viewBox="0 0 24 24" width="20"><rect x="6" y="5" width="4" height="14" rx="1"/><rect x="14" y="5" width="4" height="14" rx="1"/></svg>
+      </button>
+    </div>
+
+    <div class="tetris-mission">
+      <span class="pulse-dot"></span>
+      <span>매시업 50점 미만! <b>${TETRIS_GOAL_LINES}줄</b>을 부숴야 형벌 종료. 진행 <b id="tMissionLines">0</b>/${TETRIS_GOAL_LINES}</span>
+    </div>
+
+    <div class="tetris-stage">
+      <div class="tetris-side">
+        <div class="tet-stat">
+          <div class="lbl">Score</div>
+          <div class="val" id="tScore">0</div>
+        </div>
+        <div class="tet-stat">
+          <div class="lbl">Level</div>
+          <div class="val" id="tLevel">1</div>
+        </div>
+        <div class="tet-hold">
+          <div class="lbl">Hold</div>
+          <canvas id="tHoldCvs" width="60" height="60"></canvas>
+        </div>
+      </div>
+
+      <div class="tetris-board-wrap">
+        <div class="tetris-board" id="tBoardWrap">
+          <canvas id="tCanvas" width="200" height="400"></canvas>
+        </div>
+      </div>
+
+      <div class="tetris-side">
+        <div class="tet-stat">
+          <div class="lbl">Lines</div>
+          <div class="val" id="tLines">0</div>
+        </div>
+        <div class="tet-next">
+          <div class="lbl">Next</div>
+          <canvas id="tNextCvs" width="60" height="60"></canvas>
+        </div>
+        <button class="tet-btn accent" id="tHold" style="height:auto;padding:10px 0;flex-direction:column;font-size:11px;letter-spacing:.1em;">
+          <svg viewBox="0 0 24 24" width="20"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3v6h-6"/></svg>
+          HOLD
+        </button>
+      </div>
+    </div>
+
+    <div class="tetris-controls">
+      <button class="tet-btn" id="tLeft" aria-label="왼쪽">
+        <svg viewBox="0 0 24 24"><path d="M15 19l-7-7 7-7"/></svg>
+      </button>
+      <button class="tet-btn accent" id="tRotate" aria-label="회전">
+        <svg viewBox="0 0 24 24"><path d="M21 12a9 9 0 1 1-9-9"/><path d="M21 3v6h-6"/></svg>
+      </button>
+      <button class="tet-btn" id="tRight" aria-label="오른쪽">
+        <svg viewBox="0 0 24 24"><path d="M9 19l7-7-7-7"/></svg>
+      </button>
+      <button class="tet-btn" id="tSoft" aria-label="아래">
+        <svg viewBox="0 0 24 24"><path d="M19 12l-7 7-7-7"/></svg>
+        <span class="sub">SOFT</span>
+      </button>
+      <button class="tet-btn primary wide" id="tDrop" aria-label="강하">
+        <svg viewBox="0 0 24 24"><path d="M12 2v16"/><path d="M5 11l7 7 7-7"/></svg>
+        <span class="sub" style="position:static;margin-left:8px;opacity:.85;">HARD DROP</span>
+      </button>
+    </div>
+
+    <div class="tetris-overlay" id="tOverlay">
+      <div class="tetris-overlay-card">
+        <h3 id="tOverlayTitle">일시정지</h3>
+        <p id="tOverlayMsg">잠깐 숨 고르기. 준비되면 재개하세요.</p>
+        <div class="stack">
+          <button class="btn btn-ai btn-block" id="tResume">계속하기</button>
+          <button class="btn btn-secondary btn-block" id="tRestart">다시 시작</button>
+          <button class="btn btn-block" id="tQuit" style="background:rgba(255,69,58,0.12);color:var(--bad);">탈출 포기 (홈으로)</button>
+        </div>
       </div>
     </div>
   </div>
 `;
+
 Views.tetris.mount = () => {
+  /* ---------- canvas setup with DPR scaling ---------- */
+  const boardWrap = document.getElementById('tBoardWrap');
   const cvs = document.getElementById('tCanvas');
   const ctx = cvs.getContext('2d');
-  const ROWS = 20, COLS = 10, SQ = 20;
-  let board = Array.from({length: ROWS}, () => Array(COLS).fill(0));
-  let lines = 0;
+  const nextCvs = document.getElementById('tNextCvs');
+  const nextCtx = nextCvs.getContext('2d');
+  const holdCvs = document.getElementById('tHoldCvs');
+  const holdCtx = holdCvs.getContext('2d');
 
-  const pieces = [ [[1,1,1,1]], [[1,1],[1,1]], [[0,1,0],[1,1,1]], [[1,0,0],[1,1,1]], [[0,0,1],[1,1,1]], [[0,1,1],[1,1,0]], [[1,1,0],[0,1,1]] ];
-  const colors = ['#FF3300', '#DFFF00', '#00C853', '#00B0FF', '#7000FF', '#FF007F', '#FF9F0A'];
+  const COLS = 10, ROWS = 20;
+  let SQ = 20;
 
-  let p = randomPiece();
-  let dropStart = Date.now();
-  let req;
+  const resizeCanvas = () => {
+    const stageEl = cvs.closest('.tetris-stage');
+    const wrapEl = cvs.closest('.tetris-board-wrap');
+    if (!stageEl || !wrapEl) return;
+    const maxH = wrapEl.clientHeight - 16;
+    const maxW = wrapEl.clientWidth - 16;
+    const sqByH = Math.floor(maxH / ROWS);
+    const sqByW = Math.floor(maxW / COLS);
+    SQ = Math.max(14, Math.min(28, Math.min(sqByH, sqByW)));
+    const w = COLS * SQ, h = ROWS * SQ;
+    const dpr = window.devicePixelRatio || 1;
+    cvs.style.width = w + 'px'; cvs.style.height = h + 'px';
+    cvs.width = w * dpr; cvs.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    [nextCvs, holdCvs].forEach((c, i) => {
+      const cctx = i === 0 ? nextCtx : holdCtx;
+      const cs = parseFloat(getComputedStyle(c).width) || 60;
+      c.width = cs * dpr; c.height = cs * dpr;
+      cctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    });
+    draw();
+  };
 
-  function randomPiece() {
-    const r = Math.floor(Math.random() * pieces.length);
-    return { shape: pieces[r], color: colors[r], x: 3, y: 0 };
+  /* ---------- pieces (SRS-style) ---------- */
+  const PIECES = {
+    I: { color: '#00E0FF', shape: [[0,0,0,0],[1,1,1,1],[0,0,0,0],[0,0,0,0]] },
+    O: { color: '#FFD600', shape: [[1,1],[1,1]] },
+    T: { color: '#B266FF', shape: [[0,1,0],[1,1,1],[0,0,0]] },
+    S: { color: '#32D74B', shape: [[0,1,1],[1,1,0],[0,0,0]] },
+    Z: { color: '#FF453A', shape: [[1,1,0],[0,1,1],[0,0,0]] },
+    J: { color: '#0A84FF', shape: [[1,0,0],[1,1,1],[0,0,0]] },
+    L: { color: '#FF9F0A', shape: [[0,0,1],[1,1,1],[0,0,0]] },
+  };
+  const KEYS = Object.keys(PIECES);
+
+  /* ---------- state ---------- */
+  let board, current, next, holdPiece, hasHeld, bag, lines, score, level, missionLines, dropMs, lastDrop, raf, gameOver, paused;
+
+  const initState = () => {
+    board = Array.from({ length: ROWS }, () => Array(COLS).fill(0));
+    bag = [];
+    current = nextPiece();
+    next = nextPiece();
+    holdPiece = null; hasHeld = false;
+    lines = 0; score = 0; level = 1; missionLines = 0;
+    dropMs = 800; lastDrop = performance.now();
+    gameOver = false; paused = false;
+    updateHUD();
+  };
+
+  function refillBag() {
+    const arr = KEYS.slice();
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    bag = arr;
+  }
+  function nextPiece() {
+    if (!bag.length) refillBag();
+    const k = bag.pop();
+    const def = PIECES[k];
+    const shape = def.shape.map(r => r.slice());
+    return { key: k, color: def.color, shape, x: Math.floor((COLS - shape[0].length) / 2), y: -getTopOffset(shape) };
+  }
+  function getTopOffset(shape) {
+    for (let r = 0; r < shape.length; r++) if (shape[r].some(v => v)) return r;
+    return 0;
   }
 
-  function draw() {
-    ctx.fillStyle = '#0a0a0c'; ctx.fillRect(0,0,200,400);
-    for(let r=0; r<ROWS; r++){
-      for(let c=0; c<COLS; c++){
-        if(board[r][c]) {
-          ctx.fillStyle = board[r][c];
-          ctx.fillRect(c*SQ, r*SQ, SQ-1, SQ-1);
-        }
+  /* ---------- collision & rotation ---------- */
+  function collide(x, y, shape, b = board) {
+    for (let r = 0; r < shape.length; r++) {
+      for (let c = 0; c < shape[r].length; c++) {
+        if (!shape[r][c]) continue;
+        const nx = x + c, ny = y + r;
+        if (nx < 0 || nx >= COLS || ny >= ROWS) return true;
+        if (ny < 0) continue;
+        if (b[ny][nx]) return true;
       }
     }
-    if(p) {
-      ctx.fillStyle = p.color;
-      for(let r=0; r<p.shape.length; r++) {
-        for(let c=0; c<p.shape[r].length; c++) {
-          if(p.shape[r][c]) ctx.fillRect((p.x+c)*SQ, (p.y+r)*SQ, SQ-1, SQ-1);
-        }
-      }
-    }
+    return false;
   }
-
-  function collide(x, y, shape) {
-    for(let r=0; r<shape.length; r++) {
-      for(let c=0; c<shape[r].length; c++) {
-        if(!shape[r][c]) continue;
-        let nx = x + c; let ny = y + r;
-        if(nx < 0 || nx >= COLS || ny >= ROWS) return true;
-        if(ny < 0) continue;
-        if(board[ny][nx]) return true;
+  function rotateShape(shape) {
+    const n = shape.length, m = shape[0].length;
+    const out = Array.from({ length: m }, () => Array(n).fill(0));
+    for (let r = 0; r < n; r++) for (let c = 0; c < m; c++) out[c][n - 1 - r] = shape[r][c];
+    return out;
+  }
+  function tryRotate() {
+    if (current.key === 'O') return false;
+    const rotated = rotateShape(current.shape);
+    const kicks = [0, -1, 1, -2, 2];
+    for (const k of kicks) {
+      if (!collide(current.x + k, current.y, rotated)) {
+        current.shape = rotated; current.x += k;
+        return true;
       }
     }
     return false;
   }
 
-  function merge() {
-    for(let r=0; r<p.shape.length; r++) {
-      for(let c=0; c<p.shape[r].length; c++) {
-        if(p.shape[r][c] && p.y+r >= 0) {
-          board[p.y+r][p.x+c] = p.color;
+  /* ---------- ghost ---------- */
+  function ghostY() {
+    let y = current.y;
+    while (!collide(current.x, y + 1, current.shape)) y++;
+    return y;
+  }
+
+  /* ---------- merge & line clear ---------- */
+  function lockPiece() {
+    let topRow = current.y;
+    for (let r = 0; r < current.shape.length; r++) {
+      for (let c = 0; c < current.shape[r].length; c++) {
+        if (current.shape[r][c]) {
+          const y = current.y + r, x = current.x + c;
+          if (y < 0) { triggerGameOver(); return; }
+          board[y][x] = current.color;
+          if (y < topRow) topRow = y;
         }
       }
     }
-    playPebble(); // 블록 고정 시 조약돌 소리
-    
-    let clearedThisTurn = 0;
-    for(let r=ROWS-1; r>=0; r--) {
-      let full = true;
-      for(let c=0; c<COLS; c++) if(!board[r][c]) full = false;
-      if(full) {
+    SFX.lock();
+    Haptic.light();
+
+    let cleared = 0;
+    for (let r = ROWS - 1; r >= 0; r--) {
+      if (board[r].every(v => v)) {
         board.splice(r, 1);
         board.unshift(Array(COLS).fill(0));
-        clearedThisTurn++;
-        r++;
+        cleared++; r++;
       }
     }
-    
-    if(clearedThisTurn > 0) {
-      lines += clearedThisTurn;
+    if (cleared > 0) {
+      const pts = [0, 100, 300, 500, 800][cleared] * level;
+      score += pts;
+      lines += cleared;
+      missionLines += cleared;
+      const prevLevel = level;
+      level = 1 + Math.floor(lines / 5);
+      dropMs = Math.max(120, 800 - (level - 1) * 70);
+      SFX.lineClear(cleared);
       Haptic.heavy();
-      document.getElementById('tetrisLines').innerText = lines;
-      if(lines >= 3) {
-        cancelAnimationFrame(req);
-        Store.state.penalty = false; 
-        Store.save();
-        Toast.show('형벌 종료! 이제 매시업이 가능합니다.', '🎉', 3000);
-        Router.go('home');
-        return;
+      flashBoard();
+      floatScore(`+${pts}${cleared === 4 ? ' TETRIS!' : ''}`);
+      if (level > prevLevel) { SFX.levelUp(); flashStat('tLevel'); Toast.show(`레벨 ${level} 돌입! 속도 업`, '⚡', 1400); }
+      flashStat('tScore'); flashStat('tLines');
+      updateHUD();
+      if (missionLines >= TETRIS_GOAL_LINES) { triggerWin(); return; }
+    } else {
+      updateHUD();
+    }
+
+    current = next;
+    next = nextPiece();
+    hasHeld = false;
+    if (collide(current.x, current.y, current.shape)) triggerGameOver();
+  }
+
+  function flashBoard() {
+    boardWrap.classList.remove('flash'); void boardWrap.offsetWidth; boardWrap.classList.add('flash');
+    boardWrap.classList.remove('shake'); void boardWrap.offsetWidth; boardWrap.classList.add('shake');
+  }
+  function flashStat(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash');
+  }
+  function floatScore(text) {
+    const wrap = document.querySelector('.tetris-board-wrap'); if (!wrap) return;
+    const el = document.createElement('div');
+    el.className = 'tet-floating-score'; el.textContent = text;
+    el.style.left = '50%'; el.style.top = '40%';
+    wrap.appendChild(el);
+    setTimeout(() => el.remove(), 1000);
+  }
+
+  /* ---------- movement ---------- */
+  function move(dx) {
+    if (paused || gameOver) return;
+    if (!collide(current.x + dx, current.y, current.shape)) {
+      current.x += dx;
+      SFX.move(); Haptic.light(); draw();
+    }
+  }
+  function rotate() {
+    if (paused || gameOver) return;
+    if (tryRotate()) { SFX.rotate(); Haptic.light(); draw(); }
+  }
+  function softDrop() {
+    if (paused || gameOver) return;
+    if (!collide(current.x, current.y + 1, current.shape)) {
+      current.y++; score += 1; SFX.softDrop(); updateHUD(); draw();
+    } else {
+      lockPiece(); draw();
+    }
+    lastDrop = performance.now();
+  }
+  function hardDrop() {
+    if (paused || gameOver) return;
+    let d = 0;
+    while (!collide(current.x, current.y + 1, current.shape)) { current.y++; d++; }
+    score += d * 2;
+    SFX.hardDrop(); Haptic.heavy();
+    lockPiece(); draw(); updateHUD();
+    lastDrop = performance.now();
+  }
+  function doHold() {
+    if (paused || gameOver || hasHeld) return;
+    SFX.rotate(); Haptic.light();
+    const cur = { key: current.key, color: current.color, shape: PIECES[current.key].shape.map(r => r.slice()) };
+    if (holdPiece) {
+      const swap = holdPiece;
+      holdPiece = cur;
+      current = { ...swap, x: Math.floor((COLS - swap.shape[0].length) / 2), y: -getTopOffset(swap.shape) };
+    } else {
+      holdPiece = cur;
+      current = next;
+      next = nextPiece();
+    }
+    hasHeld = true;
+    draw();
+  }
+
+  /* ---------- drawing ---------- */
+  function drawBlock(cctx, x, y, size, color) {
+    const r = Math.max(2, Math.floor(size * 0.18));
+    cctx.fillStyle = color;
+    roundRect(cctx, x + 1, y + 1, size - 2, size - 2, r);
+    cctx.fill();
+    const grad = cctx.createLinearGradient(x, y, x, y + size);
+    grad.addColorStop(0, 'rgba(255,255,255,0.45)');
+    grad.addColorStop(0.5, 'rgba(255,255,255,0)');
+    grad.addColorStop(1, 'rgba(0,0,0,0.35)');
+    cctx.fillStyle = grad;
+    roundRect(cctx, x + 1, y + 1, size - 2, size - 2, r);
+    cctx.fill();
+    cctx.strokeStyle = 'rgba(255,255,255,0.25)';
+    cctx.lineWidth = 1.5;
+    roundRect(cctx, x + 2, y + 2, size - 4, size - 4, Math.max(1, r - 2));
+    cctx.stroke();
+  }
+  function drawGhost(cctx, x, y, size) {
+    cctx.save();
+    cctx.fillStyle = 'rgba(255,255,255,0.08)';
+    cctx.strokeStyle = 'rgba(255,255,255,0.35)';
+    cctx.lineWidth = 1.5;
+    cctx.setLineDash([3, 3]);
+    const r = Math.max(2, Math.floor(size * 0.18));
+    roundRect(cctx, x + 2, y + 2, size - 4, size - 4, r);
+    cctx.fill(); cctx.stroke();
+    cctx.restore();
+  }
+  function roundRect(cctx, x, y, w, h, r) {
+    cctx.beginPath();
+    cctx.moveTo(x + r, y);
+    cctx.arcTo(x + w, y, x + w, y + h, r);
+    cctx.arcTo(x + w, y + h, x, y + h, r);
+    cctx.arcTo(x, y + h, x, y, r);
+    cctx.arcTo(x, y, x + w, y, r);
+    cctx.closePath();
+  }
+
+  function draw() {
+    const w = COLS * SQ, h = ROWS * SQ;
+    ctx.fillStyle = '#0a0612';
+    ctx.fillRect(0, 0, w, h);
+    ctx.strokeStyle = 'rgba(255,255,255,0.04)';
+    ctx.lineWidth = 1;
+    for (let i = 1; i < COLS; i++) { ctx.beginPath(); ctx.moveTo(i * SQ, 0); ctx.lineTo(i * SQ, h); ctx.stroke(); }
+    for (let i = 1; i < ROWS; i++) { ctx.beginPath(); ctx.moveTo(0, i * SQ); ctx.lineTo(w, i * SQ); ctx.stroke(); }
+    for (let r = 0; r < ROWS; r++) for (let c = 0; c < COLS; c++) {
+      if (board[r][c]) drawBlock(ctx, c * SQ, r * SQ, SQ, board[r][c]);
+    }
+    if (current && !gameOver) {
+      const gy = ghostY();
+      for (let r = 0; r < current.shape.length; r++) {
+        for (let c = 0; c < current.shape[r].length; c++) {
+          if (current.shape[r][c] && gy + r >= 0) {
+            drawGhost(ctx, (current.x + c) * SQ, (gy + r) * SQ, SQ);
+          }
+        }
+      }
+      for (let r = 0; r < current.shape.length; r++) {
+        for (let c = 0; c < current.shape[r].length; c++) {
+          if (current.shape[r][c] && current.y + r >= 0) {
+            drawBlock(ctx, (current.x + c) * SQ, (current.y + r) * SQ, SQ, current.color);
+          }
+        }
       }
     }
-    p = randomPiece();
-    if(collide(p.x, p.y, p.shape)) {
-       board = Array.from({length: ROWS}, () => Array(COLS).fill(0)); // Game over reset
-       Toast.show('블럭이 천장에 닿았습니다. 처음부터 다시!', '💀');
+    drawMini(nextCtx, next);
+    drawMini(holdCtx, holdPiece);
+  }
+  function drawMini(c, piece) {
+    const size = parseFloat(c.canvas.style.width) || 60;
+    c.clearRect(0, 0, size, size);
+    if (!piece) return;
+    const cells = [];
+    let minR = piece.shape.length, maxR = 0, minC = piece.shape[0].length, maxC = 0;
+    for (let r = 0; r < piece.shape.length; r++) for (let cc = 0; cc < piece.shape[r].length; cc++) {
+      if (piece.shape[r][cc]) {
+        cells.push([r, cc]);
+        if (r < minR) minR = r; if (r > maxR) maxR = r;
+        if (cc < minC) minC = cc; if (cc > maxC) maxC = cc;
+      }
     }
+    const w = maxC - minC + 1, h = maxR - minR + 1;
+    const sq = Math.floor(Math.min((size - 8) / Math.max(w, h), 14));
+    const offX = (size - w * sq) / 2, offY = (size - h * sq) / 2;
+    cells.forEach(([r, cc]) => drawBlock(c, offX + (cc - minC) * sq, offY + (r - minR) * sq, sq, piece.color));
   }
 
-  function drop() {
-    if(!collide(p.x, p.y+1, p.shape)) p.y++;
-    else merge();
-    dropStart = Date.now();
+  /* ---------- HUD ---------- */
+  function updateHUD() {
+    document.getElementById('tScore').textContent = score;
+    document.getElementById('tLevel').textContent = level;
+    document.getElementById('tLines').textContent = lines;
+    const ml = document.getElementById('tMissionLines'); if (ml) ml.textContent = Math.min(missionLines, TETRIS_GOAL_LINES);
   }
 
-  function update() {
-    let now = Date.now();
-    if(now - dropStart > 600) { drop(); draw(); }
-    req = requestAnimationFrame(update);
+  /* ---------- loop ---------- */
+  function loop(now) {
+    if (!paused && !gameOver) {
+      if (now - lastDrop >= dropMs) {
+        if (!collide(current.x, current.y + 1, current.shape)) { current.y++; }
+        else { lockPiece(); }
+        lastDrop = now;
+        draw();
+      }
+    }
+    raf = requestAnimationFrame(loop);
   }
 
-  // 조작부 (이벤트 시 조약돌 사운드 재생)
-  const bindCtrl = (id, fn) => {
-    document.getElementById(id).addEventListener('pointerdown', (e) => { e.preventDefault(); fn(); draw(); playPebble(); });
+  /* ---------- end states ---------- */
+  function triggerWin() {
+    gameOver = true; cancelAnimationFrame(raf);
+    Store.state.penalty = false; Store.save();
+    SFX.win(); Haptic.success();
+    showOverlay('🎉 형벌 종료!', `${TETRIS_GOAL_LINES}줄 클리어 성공! 매시업을 다시 시도할 수 있어요.`, [
+      { label: '홈으로 돌아가기', cls: 'btn-ai', onClick: () => Router.go('home') },
+      { label: '한판 더', cls: 'btn-secondary', onClick: () => restart() },
+    ]);
+  }
+  function triggerGameOver() {
+    gameOver = true; cancelAnimationFrame(raf);
+    SFX.gameOver(); Haptic.heavy();
+    showOverlay('💀 GAME OVER', `점수: ${score}점 · 라인: ${lines}줄\n블록이 천장에 닿았어요. 다시 도전!`, [
+      { label: '다시 시작', cls: 'btn-ai', onClick: () => restart() },
+      { label: '탈출 포기', cls: '', extra: 'background:rgba(255,69,58,0.12);color:var(--bad);', onClick: () => Router.go('home') },
+    ]);
+  }
+  function restart() {
+    initState(); hideOverlay(); resizeCanvas();
+    cancelAnimationFrame(raf); lastDrop = performance.now(); raf = requestAnimationFrame(loop);
+  }
+
+  /* ---------- overlay ---------- */
+  const overlay = document.getElementById('tOverlay');
+  function showOverlay(title, msg, actions) {
+    const card = overlay.querySelector('.tetris-overlay-card');
+    card.innerHTML = `
+      <h3>${esc(title)}</h3>
+      <p style="white-space:pre-line">${esc(msg)}</p>
+      <div class="stack"></div>
+    `;
+    const stack = card.querySelector('.stack');
+    actions.forEach(a => {
+      const b = document.createElement('button');
+      b.className = `btn btn-block ${a.cls || ''}`;
+      if (a.extra) b.setAttribute('style', a.extra);
+      b.textContent = a.label;
+      b.addEventListener('click', () => { Haptic.light(); a.onClick(); });
+      stack.appendChild(b);
+    });
+    overlay.classList.add('show');
+  }
+  function hideOverlay() { overlay.classList.remove('show'); }
+
+  /* ---------- pause ---------- */
+  function togglePause() {
+    if (gameOver) return;
+    paused = !paused;
+    if (paused) {
+      SFX.tap();
+      showOverlay('일시정지', '잠깐 숨 고르기. 준비되면 재개하세요.', [
+        { label: '계속하기', cls: 'btn-ai', onClick: () => { paused = false; hideOverlay(); lastDrop = performance.now(); } },
+        { label: '다시 시작', cls: 'btn-secondary', onClick: () => restart() },
+        { label: '탈출 포기 (홈으로)', cls: '', extra: 'background:rgba(255,69,58,0.12);color:var(--bad);', onClick: () => Router.go('home') },
+      ]);
+    } else { hideOverlay(); lastDrop = performance.now(); }
+  }
+
+  /* ---------- input bindings ---------- */
+  const bind = (id, fn, opts = {}) => {
+    const el = document.getElementById(id); if (!el) return;
+    const trigger = (e) => { e.preventDefault(); el.classList.add('pressed'); SFX.ctx(); fn(); };
+    const release = () => el.classList.remove('pressed');
+    el.addEventListener('pointerdown', trigger);
+    el.addEventListener('pointerup', release);
+    el.addEventListener('pointercancel', release);
+    el.addEventListener('pointerleave', release);
+
+    if (opts.repeat) {
+      let holdT = null, repT = null;
+      el.addEventListener('pointerdown', () => {
+        clearTimeout(holdT); clearInterval(repT);
+        holdT = setTimeout(() => { repT = setInterval(fn, opts.repeat); }, 220);
+      });
+      const stop = () => { clearTimeout(holdT); clearInterval(repT); };
+      el.addEventListener('pointerup', stop);
+      el.addEventListener('pointercancel', stop);
+      el.addEventListener('pointerleave', stop);
+    }
+  };
+  bind('tLeft', () => move(-1), { repeat: 80 });
+  bind('tRight', () => move(1), { repeat: 80 });
+  bind('tSoft', () => softDrop(), { repeat: 50 });
+  bind('tRotate', rotate);
+  bind('tDrop', hardDrop);
+  bind('tHold', doHold);
+  bind('tPause', togglePause);
+
+  document.getElementById('tBack').addEventListener('click', () => {
+    paused = true;
+    showOverlay('정말 나갈까요?', '진행 상황은 저장되지 않아요.', [
+      { label: '계속 도전', cls: 'btn-ai', onClick: () => { paused = false; hideOverlay(); lastDrop = performance.now(); } },
+      { label: '홈으로 (탈출 포기)', cls: '', extra: 'background:rgba(255,69,58,0.12);color:var(--bad);', onClick: () => Router.go('home') },
+    ]);
+  });
+
+  /* ---------- touch swipe on board ---------- */
+  let touchStart = null, lastSwipe = 0;
+  cvs.addEventListener('pointerdown', (e) => { touchStart = { x: e.clientX, y: e.clientY, t: Date.now() }; });
+  cvs.addEventListener('pointermove', (e) => {
+    if (!touchStart) return;
+    const dx = e.clientX - touchStart.x, dy = e.clientY - touchStart.y;
+    if (Math.abs(dx) > SQ && Date.now() - lastSwipe > 80) {
+      move(dx > 0 ? 1 : -1);
+      touchStart = { x: e.clientX, y: e.clientY, t: Date.now() };
+      lastSwipe = Date.now();
+    } else if (dy > SQ * 1.2 && Date.now() - lastSwipe > 60) {
+      softDrop();
+      touchStart = { x: e.clientX, y: e.clientY, t: Date.now() };
+      lastSwipe = Date.now();
+    }
+  });
+  cvs.addEventListener('pointerup', (e) => {
+    if (!touchStart) return;
+    const dx = e.clientX - touchStart.x, dy = e.clientY - touchStart.y, dt = Date.now() - touchStart.t;
+    if (Math.abs(dx) < 6 && Math.abs(dy) < 6 && dt < 200) rotate();
+    else if (dy > SQ * 4 && dt < 300) hardDrop();
+    touchStart = null;
+  });
+
+  /* ---------- keyboard (optional desktop test) ---------- */
+  const keyHandler = (e) => {
+    if (e.key === 'ArrowLeft') move(-1);
+    else if (e.key === 'ArrowRight') move(1);
+    else if (e.key === 'ArrowDown') softDrop();
+    else if (e.key === 'ArrowUp' || e.key === 'x' || e.key === 'X') rotate();
+    else if (e.key === ' ') { e.preventDefault(); hardDrop(); }
+    else if (e.key === 'c' || e.key === 'C' || e.key === 'Shift') doHold();
+    else if (e.key === 'p' || e.key === 'P' || e.key === 'Escape') togglePause();
+  };
+  window.addEventListener('keydown', keyHandler);
+
+  const ro = new ResizeObserver(resizeCanvas);
+  ro.observe(boardWrap);
+
+  /* cleanup on route change */
+  const origGo = Router.go;
+  Router.go = function (name, params, opts) {
+    if (Router.current && Router.current.name === 'tetris' && name !== 'tetris') {
+      cancelAnimationFrame(raf);
+      window.removeEventListener('keydown', keyHandler);
+      try { ro.disconnect(); } catch (_) {}
+      Router.go = origGo;
+    }
+    return origGo.call(this, name, params, opts);
   };
 
-  bindCtrl('tLeft', () => { if(!collide(p.x-1, p.y, p.shape)) p.x--; });
-  bindCtrl('tRight', () => { if(!collide(p.x+1, p.y, p.shape)) p.x++; });
-  bindCtrl('tRotate', () => { 
-    let rotated = p.shape[0].map((_, i) => p.shape.map(row => row[i]).reverse());
-    if(!collide(p.x, p.y, rotated)) p.shape = rotated; 
-  });
-  bindCtrl('tDrop', () => {
-    while(!collide(p.x, p.y+1, p.shape)) p.y++;
-    merge();
-  });
-
-  draw();
-  update();
+  /* ---------- go! ---------- */
+  initState();
+  resizeCanvas();
+  SFX.ctx();
+  raf = requestAnimationFrame(loop);
 };
 
 /* --- TEAMS & DETAIL --- */
 Views.teams = () => `
   <div class="app-header"><div class="left"><span class="h-title">내 스쿼드</span></div></div>
-  <div class="scroll" style="padding:16px 22px;">
+  <div class="scroll">
     <div class="stack" id="teamListContainer"></div>
   </div>
 `;
@@ -405,7 +958,7 @@ Views.teamDetail = ({id}) => {
         <button class="h-action" id="btnMore"><svg viewBox="0 0 24 24" width="24"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg></button>
       </div>
     </div>
-    <div class="scroll no-tab" style="padding:0 22px;">
+    <div class="scroll no-tab" style="padding-bottom:120px;">
       <h2 style="font-size:28px; font-weight:900; margin-bottom:24px; letter-spacing:-0.04em;">${esc(team.name)}</h2>
       
       <div id="insightContent" style="min-height:400px; display:flex; flex-direction:column; align-items:center; justify-content:center;">
@@ -414,14 +967,51 @@ Views.teamDetail = ({id}) => {
       </div>
     </div>
     
-    <div style="position:fixed; bottom:0; left:0; right:0; padding:16px 22px calc(16px + var(--safe-bottom)); background:linear-gradient(transparent, var(--paper) 40%); pointer-events:none;">
-      <button class="btn btn-ai btn-block" onclick="Toast.show('이미지가 갤러리에 저장되었습니다! 📸')" style="pointer-events:auto; box-shadow:0 12px 30px rgba(255,51,0,0.3);">
+    <div style="position:absolute; bottom:0; left:0; right:0; padding:16px 22px calc(16px + var(--safe-bottom)); background:linear-gradient(transparent, var(--paper) 40%); pointer-events:none;">
+      <button class="btn btn-ai btn-block" id="btnShare" style="pointer-events:auto; box-shadow:0 12px 30px rgba(255,51,0,0.3);">
         <svg viewBox="0 0 24 24" width="20"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
         결과 자랑하기 (스토리 공유)
       </button>
     </div>
   `;
 };
+
+function renderRadarChart(data) {
+  const size = 240, cx = size / 2, cy = size / 2, r = 90;
+  const n = data.length;
+  const angle = (i) => (Math.PI * 2 * i / n) - Math.PI / 2;
+  const pt = (i, mag) => [cx + Math.cos(angle(i)) * r * mag, cy + Math.sin(angle(i)) * r * mag];
+
+  const rings = [0.25, 0.5, 0.75, 1].map(m => {
+    const pts = Array.from({ length: n }, (_, i) => pt(i, m).join(',')).join(' ');
+    return `<polygon class="grid" points="${pts}"/>`;
+  }).join('');
+  const axes = Array.from({ length: n }, (_, i) => {
+    const [x, y] = pt(i, 1);
+    return `<line class="axis" x1="${cx}" y1="${cy}" x2="${x}" y2="${y}"/>`;
+  }).join('');
+  const areaPts = data.map((d, i) => pt(i, clamp(d.value, 0, 100) / 100).join(',')).join(' ');
+  const points = data.map((d, i) => {
+    const [x, y] = pt(i, clamp(d.value, 0, 100) / 100);
+    return `<circle class="point" cx="${x}" cy="${y}" r="4"/>`;
+  }).join('');
+  const labels = data.map((d, i) => {
+    const [x, y] = pt(i, 1.22);
+    return `<text class="label" x="${x}" y="${y}" text-anchor="middle" dominant-baseline="middle">${esc(d.label)}</text>`;
+  }).join('');
+
+  return `
+    <div class="radar-wrap"><div class="radar">
+      <svg viewBox="0 0 ${size} ${size}">
+        ${rings}
+        ${axes}
+        <polygon class="area" points="${areaPts}"/>
+        ${points}
+        ${labels}
+      </svg>
+    </div></div>
+  `;
+}
 
 function renderInsights(team) {
   const analysis = AIEngine.analyze(team.memberIds);
@@ -450,6 +1040,27 @@ function renderInsights(team) {
 }
 
 Views.teamDetail.mount = ({id}) => {
+  const team = Store.team(id);
+  const share = $('#btnShare');
+  if (share && team) {
+    share.addEventListener('click', async () => {
+      Haptic.success(); SFX.tap();
+      const a = AIEngine.analyze(team.memberIds);
+      const text = `[One Team] ${team.name}\n시너지 ${a.overall}점 — ${a.title}\n${a.insights.map(x => `• ${x.t}`).join('\n')}`;
+      try {
+        if (navigator.share) {
+          await navigator.share({ title: 'One Team — 우리 스쿼드', text });
+          Toast.show('공유했어요!', '📤');
+        } else if (navigator.clipboard) {
+          await navigator.clipboard.writeText(text);
+          Toast.show('결과를 클립보드에 복사했어요!', '📋');
+        } else {
+          Toast.show('이미지가 갤러리에 저장되었습니다!', '📸');
+        }
+      } catch (e) { /* user cancelled */ }
+    });
+  }
+
   $('#btnMore').addEventListener('click', () => {
     Sheet.open('스쿼드 관리', `
       <div class="stack">
@@ -684,7 +1295,7 @@ Views.analyze.mount = () => {
 /* --- SETTINGS --- */
 Views.settings = () => `
   <div class="app-header"><div class="left"><span class="h-title">화학실</span></div></div>
-  <div class="scroll" style="padding:16px 22px;">
+  <div class="scroll">
     <div class="card" style="padding:16px; display:flex; flex-direction:column; gap:8px;">
       <div style="font-size:14px;font-weight:800;color:var(--muted);margin-bottom:8px;">UI 테마 모드 (기본 다크로 맵핑됨)</div>
       <div style="display:flex;gap:8px; background:var(--card-2); padding:6px; border-radius:18px;">
@@ -714,10 +1325,40 @@ function applyTheme() {
   let t = Store.state.settings.theme || 'dark'; if(t === 'system') t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
   document.documentElement.setAttribute('data-theme', t);
 }
+function bindTabBar() {
+  $$('.tab').forEach(tab => {
+    tab.addEventListener('click', (e) => {
+      e.preventDefault();
+      const name = tab.dataset.tab;
+      if (!name || !Views[name]) return;
+      Haptic.light();
+      SFX.tap();
+      if (Router.current && Router.current.name === name) return;
+      if (name === 'teamBuilder') Router.history = [];
+      Router.go(name);
+    });
+  });
+}
+
+function preventDoubleTapZoom() {
+  let last = 0;
+  document.addEventListener('touchend', (e) => {
+    const now = Date.now();
+    if (now - last < 350) e.preventDefault();
+    last = now;
+  }, { passive: false });
+}
+
 function boot(){
   Store.load(); applyTheme();
   window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => { if(Store.state.settings.theme === 'system') applyTheme(); });
   $('#scrim').addEventListener('click', () => { if($('#sheet').classList.contains('open')) Sheet.close(); });
+  bindTabBar();
+  bindSheetSwipeDown();
+  preventDoubleTapZoom();
+  const wakeAudio = () => { SFX.ctx(); document.removeEventListener('pointerdown', wakeAudio); document.removeEventListener('touchstart', wakeAudio); };
+  document.addEventListener('pointerdown', wakeAudio, { once: true });
+  document.addEventListener('touchstart', wakeAudio, { once: true });
   Router.go('splash');
 }
 document.addEventListener('DOMContentLoaded', boot);
