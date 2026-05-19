@@ -88,13 +88,18 @@
   .chip-good{background:#1F7A5A1f;color:var(--good)} .chip-warn{background:#C76A1A1f;color:var(--warn)}
   .section{padding:0 22px;margin-bottom:28px} .section-h{display:flex;justify-content:space-between;align-items:flex-end;margin-bottom:14px;}
 
-  /* ============ SPLASH ============ */
-  .splash{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:var(--ink);color:var(--paper);z-index:1000;}
-  .splash-logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;position:absolute;top:calc(20px + var(--safe-top));}
+  /* ============ SPLASH (REVISED) ============ */
+  .splash{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000000;color:#FFFFFF;z-index:1000;}
+  .splash-logo{display:flex;align-items:center;gap:8px;font-weight:800;font-size:12px;text-transform:uppercase;letter-spacing:0.1em;position:absolute;top:calc(20px + var(--safe-top)); color:#FFFFFF;}
   .glyph{display:inline-block;width:14px;height:14px;background:var(--accent);border-radius:50%;}
-  .app-icon-lg{width:100px;height:100px;margin-bottom:24px;}
-  .splash-title{font-size:26px;font-weight:800;line-height:1.3;text-align:center;}
-  .line2{display:block;color:var(--muted-2);}
+  .app-icon-lg{width:120px;height:120px;margin-bottom:24px; animation: logoFloat 2.5s ease-in-out infinite;}
+  .splash-title{font-size:26px;font-weight:800;line-height:1.3;text-align:center; color:#FFFFFF;}
+  .line2{display:block;color:rgba(255,255,255,0.6); font-weight:500;}
+
+  @keyframes logoFloat {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-8px); }
+  }
 
   /* ============ HOME ============ */
   .hero-card{padding:12px 22px 24px;}
@@ -500,35 +505,29 @@ Views.home.mount = () => {
   $$('[data-team]').forEach(b => b.addEventListener('click', () => { Haptic.light(); Router.go('teamDetail', {id: b.dataset.team}); }));
 };
 
-/* --- SPLASH --- */
+/* --- SPLASH (수정된 버젼 적용) --- */
 Views.splash = () => `
   <div class="splash">
     <div class="splash-logo"><span class="glyph"></span><span>One Team</span></div>
     <div style="display:flex;flex-direction:column;align-items:center;gap:28px">
       <div class="app-icon-lg">
-        <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <circle cx="50" cy="50" r="40" fill="url(#gradBg)" opacity="0.1"/>
-          <path d="M50 15 L80 32.5 V67.5 L50 85 L20 67.5 V32.5 Z" stroke="url(#gradLines)" stroke-width="4" stroke-linejoin="round"/>
-          <circle cx="50" cy="50" r="16" fill="url(#gradAccent)"/>
-          <path d="M50 34 C 58.8 34 66 41.2 66 50" stroke="#F4EFE6" stroke-width="4" stroke-linecap="round"/>
+        <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="width:100%; height:100%;">
           <defs>
-            <linearGradient id="gradBg" x1="0" y1="0" x2="100" y2="100">
-              <stop stop-color="#FF4D1F"/>
-              <stop offset="1" stop-color="#1B3A7A"/>
-            </linearGradient>
-            <linearGradient id="gradLines" x1="20" y1="15" x2="80" y2="85">
-              <stop stop-color="#FF4D1F"/>
-              <stop offset="0.5" stop-color="#E8C547"/>
-              <stop offset="1" stop-color="#1B3A7A"/>
-            </linearGradient>
-            <linearGradient id="gradAccent" x1="34" y1="34" x2="66" y2="66">
-              <stop stop-color="#FF4D1F"/>
-              <stop offset="1" stop-color="#C76A1A"/>
-            </linearGradient>
+            <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+              <feGaussianBlur stdDeviation="3" result="blur" />
+              <feComposite in="SourceGraphic" in2="blur" operator="over" />
+            </filter>
           </defs>
+          <circle cx="50" cy="60" r="38" stroke="#FFFFFF" stroke-width="1.5" fill="none" opacity="0.4" />
+          <circle cx="78" cy="60" r="26" stroke="#FFFFFF" stroke-width="1.5" fill="none" opacity="0.6" />
+          <clipPath id="overlap">
+            <circle cx="78" cy="60" r="26" />
+          </clipPath>
+          <circle cx="50" cy="60" r="38" fill="var(--accent)" clip-path="url(#overlap)" filter="url(#glow)" />
+          <circle cx="68" cy="60" r="4" fill="#FFFFFF" />
         </svg>
       </div>
-      <div class="splash-title">팀의 화학을<span class="line2">설계하다.</span></div>
+      <div class="splash-title">최적의 시너지를<br/><span class="line2">발견하는 기술.</span></div>
     </div>
   </div>
 `;
@@ -539,7 +538,7 @@ Views.splash.mount = () => {
     } else {
       Router.go('analyze');
     }
-  }, 1500); 
+  }, 2200); 
 };
 
 /* --- TEAMS --- */
