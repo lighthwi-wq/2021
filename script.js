@@ -430,6 +430,22 @@ const Router = {
 };
 
 const avatarHTML = m => `<div class="avatar avatar-md" style="background:${pickColor(m.id)}">${esc(initial(m.name))}</div>`;
+
+/* ===================================================================
+   ICONS — Apple SF Symbols / Material Symbols style (line, monochrome)
+   Global SVG style in CSS: fill:none; stroke:currentColor; stroke-width:2.5
+   =================================================================== */
+const Icon = {
+  sparkles: (size=22) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><path d="M11 3l1.6 4.4L17 9l-4.4 1.6L11 15l-1.6-4.4L5 9l4.4-1.6z"/><path d="M19 14l.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6z"/></svg>`,
+  person:   (size=20) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M20 21a8 8 0 0 0-16 0"/></svg>`,
+  sun:      (size=15) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41"/></svg>`,
+  moon:     (size=15) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>`,
+  contrast: (size=15) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/></svg>`,
+  trash:    (size=18) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" aria-hidden="true"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>`,
+  usersEmpty: (size=56) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" style="stroke-width:1.6;" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M3 21v-2a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v2"/><circle cx="17" cy="10" r="3"/><path d="M23 21v-1a3 3 0 0 0-3-3"/></svg>`,
+  ghostUser: (size=48) => `<svg viewBox="0 0 24 24" width="${size}" height="${size}" style="stroke-width:1.6; stroke-dasharray:3 3;" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>`,
+};
+
 const Views = {};
 
 /* --- HIGH-END MINIMAL SPLASH --- */
@@ -496,11 +512,13 @@ Views.home = () => {
       ${hero}
       <div class="section-h"><span class="h3">액션 스튜디오</span></div>
       <div class="stack mb-24">
-        <button class="btn btn-primary" onclick="Router.go('teamBuilder')" style="height:72px; font-size:18px; justify-content:flex-start; padding:0 24px; box-shadow:var(--shadow-sm);">
-          <span style="font-size:24px; margin-right:12px;">✨</span> AI 팀 매시업 만들기
+        <button class="btn btn-primary" onclick="Router.go('teamBuilder')" style="height:72px; font-size:18px; justify-content:flex-start; padding:0 24px; box-shadow:var(--shadow-sm); gap:14px;">
+          <span style="display:inline-flex; width:40px; height:40px; align-items:center; justify-content:center; border-radius:14px; background:rgba(255,51,0,0.12); color:var(--accent);">${Icon.sparkles(22)}</span>
+          AI 팀 매시업 만들기
         </button>
-        <button class="btn btn-secondary" onclick="Router.go('analyze')" style="height:60px; justify-content:flex-start; padding:0 24px; font-size:16px;">
-          <span style="font-size:20px; margin-right:12px;">👤</span> 내 프로필 업데이트
+        <button class="btn btn-secondary" onclick="Router.go('analyze')" style="height:60px; justify-content:flex-start; padding:0 24px; font-size:16px; gap:14px;">
+          <span style="display:inline-flex; width:32px; height:32px; align-items:center; justify-content:center; border-radius:11px; background:var(--card-2); color:var(--ink-2);">${Icon.person(18)}</span>
+          내 프로필 업데이트
         </button>
       </div>
       
@@ -1125,12 +1143,13 @@ Views.teams.mount = () => {
   if (!Store.state.teams.length) {
     container.innerHTML = `
       <div style="text-align:center;padding:48px 20px 24px;color:var(--muted);font-weight:700;">
-        <div style="font-size:48px;margin-bottom:12px;">🧩</div>
+        <div style="margin-bottom:16px;display:flex;justify-content:center;color:var(--muted-2);">${Icon.usersEmpty(56)}</div>
         <div style="font-size:16px;color:var(--ink);margin-bottom:6px;">아직 만든 스쿼드가 없어요</div>
         <div style="font-size:13px;color:var(--muted);">AI가 도와줄게요. 첫 스쿼드를 만들어볼까요?</div>
       </div>
-      <button class="btn btn-ai btn-block" onclick="Router.go('teamBuilder')" style="height:64px; font-size:17px; border-radius:20px; box-shadow:0 12px 24px rgba(255,51,0,0.3);">
-        ✨ 첫 스쿼드 만들기
+      <button class="btn btn-ai btn-block" onclick="Router.go('teamBuilder')" style="height:64px; font-size:17px; border-radius:20px; box-shadow:0 12px 24px rgba(255,51,0,0.3); gap:10px;">
+        ${Icon.sparkles(20)}
+        첫 스쿼드 만들기
       </button>`;
     return;
   }
@@ -1320,7 +1339,7 @@ Views.teamBuilder.mount = () => {
     if (pool.length === 0) {
       $('#builderList').innerHTML = `
         <div style="padding:48px 20px 24px;text-align:center;color:var(--muted); font-weight:700;">
-          <div style="font-size:40px; margin-bottom:8px;">🫥</div>
+          <div style="margin-bottom:14px; display:flex; justify-content:center; color:var(--muted-2);">${Icon.ghostUser(48)}</div>
           <div style="font-size:16px; color:var(--ink); margin-bottom:6px;">풀에 멤버가 없어요</div>
           <div style="font-size:13px; color:var(--muted); margin-bottom:24px;">아래 버튼으로 팀원을 영입해보세요</div>
         </div>
@@ -1449,13 +1468,33 @@ Views.analyze = () => {
   const isFirstTime = !Store.state.profile;
   const backBtnHtml = isFirstTime ? '' : `<button class="h-back" onclick="Router.back('home')" aria-label="뒤로"><svg viewBox="0 0 24 24" width="22" height="22"><path d="M15 19l-7-7 7-7"/></svg></button>`;
 
+  const brandHtml = `
+    <div class="wizard-brand" aria-label="One Team">
+      <div class="wizard-brand-emblem" aria-hidden="true">
+        <div class="t-piece t-giyeok">
+          <span class="t-block" style="grid-area:1/1"></span>
+          <span class="t-block" style="grid-area:1/2"></span>
+          <span class="t-block" style="grid-area:1/3"></span>
+          <span class="t-block" style="grid-area:2/3"></span>
+        </div>
+        <div class="t-piece t-nieun">
+          <span class="t-block" style="grid-area:2/1"></span>
+          <span class="t-block" style="grid-area:3/1"></span>
+          <span class="t-block" style="grid-area:3/2"></span>
+          <span class="t-block" style="grid-area:3/3"></span>
+        </div>
+      </div>
+      <div class="wizard-brand-text">One Team</div>
+    </div>
+  `;
+
   return `
     <div class="scroll no-tab wizard-scroll" style="padding-top:calc(12px + var(--safe-top)); padding-bottom:calc(40px + var(--safe-bottom) + var(--kb-inset));">
-      <div style="display:flex; align-items:center; height:44px; margin-left:-8px; margin-bottom:16px;">
-        ${backBtnHtml}
-      </div>
+      ${brandHtml}
 
-      <div class="wizard-intro">
+      ${isFirstTime ? '' : `<div style="display:flex; align-items:center; height:44px; margin-left:-8px; margin-bottom:8px;">${backBtnHtml}</div>`}
+
+      <div class="wizard-intro" style="${isFirstTime ? 'margin-top:4px;' : ''}">
         <h2 class="wiz-q">당신의 <span class="wiz-q-accent">성향 DNA</span>를<br/>알려주세요.</h2>
         <p class="wiz-sub">AI가 가장 완벽한 시너지의 스쿼드를 짜드릴게요.</p>
       </div>
@@ -1518,12 +1557,19 @@ Views.settings = () => `
     <div class="card" style="padding:16px; display:flex; flex-direction:column; gap:8px;">
       <div style="font-size:14px;font-weight:800;color:var(--muted);margin-bottom:8px;">UI 테마 모드 (기본 다크로 맵핑됨)</div>
       <div style="display:flex;gap:8px; background:var(--card-2); padding:6px; border-radius:18px;">
-        ${['light','dark','system'].map(t => `<button class="theme-opt ${Store.state.settings.theme===t?'active':''}" data-theme="${t}" style="flex:1; padding:12px; border-radius:14px; font-weight:800; font-size:14px; transition:all .2s; background:${Store.state.settings.theme===t?'var(--card)':'transparent'}; color:${Store.state.settings.theme===t?'var(--ink)':'var(--muted)'};">${t==='light'?'☀️ 라이트':t==='dark'?'🌙 다크':'⚙️ 시스템'}</button>`).join('')}
+        ${['light','dark','system'].map(t => {
+          const icon = t==='light' ? Icon.sun(15) : t==='dark' ? Icon.moon(15) : Icon.contrast(15);
+          const label = t==='light' ? '라이트' : t==='dark' ? '다크' : '시스템';
+          return `<button class="theme-opt ${Store.state.settings.theme===t?'active':''}" data-theme="${t}" style="flex:1; padding:12px; border-radius:14px; font-weight:800; font-size:14px; transition:all .2s; background:${Store.state.settings.theme===t?'var(--card)':'transparent'}; color:${Store.state.settings.theme===t?'var(--ink)':'var(--muted)'};">${icon}<span>${label}</span></button>`;
+        }).join('')}
       </div>
     </div>
     
     <div class="mt-16">
-      <button class="btn btn-block" id="btnReset" style="background:rgba(255,69,58,0.1); color:var(--bad); height:60px;">데이터 전체 초기화 💣</button>
+      <button class="btn btn-block" id="btnReset" style="background:rgba(255,69,58,0.1); color:var(--bad); height:60px; gap:10px;">
+        ${Icon.trash(18)}
+        데이터 전체 초기화
+      </button>
     </div>
   </div>
 `;

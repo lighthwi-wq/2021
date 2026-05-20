@@ -125,6 +125,74 @@ body.kb-open .scroll, body.kb-open .scroll.no-tab { scroll-padding-bottom: calc(
 .wizard-intro{padding:4px 0 0;}
 .wizard-scroll{scroll-behavior:smooth;}
 
+/* ============ WIZARD BRAND (One Team logo at top center) ============ */
+.wizard-brand{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:6px 0 22px;
+  opacity:0;
+  transform:translateY(-8px);
+  animation:brandFadeIn .7s cubic-bezier(0.25, 1, 0.5, 1) .08s forwards;
+  position:relative;
+}
+@keyframes brandFadeIn{ to{ opacity:1; transform:translateY(0);} }
+
+.wizard-brand-emblem{
+  position:relative;
+  width:30px;
+  height:30px;
+  filter:drop-shadow(0 4px 14px rgba(255, 51, 0, 0.4));
+}
+.wizard-brand-emblem .t-piece{
+  position:absolute;
+  inset:0;
+  display:grid;
+  grid-template-columns:repeat(3, 8px);
+  grid-template-rows:repeat(3, 8px);
+  gap:2px;
+}
+.wizard-brand-emblem .t-block{
+  width:8px;
+  height:8px;
+  border-radius:2px;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.28),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 1px 2px rgba(0, 0, 0, 0.4);
+}
+.wizard-brand-emblem .t-giyeok .t-block{
+  background:linear-gradient(135deg, #FF8A4C 0%, #FF3300 55%, #FF0066 100%);
+}
+.wizard-brand-emblem .t-nieun .t-block{
+  background:linear-gradient(135deg, #C58CFF 0%, #7000FF 55%, #4A154B 100%);
+}
+.wizard-brand-text{
+  font-size:11px;
+  font-weight:800;
+  letter-spacing:0.24em;
+  text-transform:uppercase;
+  color:var(--muted);
+  line-height:1;
+}
+
+/* Theme picker icons (SF Symbols-style) */
+.theme-opt{
+  display:flex !important;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+.theme-opt svg{
+  width:15px;
+  height:15px;
+  stroke-width:2;
+  flex-shrink:0;
+}
+
 .field{display:flex;flex-direction:column;gap:10px;}
 .field-label{font-size:14px;font-weight:800;color:var(--muted);}
 .input{height:56px;background:var(--card-2);border:1px solid var(--line);border-radius:18px;padding:0 20px;font-size:16px;font-weight:700;transition:border-color .2s, box-shadow .2s;color:var(--ink);width:100%; box-shadow:var(--shadow-sm); scroll-margin-top:calc(96px + var(--safe-top)); scroll-margin-bottom:calc(140px + var(--kb-inset));}
