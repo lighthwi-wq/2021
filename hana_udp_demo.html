@@ -3112,6 +3112,659 @@
   }
   .video-preview .vid-attrs > span { display: inline-flex; align-items: center; gap: 3px; }
 
+
+/* ============================================================
+   MONITORING ENHANCEMENT · injected by integrator
+   ============================================================ */
+  /* =========================================================
+     MONITORING · ENHANCED (Sankey, Anomaly, De-ID, Resources)
+     ========================================================= */
+
+  /* Local tabs (scoped to monitoring page) */
+  #page-monitoring .mon-tab-panel { display: none; }
+  #page-monitoring .mon-tab-panel.active { display: block; animation: monFadeIn 0.28s var(--ease); }
+  @keyframes monFadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  #page-monitoring .tabs .tab { display: inline-flex; align-items: center; gap: 8px; }
+  #page-monitoring .tabs .tab-badge {
+    display: inline-flex; align-items: center; justify-content: center;
+    min-width: 18px; height: 18px; padding: 0 6px;
+    border-radius: 9px;
+    background: var(--hana-red); color: #fff;
+    font-size: 11px; font-weight: 700;
+    margin-left: 2px;
+  }
+
+  /* KPI trend chips inside monitoring */
+  #page-monitoring .kpi .trend {
+    margin-top: 6px;
+    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 12px; font-weight: 600;
+    color: var(--teal-700);
+  }
+  #page-monitoring .kpi .trend.down { color: var(--hana-red); }
+  #page-monitoring .kpi .trend .material-icons { font-size: 16px; }
+  #page-monitoring .tag.pulse-tag .dot {
+    animation: monLivePulse 1.4s ease-in-out infinite;
+  }
+  @keyframes monLivePulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(0,133,122,0.5); }
+    50% { box-shadow: 0 0 0 6px rgba(0,133,122,0); }
+  }
+
+  /* =========================================
+     SANKEY FLOW
+     ========================================= */
+  .sankey-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r-lg);
+    padding: 20px;
+    box-shadow: var(--shadow-sm);
+  }
+  .sankey-toolbar {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; flex-wrap: wrap;
+    margin-bottom: 14px;
+  }
+  .sankey-toolbar .legend {
+    display: inline-flex; align-items: center; gap: 14px;
+    font-size: 12px; color: var(--text-secondary);
+  }
+  .sankey-toolbar .legend i {
+    display: inline-block; width: 10px; height: 10px; border-radius: 2px;
+    margin-right: 5px; vertical-align: middle;
+  }
+  .sankey-toolbar .legend .ok    i { background: var(--teal-500); }
+  .sankey-toolbar .legend .warn  i { background: var(--amber-400); }
+  .sankey-toolbar .legend .error i { background: var(--hana-red); }
+  .sankey-toolbar .legend .anomaly-marker {
+    display: inline-flex; align-items: center; gap: 4px;
+    color: var(--hana-red); font-weight: 600;
+  }
+  .sankey-toolbar .legend .anomaly-marker::before {
+    content: '!'; display: inline-flex; align-items: center; justify-content: center;
+    width: 14px; height: 14px; border-radius: 50%;
+    background: var(--hana-red); color: #fff;
+    font-size: 10px; font-weight: 700;
+    box-shadow: 0 0 0 2px rgba(227,6,19,0.18);
+    animation: monAnomalyPulse 1.6s ease-in-out infinite;
+  }
+  @keyframes monAnomalyPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(227,6,19,0.45); }
+    50% { box-shadow: 0 0 0 6px rgba(227,6,19,0); }
+  }
+
+  .sankey-wrap {
+    position: relative;
+    width: 100%;
+    overflow-x: auto;
+    background:
+      radial-gradient(circle at 15% 20%, rgba(0,133,122,0.04), transparent 50%),
+      radial-gradient(circle at 85% 80%, rgba(227,6,19,0.03), transparent 50%),
+      var(--gray-50);
+    border-radius: var(--r-md);
+    padding: 8px 0;
+  }
+  .sankey-svg { display: block; width: 100%; min-width: 980px; height: 520px; }
+  .sankey-svg .stage-label {
+    font: 700 11px 'Pretendard Variable', sans-serif;
+    fill: var(--gray-500);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .sankey-svg .stage-sub {
+    font: 500 10px 'Pretendard Variable', sans-serif;
+    fill: var(--gray-400);
+  }
+  .sankey-svg .node-rect {
+    transition: filter 0.18s var(--ease), transform 0.18s var(--ease);
+    cursor: pointer;
+    transform-box: fill-box;
+    transform-origin: center;
+  }
+  .sankey-svg .node-group:hover .node-rect {
+    filter: brightness(1.08) drop-shadow(0 4px 8px rgba(14,20,28,0.18));
+  }
+  .sankey-svg .node-group.dimmed { opacity: 0.25; }
+  .sankey-svg .node-label {
+    font: 600 12px 'Pretendard Variable', sans-serif;
+    fill: var(--gray-900);
+    pointer-events: none;
+  }
+  .sankey-svg .node-value {
+    font: 500 10.5px 'Pretendard Variable', sans-serif;
+    fill: var(--gray-500);
+    pointer-events: none;
+    font-variant-numeric: tabular-nums;
+  }
+  .sankey-svg .node-status {
+    pointer-events: none;
+  }
+  .sankey-svg .flow {
+    fill-opacity: 0.42;
+    transition: fill-opacity 0.18s var(--ease);
+    cursor: pointer;
+  }
+  .sankey-svg .flow.dimmed { fill-opacity: 0.08; }
+  .sankey-svg .flow.highlight { fill-opacity: 0.78; }
+  .sankey-svg .flow.error { stroke: var(--hana-red); stroke-width: 1; stroke-dasharray: 4 3; }
+
+  /* Anomaly badge over a node */
+  .sankey-svg .anomaly-badge {
+    pointer-events: none;
+  }
+  .sankey-svg .anomaly-badge .badge-circle {
+    fill: var(--hana-red);
+  }
+  .sankey-svg .anomaly-badge .badge-pulse {
+    fill: var(--hana-red);
+    opacity: 0.35;
+    transform-box: fill-box;
+    transform-origin: center;
+    animation: monBadgeRing 1.6s ease-out infinite;
+  }
+  @keyframes monBadgeRing {
+    0%   { transform: scale(1);   opacity: 0.5; }
+    100% { transform: scale(2.4); opacity: 0; }
+  }
+  .sankey-svg .anomaly-badge .badge-text {
+    fill: #fff;
+    font: 700 10px 'Pretendard Variable', sans-serif;
+    text-anchor: middle;
+    dominant-baseline: central;
+  }
+
+  /* Animated data-flow particles along Sankey paths */
+  .sankey-svg .flow-particle {
+    fill: #fff;
+    filter: drop-shadow(0 0 4px currentColor);
+  }
+  .sankey-svg .flow-particle.ok    { color: var(--teal-500); }
+  .sankey-svg .flow-particle.warn  { color: var(--amber-500); }
+  .sankey-svg .flow-particle.error { color: var(--hana-red); }
+
+  /* Sankey tooltip (floating) */
+  .sankey-tooltip {
+    position: absolute;
+    min-width: 260px;
+    max-width: 320px;
+    background: rgba(15, 23, 33, 0.96);
+    color: #fff;
+    border-radius: var(--r-md);
+    padding: 14px 16px;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, calc(-100% - 14px)) scale(0.96);
+    transition: opacity 0.16s var(--ease), transform 0.16s var(--ease);
+    box-shadow: 0 16px 40px -8px rgba(0,0,0,0.4);
+    z-index: 30;
+    backdrop-filter: blur(8px);
+  }
+  .sankey-tooltip.visible { opacity: 1; transform: translate(-50%, calc(-100% - 14px)) scale(1); }
+  .sankey-tooltip::after {
+    content: '';
+    position: absolute;
+    left: 50%; bottom: -6px;
+    transform: translateX(-50%);
+    border: 6px solid transparent;
+    border-top-color: rgba(15,23,33,0.96);
+    border-bottom: 0;
+  }
+  .sankey-tooltip .tt-head {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 10px; padding-bottom: 10px;
+    border-bottom: 1px solid rgba(255,255,255,0.10);
+  }
+  .sankey-tooltip .tt-head .material-icons { font-size: 18px; color: var(--teal-300); }
+  .sankey-tooltip .tt-head .tt-title { font-weight: 700; font-size: 14px; flex: 1; }
+  .sankey-tooltip .tt-head .tt-pill {
+    font-size: 10.5px; font-weight: 700;
+    padding: 2px 8px; border-radius: 10px;
+    background: rgba(0,133,122,0.22); color: var(--teal-300);
+    text-transform: uppercase; letter-spacing: 0.04em;
+  }
+  .sankey-tooltip .tt-head .tt-pill.warn  { background: rgba(232,172,50,0.22); color: var(--amber-300); }
+  .sankey-tooltip .tt-head .tt-pill.error { background: rgba(227,6,19,0.22);   color: #FF8D95; }
+  .sankey-tooltip .tt-row {
+    display: flex; justify-content: space-between;
+    font-size: 12.5px;
+    padding: 4px 0;
+  }
+  .sankey-tooltip .tt-row .k { color: rgba(255,255,255,0.6); }
+  .sankey-tooltip .tt-row .v {
+    color: #fff; font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .sankey-tooltip .tt-row .v.up   { color: var(--teal-300); }
+  .sankey-tooltip .tt-row .v.down { color: #FF8D95; }
+  .sankey-tooltip .tt-note {
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid rgba(255,255,255,0.10);
+    font-size: 11.5px; color: rgba(255,255,255,0.7);
+    line-height: 1.45;
+  }
+  .sankey-tooltip .tt-note .material-icons {
+    font-size: 13px; vertical-align: -2px; margin-right: 4px;
+    color: var(--amber-300);
+  }
+  .sankey-tooltip .tt-bar {
+    height: 4px; border-radius: 2px;
+    background: rgba(255,255,255,0.10);
+    margin-top: 4px; overflow: hidden;
+  }
+  .sankey-tooltip .tt-bar span {
+    display: block; height: 100%;
+    background: linear-gradient(90deg, var(--teal-400), var(--teal-300));
+    border-radius: 2px;
+  }
+  .sankey-tooltip .tt-bar.warn span { background: linear-gradient(90deg, var(--amber-500), var(--amber-300)); }
+  .sankey-tooltip .tt-bar.error span { background: linear-gradient(90deg, var(--hana-red), #FF8D95); }
+
+  /* Live stream feed (sidebar of Sankey) */
+  .live-feed {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r-lg);
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+    height: 100%;
+    display: flex; flex-direction: column;
+  }
+  .live-feed .lf-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 12px;
+  }
+  .live-feed .lf-head h4 {
+    margin: 0; font-size: 14px; font-weight: 700;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .live-feed .lf-head h4 .live-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--hana-red);
+    box-shadow: 0 0 0 0 rgba(227,6,19,0.7);
+    animation: monLivePulseRed 1.4s ease-in-out infinite;
+  }
+  @keyframes monLivePulseRed {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(227,6,19,0.5); }
+    50% { box-shadow: 0 0 0 5px rgba(227,6,19,0); }
+  }
+  .live-feed .lf-list {
+    flex: 1;
+    overflow-y: auto;
+    max-height: 480px;
+    padding-right: 4px;
+  }
+  .live-feed .lf-item {
+    display: flex; gap: 10px;
+    padding: 8px 10px;
+    border-radius: var(--r-sm);
+    transition: background 0.15s;
+    border-left: 3px solid transparent;
+    animation: lfSlideIn 0.34s var(--ease);
+  }
+  @keyframes lfSlideIn {
+    from { opacity: 0; transform: translateX(-8px); }
+    to { opacity: 1; transform: translateX(0); }
+  }
+  .live-feed .lf-item:hover { background: var(--gray-50); }
+  .live-feed .lf-item.ok    { border-left-color: var(--teal-500); }
+  .live-feed .lf-item.warn  { border-left-color: var(--amber-400); }
+  .live-feed .lf-item.error { border-left-color: var(--hana-red); }
+  .live-feed .lf-item .lf-time {
+    font: 600 11px 'Pretendard Variable', sans-serif;
+    color: var(--text-tertiary);
+    flex: 0 0 50px;
+    font-variant-numeric: tabular-nums;
+  }
+  .live-feed .lf-item .lf-content {
+    flex: 1; min-width: 0;
+  }
+  .live-feed .lf-item .lf-msg {
+    font-size: 12.5px; color: var(--text-primary);
+    font-weight: 500;
+    line-height: 1.4;
+    overflow-wrap: break-word;
+  }
+  .live-feed .lf-item .lf-meta {
+    font-size: 11px; color: var(--text-tertiary);
+    margin-top: 2px;
+  }
+  .live-feed .lf-foot {
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid var(--border-soft);
+    font-size: 11px; color: var(--text-tertiary);
+    display: flex; justify-content: space-between;
+  }
+
+  /* =========================================
+     STAGE TRANSFORM PANEL
+     ========================================= */
+  .stage-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 1280px) { .stage-grid { grid-template-columns: repeat(3, 1fr); } }
+  @media (max-width: 720px)  { .stage-grid { grid-template-columns: 1fr; } }
+  .stage-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r-lg);
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+  }
+  .stage-card::before {
+    content: '';
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: var(--teal-500);
+  }
+  .stage-card.warn::before  { background: var(--amber-400); }
+  .stage-card.error::before { background: var(--hana-red); }
+  .stage-card .sc-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px;
+  }
+  .stage-card .sc-icon {
+    width: 36px; height: 36px;
+    background: var(--teal-50);
+    color: var(--teal-700);
+    border-radius: var(--r-md);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .stage-card.warn  .sc-icon { background: var(--amber-50); color: var(--amber-700); }
+  .stage-card.error .sc-icon { background: var(--red-50);   color: var(--red-600);   }
+  .stage-card .sc-name { font-size: 13.5px; font-weight: 700; }
+  .stage-card .sc-stage {
+    font-size: 10px; color: var(--text-tertiary);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    margin-top: 1px;
+  }
+  .stage-card .sc-metric {
+    display: flex; align-items: baseline; gap: 6px;
+    margin-bottom: 10px;
+  }
+  .stage-card .sc-metric .v {
+    font-size: 22px; font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+  .stage-card .sc-metric .u {
+    font-size: 11px; color: var(--text-secondary);
+  }
+  .stage-card .sc-spark {
+    width: 100%; height: 36px;
+    margin-bottom: 10px;
+  }
+  .stage-card .sc-rows {
+    font-size: 12px;
+    color: var(--text-secondary);
+    display: grid; gap: 4px;
+  }
+  .stage-card .sc-rows .row {
+    display: flex; justify-content: space-between;
+  }
+  .stage-card .sc-rows .row .v {
+    color: var(--text-primary); font-weight: 600;
+    font-variant-numeric: tabular-nums;
+  }
+  .stage-card .sc-rows .row .v.ok    { color: var(--teal-700); }
+  .stage-card .sc-rows .row .v.warn  { color: var(--amber-600); }
+  .stage-card .sc-rows .row .v.error { color: var(--hana-red); }
+
+  /* =========================================
+     ANOMALY PANEL
+     ========================================= */
+  .anomaly-summary {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 900px) { .anomaly-summary { grid-template-columns: 1fr; } }
+  .anomaly-summary .as-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r-lg);
+    padding: 16px;
+    display: flex; align-items: center; gap: 14px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+    overflow: hidden;
+  }
+  .anomaly-summary .as-card .as-icon {
+    width: 48px; height: 48px;
+    border-radius: var(--r-md);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .anomaly-summary .as-card .as-icon .material-icons { font-size: 26px; }
+  .anomaly-summary .as-card.format .as-icon { background: var(--amber-50); color: var(--amber-700); }
+  .anomaly-summary .as-card.pii    .as-icon { background: var(--red-50);   color: var(--red-600); }
+  .anomaly-summary .as-card.volume .as-icon { background: var(--teal-50);  color: var(--teal-700); }
+  .anomaly-summary .as-card .as-body { flex: 1; }
+  .anomaly-summary .as-card .as-label {
+    font-size: 12px; color: var(--text-secondary); font-weight: 600;
+    margin-bottom: 2px;
+  }
+  .anomaly-summary .as-card .as-value {
+    font-size: 22px; font-weight: 800; letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+  }
+  .anomaly-summary .as-card .as-value .unit {
+    font-size: 12px; font-weight: 500; color: var(--text-secondary);
+    margin-left: 4px;
+  }
+  .anomaly-summary .as-card .as-delta {
+    font-size: 11.5px; color: var(--hana-red); font-weight: 600;
+    margin-top: 4px;
+  }
+  .anomaly-summary .as-card .as-delta.ok { color: var(--teal-700); }
+
+  /* Anomaly chips */
+  .tag.anom-format { background: var(--amber-100); color: var(--amber-700); }
+  .tag.anom-pii    { background: var(--red-50);    color: var(--red-700);   }
+  .tag.anom-volume { background: var(--teal-50);   color: var(--teal-700);  }
+  .tag.anom-conn   { background: var(--gray-100);  color: var(--gray-700);  }
+
+  /* Severity dot column */
+  .sev-dot {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 11.5px; font-weight: 600;
+  }
+  .sev-dot::before {
+    content: ''; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--gray-400);
+  }
+  .sev-dot.p0::before { background: #7E0007; box-shadow: 0 0 0 2px rgba(126,0,7,0.18); }
+  .sev-dot.p1::before { background: var(--hana-red); }
+  .sev-dot.p2::before { background: var(--amber-500); }
+  .sev-dot.p3::before { background: var(--gray-400); }
+
+  /* =========================================
+     RESOURCE MONITORING (enhanced)
+     ========================================= */
+  .resource-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 14px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 1100px) { .resource-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 600px)  { .resource-grid { grid-template-columns: 1fr; } }
+  .resource-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r-lg);
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+  }
+  .resource-card .rc-head {
+    display: flex; align-items: center; gap: 10px;
+    margin-bottom: 12px;
+  }
+  .resource-card .rc-icon {
+    width: 32px; height: 32px;
+    border-radius: var(--r-sm);
+    background: var(--teal-50); color: var(--teal-700);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .resource-card.warn  .rc-icon { background: var(--amber-50); color: var(--amber-700); }
+  .resource-card.error .rc-icon { background: var(--red-50);   color: var(--red-600); }
+  .resource-card .rc-icon .material-icons { font-size: 18px; }
+  .resource-card .rc-name { font-weight: 700; font-size: 13px; flex: 1; }
+  .resource-card .rc-status {
+    font-size: 11px; font-weight: 600;
+    padding: 2px 8px; border-radius: 10px;
+    background: var(--teal-50); color: var(--teal-700);
+  }
+  .resource-card.warn  .rc-status { background: var(--amber-100); color: var(--amber-700); }
+  .resource-card.error .rc-status { background: var(--red-50);    color: var(--red-700);   }
+  .resource-card .rc-rows {
+    display: grid; gap: 8px;
+  }
+  .resource-card .rc-row {
+    display: grid; grid-template-columns: 70px 1fr 56px;
+    gap: 8px; align-items: center;
+    font-size: 12px;
+  }
+  .resource-card .rc-row .l { color: var(--text-secondary); }
+  .resource-card .rc-row .v {
+    text-align: right; font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: var(--text-primary);
+  }
+  .resource-card .rc-bar {
+    height: 6px; border-radius: 3px;
+    background: var(--gray-100);
+    overflow: hidden;
+  }
+  .resource-card .rc-bar span {
+    display: block; height: 100%; border-radius: 3px;
+    background: linear-gradient(90deg, var(--teal-400), var(--teal-600));
+    transition: width 0.6s var(--ease);
+  }
+  .resource-card .rc-bar.warn span  { background: linear-gradient(90deg, var(--amber-300), var(--amber-500)); }
+  .resource-card .rc-bar.error span { background: linear-gradient(90deg, #FF8D95, var(--hana-red)); }
+
+  /* =========================================
+     DE-ID PANEL
+     ========================================= */
+  .deid-summary {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px;
+    margin-bottom: 18px;
+  }
+  @media (max-width: 900px) { .deid-summary { grid-template-columns: repeat(2, 1fr); } }
+
+  .deid-method-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r-lg);
+    padding: 16px;
+    box-shadow: var(--shadow-sm);
+    position: relative;
+  }
+  .deid-method-card .dm-label {
+    font-size: 11px; color: var(--text-tertiary);
+    text-transform: uppercase; letter-spacing: 0.06em;
+    font-weight: 700;
+    margin-bottom: 8px;
+  }
+  .deid-method-card .dm-method {
+    font-size: 14px; font-weight: 700; margin-bottom: 4px;
+  }
+  .deid-method-card .dm-count {
+    font-size: 20px; font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+  .deid-method-card .dm-bar {
+    height: 4px; background: var(--gray-100);
+    border-radius: 2px; margin-top: 10px;
+    overflow: hidden;
+  }
+  .deid-method-card .dm-bar span {
+    display: block; height: 100%;
+    background: linear-gradient(90deg, var(--teal-400), var(--teal-600));
+    border-radius: 2px;
+  }
+  .deid-method-card .dm-pct {
+    font-size: 11px; color: var(--text-secondary);
+    margin-top: 4px;
+  }
+
+  /* PII type pills inside table */
+  .pii-pill {
+    display: inline-flex; align-items: center;
+    padding: 2px 8px;
+    background: var(--red-50);
+    color: var(--red-700);
+    border: 1px solid var(--red-100);
+    border-radius: 10px;
+    font-size: 11px; font-weight: 600;
+    margin-right: 4px; margin-bottom: 4px;
+  }
+  .pii-pill.masked {
+    background: var(--teal-50); color: var(--teal-700); border-color: var(--teal-100);
+  }
+  .pii-pill .material-icons { font-size: 12px; margin-right: 3px; }
+
+  /* Mini bar / fill in row */
+  .mini-fill {
+    display: inline-block;
+    width: 80px; height: 6px;
+    background: var(--gray-100); border-radius: 3px;
+    overflow: hidden; vertical-align: middle;
+    margin-right: 6px;
+  }
+  .mini-fill span {
+    display: block; height: 100%;
+    background: linear-gradient(90deg, var(--teal-400), var(--teal-600));
+  }
+  .mini-fill.warn  span { background: linear-gradient(90deg, var(--amber-300), var(--amber-500)); }
+  .mini-fill.error span { background: linear-gradient(90deg, #FF8D95, var(--hana-red)); }
+
+  /* Modal large variant for de-id detail */
+  .deid-detail .grid-2col {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    margin-bottom: 14px;
+  }
+  .deid-detail .info-row {
+    display: flex; justify-content: space-between;
+    padding: 8px 0; border-bottom: 1px dashed var(--border-soft);
+    font-size: 13px;
+  }
+  .deid-detail .info-row:last-child { border-bottom: 0; }
+  .deid-detail .info-row .k { color: var(--text-secondary); }
+  .deid-detail .info-row .v { font-weight: 700; }
+  .deid-detail h5 {
+    font-size: 13px; font-weight: 700; margin: 6px 0 10px;
+    color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .deid-detail table.data { font-size: 12.5px; }
+
+  /* Filters row */
+  .mon-filters {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    margin-bottom: 12px;
+  }
+  .mon-filters select,
+  .mon-filters input {
+    padding: 8px 12px;
+    border: 1px solid var(--border-soft);
+    border-radius: var(--r-md);
+    background: #fff;
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+  .mon-filters select:focus,
+  .mon-filters input:focus {
+    outline: 2px solid var(--teal-200);
+    border-color: var(--teal-500);
+  }
+  .mon-filters .filter-spacer { flex: 1; }
 </style>
 </head>
 <body>
@@ -4645,103 +5298,478 @@
       <div class="page-header">
         <div>
           <h1 class="page-title">시스템 모니터링</h1>
-          <p class="page-subtitle">플랫폼 인프라·서비스의 실시간 상태를 모니터링합니다.</p>
+          <p class="page-subtitle">데이터 수집·적재 파이프라인, 플랫폼 자원, 비식별화 작업을 실시간으로 모니터링합니다.</p>
         </div>
         <div class="page-actions">
-          <span class="tag green"><span class="dot"></span> 전체 상태 정상</span>
-          <button class="btn btn-ghost"><span class="material-icons">notifications_active</span> 알림 채널</button>
+          <span class="tag green pulse-tag"><span class="dot"></span> 실시간 연동 정상</span>
+          <button class="btn btn-ghost" id="monRefreshBtn"><span class="material-icons">refresh</span> 새로고침</button>
+          <button class="btn btn-ghost" id="monNotifBtn"><span class="material-icons">notifications_active</span> 알림 채널</button>
         </div>
       </div>
 
-      <div class="health-grid">
-        <div class="health-card ok">
-          <div class="h"><span class="name">Ingest Gateway</span><span class="material-icons">check_circle</span></div>
-          <div class="v num">99.97%</div>
-          <div class="bar"><span style="width:99.97%"></span></div>
+      <!-- KPI Row -->
+      <div class="grid grid-4" style="margin-bottom:20px;">
+        <div class="kpi teal">
+          <div class="icon"><span class="material-icons">speed</span></div>
+          <div class="label">실시간 처리량 (EPS)</div>
+          <h3 class="value num"><span id="kpiEps">1,842</span></h3>
+          <div class="trend"><span class="material-icons">trending_up</span> <span id="kpiEpsTrend">+12.4%</span> vs 24h 평균</div>
         </div>
-        <div class="health-card ok">
-          <div class="h"><span class="name">STT 처리 클러스터</span><span class="material-icons">check_circle</span></div>
-          <div class="v num">98.4%</div>
-          <div class="bar"><span style="width:98.4%"></span></div>
+        <div class="kpi yellow">
+          <div class="icon"><span class="material-icons">storage</span></div>
+          <div class="label">금일 누적 적재량</div>
+          <h3 class="value num"><span id="kpiVolume">3.84</span><span class="unit">TB</span></h3>
+          <div class="trend"><span class="material-icons">north_east</span> 목표 대비 <span id="kpiVolumeProg">64%</span></div>
         </div>
-        <div class="health-card warn">
-          <div class="h"><span class="name">OCR Worker Pool</span><span class="material-icons">warning</span></div>
-          <div class="v num">82.1%</div>
-          <div class="bar"><span style="width:82.1%"></span></div>
+        <div class="kpi red">
+          <div class="icon"><span class="material-icons">report_problem</span></div>
+          <div class="label">누적 이상 발생</div>
+          <h3 class="value num"><span id="kpiAnomaly">17</span><span class="unit">건</span></h3>
+          <div class="trend down"><span class="material-icons">priority_high</span> P1 <span id="kpiAnomalyP1">2</span>건 · P2 <span id="kpiAnomalyP2">5</span>건</div>
         </div>
-        <div class="health-card ok">
-          <div class="h"><span class="name">Vector DB</span><span class="material-icons">check_circle</span></div>
-          <div class="v num">99.99%</div>
-          <div class="bar"><span style="width:99.99%"></span></div>
+        <div class="kpi gray">
+          <div class="icon"><span class="material-icons">verified_user</span></div>
+          <div class="label">비식별화 처리 건수</div>
+          <h3 class="value num"><span id="kpiDeid">42,180</span><span class="unit">건</span></h3>
+          <div class="trend"><span class="material-icons">shield</span> 적용률 <span id="kpiDeidRate">99.2%</span></div>
         </div>
       </div>
 
-      <div class="grid grid-2" style="margin-top:20px;">
+      <!-- Monitoring Tabs -->
+      <div class="tabs">
+        <div class="tab active" data-mon-tab="flow"><span class="material-icons" style="font-size:18px;">account_tree</span> 실시간 수집 흐름</div>
+        <div class="tab" data-mon-tab="transform"><span class="material-icons" style="font-size:18px;">transform</span> 단계별 변환 상태</div>
+        <div class="tab" data-mon-tab="anomaly"><span class="material-icons" style="font-size:18px;">report</span> 수집/적재 이상 확인 <span class="tab-badge" id="anomalyTabBadge">17</span></div>
+        <div class="tab" data-mon-tab="resource"><span class="material-icons" style="font-size:18px;">monitor_heart</span> 플랫폼 자원</div>
+        <div class="tab" data-mon-tab="deid"><span class="material-icons" style="font-size:18px;">enhanced_encryption</span> 비식별화 작업 결과</div>
+      </div>
+
+      <!-- =========================================================
+           TAB 1 · REAL-TIME SANKEY FLOW
+           ========================================================= -->
+      <div class="mon-tab-panel active" data-mon-panel="flow">
+        <div class="grid" style="grid-template-columns: 2.6fr 1fr; gap:16px;">
+          <!-- Sankey Card -->
+          <div class="sankey-card">
+            <div class="sankey-toolbar">
+              <div>
+                <h3 style="margin:0; font-size:16px; font-weight:700;">데이터 수집·적재 실시간 흐름</h3>
+                <div class="muted" style="font-size:12px; margin-top:2px;">노드에 마우스를 올리면 단계별 변환 상태를 확인할 수 있습니다.</div>
+              </div>
+              <div class="legend">
+                <span class="ok"><i></i>정상</span>
+                <span class="warn"><i></i>주의</span>
+                <span class="error"><i></i>오류</span>
+                <span class="anomaly-marker">이상 누적 표시</span>
+              </div>
+            </div>
+            <div class="sankey-wrap" id="sankeyWrap">
+              <svg class="sankey-svg" id="sankeySvg" viewBox="0 0 1080 520" preserveAspectRatio="xMidYMid meet" aria-label="실시간 수집·적재 흐름도">
+                <defs>
+                  <!-- Per-source gradient for flow paths -->
+                  <linearGradient id="gradCall"  x1="0" x2="1"><stop offset="0%" stop-color="#00857A" stop-opacity="0.85"/><stop offset="100%" stop-color="#5CBDB1" stop-opacity="0.55"/></linearGradient>
+                  <linearGradient id="gradDoc"   x1="0" x2="1"><stop offset="0%" stop-color="#C98E1A" stop-opacity="0.80"/><stop offset="100%" stop-color="#F2C75C" stop-opacity="0.55"/></linearGradient>
+                  <linearGradient id="gradMail"  x1="0" x2="1"><stop offset="0%" stop-color="#677381" stop-opacity="0.75"/><stop offset="100%" stop-color="#97A0AC" stop-opacity="0.55"/></linearGradient>
+                  <linearGradient id="gradVideo" x1="0" x2="1"><stop offset="0%" stop-color="#B40410" stop-opacity="0.65"/><stop offset="100%" stop-color="#ED4754" stop-opacity="0.45"/></linearGradient>
+                  <linearGradient id="gradSns"   x1="0" x2="1"><stop offset="0%" stop-color="#9C6C12" stop-opacity="0.75"/><stop offset="100%" stop-color="#E8AC32" stop-opacity="0.50"/></linearGradient>
+                  <linearGradient id="gradFlow"  x1="0" x2="1"><stop offset="0%" stop-color="#5CBDB1" stop-opacity="0.6"/><stop offset="100%" stop-color="#2BA899" stop-opacity="0.4"/></linearGradient>
+                  <linearGradient id="gradMid"   x1="0" x2="1"><stop offset="0%" stop-color="#2BA899" stop-opacity="0.55"/><stop offset="100%" stop-color="#00857A" stop-opacity="0.45"/></linearGradient>
+                  <linearGradient id="gradEnd"   x1="0" x2="1"><stop offset="0%" stop-color="#00857A" stop-opacity="0.55"/><stop offset="100%" stop-color="#004B45" stop-opacity="0.45"/></linearGradient>
+
+                  <!-- Drop shadows -->
+                  <filter id="nodeShadow" x="-20%" y="-20%" width="140%" height="140%">
+                    <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#0E141C" flood-opacity="0.10"/>
+                  </filter>
+                </defs>
+
+                <!-- Stage column labels -->
+                <g id="sankeyStageLabels"></g>
+
+                <!-- Flow paths (rendered first so nodes sit on top) -->
+                <g id="sankeyFlows"></g>
+
+                <!-- Animated particles along paths -->
+                <g id="sankeyParticles"></g>
+
+                <!-- Node rectangles -->
+                <g id="sankeyNodes"></g>
+
+                <!-- Anomaly badges (top-most layer) -->
+                <g id="sankeyAnomalies"></g>
+              </svg>
+              <div class="sankey-tooltip" id="sankeyTooltip" role="tooltip" aria-hidden="true"></div>
+            </div>
+
+            <div class="grid" style="grid-template-columns: repeat(4, 1fr); gap:10px; margin-top:14px;">
+              <div style="padding:10px 12px; background:var(--gray-50); border-radius:var(--r-md); border:1px solid var(--border-soft);">
+                <div class="muted" style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">파이프라인 가동률</div>
+                <div style="font-size:18px; font-weight:800; margin-top:4px;" class="num">98.7<span style="font-size:12px; font-weight:500; color:var(--text-secondary);">%</span></div>
+              </div>
+              <div style="padding:10px 12px; background:var(--gray-50); border-radius:var(--r-md); border:1px solid var(--border-soft);">
+                <div class="muted" style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">평균 E2E 지연</div>
+                <div style="font-size:18px; font-weight:800; margin-top:4px;" class="num">412<span style="font-size:12px; font-weight:500; color:var(--text-secondary);">ms</span></div>
+              </div>
+              <div style="padding:10px 12px; background:var(--gray-50); border-radius:var(--r-md); border:1px solid var(--border-soft);">
+                <div class="muted" style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">활성 커넥터</div>
+                <div style="font-size:18px; font-weight:800; margin-top:4px;" class="num">12<span style="font-size:12px; font-weight:500; color:var(--text-secondary);">/13</span></div>
+              </div>
+              <div style="padding:10px 12px; background:var(--gray-50); border-radius:var(--r-md); border:1px solid var(--border-soft);">
+                <div class="muted" style="font-size:11px; font-weight:600; text-transform:uppercase; letter-spacing:0.04em;">금일 처리 건수</div>
+                <div style="font-size:18px; font-weight:800; margin-top:4px;" class="num"><span id="flowTodayCount">9.42M</span></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Live Feed -->
+          <div class="live-feed" id="liveFeed">
+            <div class="lf-head">
+              <h4><span class="live-dot"></span> 실시간 이벤트 스트림</h4>
+              <button class="btn-icon" id="lfPauseBtn" title="일시정지"><span class="material-icons">pause</span></button>
+            </div>
+            <div class="lf-list" id="lfList">
+              <!-- populated by JS -->
+            </div>
+            <div class="lf-foot">
+              <span>최근 50건 표시</span>
+              <span id="lfCounter">·</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           TAB 2 · STAGE TRANSFORMATION STATUS
+           ========================================================= -->
+      <div class="mon-tab-panel" data-mon-panel="transform">
+        <div class="stage-grid" id="stageGrid">
+          <!-- populated by JS -->
+        </div>
+
         <div class="card">
           <div class="section-head">
-            <h3>리소스 사용률</h3>
-            <div class="sub">실시간 · 1분 단위</div>
+            <div>
+              <h3>단계별 처리량 추이 (최근 30분)</h3>
+              <div class="sub">스키마 검증 → PII 탐지 → 정제·표준화 → 적재 단계별 처리 EPS</div>
+            </div>
+            <div class="tools">
+              <button class="btn btn-ghost"><span class="material-icons">file_download</span> CSV 내보내기</button>
+            </div>
           </div>
-          <div class="chart-wrap h-md"><canvas id="chart-resource"></canvas></div>
+          <div class="chart-wrap h-md"><canvas id="chart-transform"></canvas></div>
         </div>
-        <div class="card">
-          <div class="section-head">
-            <h3>서비스 가용성 (지난 24h)</h3>
-            <div class="sub">SLA 99.9% 기준</div>
+
+        <div class="grid grid-2" style="margin-top:16px;">
+          <div class="card">
+            <div class="section-head"><h3>변환 규칙 적용 현황</h3><div class="sub">최근 1시간</div></div>
+            <table class="data">
+              <thead><tr><th>규칙</th><th>적용</th><th>실패</th><th>성공률</th></tr></thead>
+              <tbody>
+                <tr><td><b style="font-size:13px;">JSON 스키마 검증</b><div class="muted" style="font-size:11px;">v2.4 · 142개 필드</div></td>
+                  <td class="num">128,420</td><td class="num">312</td>
+                  <td><span class="mini-fill"><span style="width:99.7%"></span></span><span class="num">99.76%</span></td></tr>
+                <tr><td><b style="font-size:13px;">PII 패턴 탐지</b><div class="muted" style="font-size:11px;">정규식 28종 + ML 모델</div></td>
+                  <td class="num">128,108</td><td class="num">8</td>
+                  <td><span class="mini-fill"><span style="width:99.9%"></span></span><span class="num">99.99%</span></td></tr>
+                <tr><td><b style="font-size:13px;">날짜·시간 표준화</b><div class="muted" style="font-size:11px;">ISO 8601 · KST 변환</div></td>
+                  <td class="num">128,100</td><td class="num">42</td>
+                  <td><span class="mini-fill"><span style="width:99.9%"></span></span><span class="num">99.96%</span></td></tr>
+                <tr><td><b style="font-size:13px;">금액 정규화</b><div class="muted" style="font-size:11px;">원화 단위 통일</div></td>
+                  <td class="num">86,420</td><td class="num">18</td>
+                  <td><span class="mini-fill"><span style="width:99.9%"></span></span><span class="num">99.98%</span></td></tr>
+                <tr><td><b style="font-size:13px;">중복 제거 (Dedup)</b><div class="muted" style="font-size:11px;">SHA-256 해시 비교</div></td>
+                  <td class="num">128,058</td><td class="num">1,842</td>
+                  <td><span class="mini-fill warn"><span style="width:98.6%"></span></span><span class="num">98.56%</span></td></tr>
+              </tbody>
+            </table>
           </div>
-          <div class="stack-v" style="gap:14px; margin-top:8px;">
-            <div>
-              <div class="stack-h" style="justify-content:space-between; margin-bottom:6px;"><b style="font-size:14px;">Ingest API</b><span class="num" style="font-size:14px;">99.97%</span></div>
-              <div class="progress"><span style="width:99.97%"></span></div>
-            </div>
-            <div>
-              <div class="stack-h" style="justify-content:space-between; margin-bottom:6px;"><b style="font-size:14px;">STT Inference</b><span class="num" style="font-size:14px;">98.40%</span></div>
-              <div class="progress"><span style="width:98.4%"></span></div>
-            </div>
-            <div>
-              <div class="stack-h" style="justify-content:space-between; margin-bottom:6px;"><b style="font-size:14px;">OCR Inference</b><span class="num" style="font-size:14px;">82.10%</span></div>
-              <div class="progress yellow"><span style="width:82.1%"></span></div>
-            </div>
-            <div>
-              <div class="stack-h" style="justify-content:space-between; margin-bottom:6px;"><b style="font-size:14px;">Catalog API</b><span class="num" style="font-size:14px;">99.95%</span></div>
-              <div class="progress"><span style="width:99.95%"></span></div>
-            </div>
-            <div>
-              <div class="stack-h" style="justify-content:space-between; margin-bottom:6px;"><b style="font-size:14px;">Search (Vector)</b><span class="num" style="font-size:14px;">99.99%</span></div>
-              <div class="progress"><span style="width:99.99%"></span></div>
-            </div>
-            <div>
-              <div class="stack-h" style="justify-content:space-between; margin-bottom:6px;"><b style="font-size:14px;">External Crawler</b><span class="num" style="font-size:14px;">76.20%</span></div>
-              <div class="progress red"><span style="width:76.2%"></span></div>
-            </div>
+
+          <div class="card">
+            <div class="section-head"><h3>스테이지 큐 적체 상태</h3><div class="sub">대기 메시지 수</div></div>
+            <div class="chart-wrap h-md"><canvas id="chart-queue"></canvas></div>
           </div>
         </div>
       </div>
 
-      <div class="card" style="margin-top:20px;">
-        <div class="section-head">
-          <div>
-            <h3>최근 이벤트 로그</h3>
-            <div class="sub">우선순위 P0~P3</div>
+      <!-- =========================================================
+           TAB 3 · ANOMALY DETECTION
+           ========================================================= -->
+      <div class="mon-tab-panel" data-mon-panel="anomaly">
+        <div class="anomaly-summary">
+          <div class="as-card format">
+            <div class="as-icon"><span class="material-icons">rule_folder</span></div>
+            <div class="as-body">
+              <div class="as-label">데이터 형식 이상</div>
+              <div class="as-value">7<span class="unit">건</span></div>
+              <div class="as-delta">스키마 불일치 · 인코딩 오류</div>
+            </div>
           </div>
-          <div class="tools">
-            <button class="btn btn-ghost"><span class="material-icons">filter_alt</span> 필터</button>
-            <button class="btn btn-ghost"><span class="material-icons">download</span> 내보내기</button>
+          <div class="as-card pii">
+            <div class="as-icon"><span class="material-icons">privacy_tip</span></div>
+            <div class="as-body">
+              <div class="as-label">개인정보 노출 후보</div>
+              <div class="as-value">3<span class="unit">건</span></div>
+              <div class="as-delta">즉시 격리·관리자 검토 필요</div>
+            </div>
+          </div>
+          <div class="as-card volume">
+            <div class="as-icon"><span class="material-icons">show_chart</span></div>
+            <div class="as-body">
+              <div class="as-label">수집량 이상 (Spike/Drop)</div>
+              <div class="as-value">7<span class="unit">건</span></div>
+              <div class="as-delta ok">대부분 자동 복구</div>
+            </div>
           </div>
         </div>
-        <table class="data" id="eventTable">
-          <thead><tr><th>시각</th><th>우선순위</th><th>구성요소</th><th>메시지</th><th>상태</th><th></th></tr></thead>
-          <tbody>
-            <tr><td class="num">14:08</td><td><span class="tag yellow">P2</span></td><td>OCR Worker</td><td>처리 큐 적체 · 대기 524건</td><td><span class="tag yellow">확인 중</span></td>
-              <td class="row-actions"><button class="btn-icon"><span class="material-icons">arrow_forward</span></button></td></tr>
-            <tr><td class="num">13:42</td><td><span class="tag red">P1</span></td><td>External Crawler</td><td>외부 SNS API rate limit · 인증키 점검 필요</td><td><span class="tag red">진행중</span></td>
-              <td class="row-actions"><button class="btn-icon"><span class="material-icons">arrow_forward</span></button></td></tr>
-            <tr><td class="num">12:18</td><td><span class="tag gray">P3</span></td><td>Catalog API</td><td>일시적 응답 지연 (3분간)</td><td><span class="tag green">해결</span></td>
-              <td class="row-actions"><button class="btn-icon"><span class="material-icons">arrow_forward</span></button></td></tr>
-            <tr><td class="num">10:24</td><td><span class="tag gray">P3</span></td><td>Backup</td><td>VOC DW 일일 백업 완료</td><td><span class="tag green">완료</span></td>
-              <td class="row-actions"><button class="btn-icon"><span class="material-icons">arrow_forward</span></button></td></tr>
-          </tbody>
-        </table>
+
+        <div class="card">
+          <div class="section-head">
+            <div><h3>이상 발생 목록</h3><div class="sub">최근 24시간 · 자동 탐지</div></div>
+            <div class="tools">
+              <button class="btn btn-ghost"><span class="material-icons">filter_alt</span> 필터</button>
+              <button class="btn btn-ghost"><span class="material-icons">download</span> 내보내기</button>
+            </div>
+          </div>
+          <div class="mon-filters">
+            <select id="anomalyTypeFilter">
+              <option value="all">전체 유형</option>
+              <option value="format">형식</option>
+              <option value="pii">개인정보</option>
+              <option value="volume">수집량</option>
+              <option value="conn">연결</option>
+            </select>
+            <select id="anomalySevFilter">
+              <option value="all">전체 우선순위</option>
+              <option value="p0">P0 (긴급)</option>
+              <option value="p1">P1 (높음)</option>
+              <option value="p2">P2 (중간)</option>
+              <option value="p3">P3 (낮음)</option>
+            </select>
+            <select id="anomalyStatusFilter">
+              <option value="all">전체 상태</option>
+              <option value="open">미해결</option>
+              <option value="ack">확인 중</option>
+              <option value="resolved">해결</option>
+            </select>
+            <input type="text" id="anomalySearch" placeholder="컴포넌트·메시지 검색…" style="min-width:220px;">
+            <div class="filter-spacer"></div>
+            <span class="muted" style="font-size:12px;">표시: <b id="anomalyCountLabel">17</b>건</span>
+          </div>
+          <table class="data" id="anomalyTable">
+            <thead><tr>
+              <th>시각</th>
+              <th>우선순위</th>
+              <th>유형</th>
+              <th>컴포넌트 / 노드</th>
+              <th>이상 내용</th>
+              <th>영향 건수</th>
+              <th>상태</th>
+              <th>담당</th>
+              <th></th>
+            </tr></thead>
+            <tbody id="anomalyTbody">
+              <!-- populated by JS -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           TAB 4 · PLATFORM RESOURCES
+           ========================================================= -->
+      <div class="mon-tab-panel" data-mon-panel="resource">
+        <div class="health-grid">
+          <div class="health-card ok">
+            <div class="h"><span class="name">Ingest Gateway</span><span class="material-icons">check_circle</span></div>
+            <div class="v num">99.97%</div>
+            <div class="bar"><span style="width:99.97%"></span></div>
+          </div>
+          <div class="health-card ok">
+            <div class="h"><span class="name">STT 처리 클러스터</span><span class="material-icons">check_circle</span></div>
+            <div class="v num">98.4%</div>
+            <div class="bar"><span style="width:98.4%"></span></div>
+          </div>
+          <div class="health-card warn">
+            <div class="h"><span class="name">OCR Worker Pool</span><span class="material-icons">warning</span></div>
+            <div class="v num">82.1%</div>
+            <div class="bar"><span style="width:82.1%"></span></div>
+          </div>
+          <div class="health-card ok">
+            <div class="h"><span class="name">Vector DB</span><span class="material-icons">check_circle</span></div>
+            <div class="v num">99.99%</div>
+            <div class="bar"><span style="width:99.99%"></span></div>
+          </div>
+        </div>
+
+        <h4 style="margin:22px 0 12px; font-size:14px; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.06em; font-weight:700;">플랫폼 구성 자원</h4>
+        <div class="resource-grid" id="resourceGrid">
+          <!-- populated by JS -->
+        </div>
+
+        <div class="grid grid-2" style="margin-top:20px;">
+          <div class="card">
+            <div class="section-head">
+              <h3>클러스터 리소스 사용률</h3>
+              <div class="sub">실시간 · 1분 단위</div>
+            </div>
+            <div class="chart-wrap h-md"><canvas id="chart-resource"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="section-head">
+              <h3>서비스 가용성 (지난 24h)</h3>
+              <div class="sub">SLA 99.9% 기준</div>
+            </div>
+            <div class="stack-v" style="gap:14px; margin-top:8px;">
+              <div>
+                <div class="stack-h" style="justify-content:space-between; margin-bottom:6px;"><b style="font-size:14px;">Ingest API</b><span class="num" style="font-size:14px;">99.97%</span></div>
+                <div class="progress"><span style="width:99.97%"></span></div>
+              </div>
+              <div>
+                <div class="stack-h" style="justify-content:space-between; margin-bottom:6px;"><b style="font-size:14px;">STT Inference</b><span class="num" style="font-size:14px;">98.40%</span></div>
+                <div class="progress"><span style="width:98.4%"></span></div>
+              </div>
+              <div>
+                <div class="stack-h" style="justify-content:space-between; margin-bottom:6px;"><b style="font-size:14px;">OCR Inference</b><span class="num" style="font-size:14px;">82.10%</span></div>
+                <div class="progress yellow"><span style="width:82.1%"></span></div>
+              </div>
+              <div>
+                <div class="stack-h" style="justify-content:space-between; margin-bottom:6px;"><b style="font-size:14px;">Catalog API</b><span class="num" style="font-size:14px;">99.95%</span></div>
+                <div class="progress"><span style="width:99.95%"></span></div>
+              </div>
+              <div>
+                <div class="stack-h" style="justify-content:space-between; margin-bottom:6px;"><b style="font-size:14px;">Search (Vector)</b><span class="num" style="font-size:14px;">99.99%</span></div>
+                <div class="progress"><span style="width:99.99%"></span></div>
+              </div>
+              <div>
+                <div class="stack-h" style="justify-content:space-between; margin-bottom:6px;"><b style="font-size:14px;">External Crawler</b><span class="num" style="font-size:14px;">76.20%</span></div>
+                <div class="progress red"><span style="width:76.2%"></span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:20px;">
+          <div class="section-head">
+            <div>
+              <h3>최근 이벤트 로그</h3>
+              <div class="sub">우선순위 P0~P3</div>
+            </div>
+            <div class="tools">
+              <button class="btn btn-ghost"><span class="material-icons">filter_alt</span> 필터</button>
+              <button class="btn btn-ghost"><span class="material-icons">download</span> 내보내기</button>
+            </div>
+          </div>
+          <table class="data" id="eventTable">
+            <thead><tr><th>시각</th><th>우선순위</th><th>구성요소</th><th>메시지</th><th>상태</th><th></th></tr></thead>
+            <tbody>
+              <tr><td class="num">14:08</td><td><span class="tag yellow">P2</span></td><td>OCR Worker</td><td>처리 큐 적체 · 대기 524건</td><td><span class="tag yellow">확인 중</span></td>
+                <td class="row-actions"><button class="btn-icon"><span class="material-icons">arrow_forward</span></button></td></tr>
+              <tr><td class="num">13:42</td><td><span class="tag red">P1</span></td><td>External Crawler</td><td>외부 SNS API rate limit · 인증키 점검 필요</td><td><span class="tag red">진행중</span></td>
+                <td class="row-actions"><button class="btn-icon"><span class="material-icons">arrow_forward</span></button></td></tr>
+              <tr><td class="num">12:18</td><td><span class="tag gray">P3</span></td><td>Catalog API</td><td>일시적 응답 지연 (3분간)</td><td><span class="tag green">해결</span></td>
+                <td class="row-actions"><button class="btn-icon"><span class="material-icons">arrow_forward</span></button></td></tr>
+              <tr><td class="num">10:24</td><td><span class="tag gray">P3</span></td><td>Backup</td><td>VOC DW 일일 백업 완료</td><td><span class="tag green">완료</span></td>
+                <td class="row-actions"><button class="btn-icon"><span class="material-icons">arrow_forward</span></button></td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- =========================================================
+           TAB 5 · DE-IDENTIFICATION RESULTS
+           ========================================================= -->
+      <div class="mon-tab-panel" data-mon-panel="deid">
+        <div class="deid-summary">
+          <div class="deid-method-card">
+            <div class="dm-label">처리 방식 · 가명화</div>
+            <div class="dm-method">Pseudonymization</div>
+            <div class="dm-count">28,420<span class="unit" style="font-size:11px; color:var(--text-secondary); margin-left:4px;">건</span></div>
+            <div class="dm-bar"><span style="width:67%; background:linear-gradient(90deg, var(--teal-400), var(--teal-600));"></span></div>
+            <div class="dm-pct">전체의 67.4%</div>
+          </div>
+          <div class="deid-method-card">
+            <div class="dm-label">처리 방식 · 마스킹</div>
+            <div class="dm-method">Masking</div>
+            <div class="dm-count">9,840<span class="unit" style="font-size:11px; color:var(--text-secondary); margin-left:4px;">건</span></div>
+            <div class="dm-bar"><span style="width:23%; background:linear-gradient(90deg, var(--amber-400), var(--amber-600));"></span></div>
+            <div class="dm-pct">전체의 23.3%</div>
+          </div>
+          <div class="deid-method-card">
+            <div class="dm-label">처리 방식 · 일반화</div>
+            <div class="dm-method">Generalization</div>
+            <div class="dm-count">2,840<span class="unit" style="font-size:11px; color:var(--text-secondary); margin-left:4px;">건</span></div>
+            <div class="dm-bar"><span style="width:7%; background:linear-gradient(90deg, var(--gray-400), var(--gray-600));"></span></div>
+            <div class="dm-pct">전체의 6.7%</div>
+          </div>
+          <div class="deid-method-card">
+            <div class="dm-label">처리 방식 · 삭제</div>
+            <div class="dm-method">Suppression</div>
+            <div class="dm-count">1,080<span class="unit" style="font-size:11px; color:var(--text-secondary); margin-left:4px;">건</span></div>
+            <div class="dm-bar"><span style="width:3%; background:linear-gradient(90deg, #FF8D95, var(--hana-red));"></span></div>
+            <div class="dm-pct">전체의 2.6%</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="section-head">
+            <div><h3>비식별화 작업 내역</h3><div class="sub">최근 24시간 · 자동 로깅</div></div>
+            <div class="tools">
+              <button class="btn btn-ghost"><span class="material-icons">history</span> 전체 이력</button>
+              <button class="btn btn-ghost"><span class="material-icons">download</span> 감사 보고서</button>
+            </div>
+          </div>
+          <div class="mon-filters">
+            <select id="deidMethodFilter">
+              <option value="all">전체 방식</option>
+              <option value="pseudo">가명화</option>
+              <option value="mask">마스킹</option>
+              <option value="general">일반화</option>
+              <option value="suppress">삭제</option>
+            </select>
+            <select id="deidDatasetFilter">
+              <option value="all">전체 데이터셋</option>
+              <option value="callcenter">콜센터 STT</option>
+              <option value="ocr">문서 OCR</option>
+              <option value="email">이메일·채팅</option>
+              <option value="cctv">CCTV</option>
+            </select>
+            <select id="deidStatusFilter">
+              <option value="all">전체 상태</option>
+              <option value="done">완료</option>
+              <option value="running">처리중</option>
+              <option value="failed">실패</option>
+            </select>
+            <input type="text" id="deidSearch" placeholder="작업ID·데이터셋 검색…" style="min-width:200px;">
+            <div class="filter-spacer"></div>
+            <span class="muted" style="font-size:12px;">표시: <b id="deidCountLabel">12</b>건</span>
+          </div>
+          <table class="data" id="deidTable">
+            <thead><tr>
+              <th>작업ID</th>
+              <th>대상 데이터셋</th>
+              <th>처리 방식</th>
+              <th>PII 항목</th>
+              <th>대상 건수</th>
+              <th>처리 시간</th>
+              <th>요청자</th>
+              <th>상태</th>
+              <th></th>
+            </tr></thead>
+            <tbody id="deidTbody">
+              <!-- populated by JS -->
+            </tbody>
+          </table>
+        </div>
+
+        <div class="grid grid-2" style="margin-top:16px;">
+          <div class="card">
+            <div class="section-head"><h3>PII 항목별 탐지·마스킹 비중</h3><div class="sub">최근 7일 · 누적</div></div>
+            <div class="chart-wrap h-md"><canvas id="chart-pii-type"></canvas></div>
+          </div>
+          <div class="card">
+            <div class="section-head"><h3>비식별화 일일 처리량</h3><div class="sub">최근 14일</div></div>
+            <div class="chart-wrap h-md"><canvas id="chart-deid-daily"></canvas></div>
+          </div>
+        </div>
       </div>
     </section>
 
@@ -8499,6 +9527,1231 @@ $$('#usTypeSeg button').forEach(b => {
   if (loginBtn) {
     loginBtn.addEventListener('click', () => setTimeout(tryRun, 700));
   }
+})();
+
+/* ============================================================
+   MONITORING ENHANCEMENT · injected by integrator
+   ============================================================ */
+/* =========================================================
+   MONITORING · ENHANCED FEATURES
+   - Sankey real-time flow visualization
+   - Anomaly indicators on nodes (with cumulative counts)
+   - Node hover -> stage transformation status tooltip
+   - Live event stream
+   - Stage-by-stage transformation cards + charts
+   - Anomaly table with filters
+   - Platform resources grid
+   - De-identification job log + charts
+   ========================================================= */
+(function MonitoringModule() {
+
+  // -------- DATA MODEL --------
+  const STAGES = [
+    { id: 'source',    label: '수집 소스',     sub: 'SOURCES',     x: 80,  desc: '비정형 데이터 원천' },
+    { id: 'channel',   label: '수집 채널',     sub: 'INGEST',      x: 290, desc: 'Kafka · REST · SFTP' },
+    { id: 'transform', label: '검증·변환',     sub: 'TRANSFORM',   x: 510, desc: '스키마·PII·정제' },
+    { id: 'load',      label: '적재',          sub: 'LOAD',        x: 730, desc: 'Raw / Staging / DW' },
+    { id: 'store',     label: '분석 저장소',   sub: 'STORE',       x: 950, desc: 'Vector · Feature' },
+  ];
+
+  // Node definitions per stage. `value` is total flow through the node (relative units).
+  const NODES = [
+    // Sources
+    { id: 's_call',  stage: 'source',    name: '콜센터 STT',     icon: 'support_agent',  value: 320, status: 'ok',    eps: 642 },
+    { id: 's_doc',   stage: 'source',    name: '문서 OCR',        icon: 'description',    value: 270, status: 'warn',  eps: 412, anomaly: { count: 7, msg: '처리 큐 적체 524건' } },
+    { id: 's_mail',  stage: 'source',    name: '이메일·채팅',     icon: 'mail',           value: 140, status: 'ok',    eps: 218 },
+    { id: 's_video', stage: 'source',    name: 'CCTV·영상',       icon: 'videocam',       value: 220, status: 'ok',    eps: 86  },
+    { id: 's_sns',   stage: 'source',    name: 'SNS 크롤러',      icon: 'public',         value: 60,  status: 'error', eps: 0,   anomaly: { count: 12, msg: 'API rate limit · 인증키 점검' } },
+
+    // Channels
+    { id: 'c_kafka', stage: 'channel',   name: 'Kafka Stream',    icon: 'bolt',           value: 460, status: 'ok',    eps: 1102 },
+    { id: 'c_rest',  stage: 'channel',   name: 'REST API',        icon: 'api',            value: 250, status: 'ok',    eps: 408 },
+    { id: 'c_sftp',  stage: 'channel',   name: 'SFTP Batch',      icon: 'cloud_upload',   value: 300, status: 'ok',    eps: 332 },
+
+    // Transform
+    { id: 't_schema', stage: 'transform', name: '스키마 검증',     icon: 'rule',           value: 1010, status: 'ok',   eps: 1842 },
+    { id: 't_pii',    stage: 'transform', name: 'PII 탐지',        icon: 'privacy_tip',    value: 1010, status: 'warn', eps: 1842, anomaly: { count: 3, msg: '개인정보 노출 후보 3건' } },
+    { id: 't_clean',  stage: 'transform', name: '정제·표준화',     icon: 'auto_fix_high',  value: 1010, status: 'ok',   eps: 1842 },
+
+    // Load
+    { id: 'l_raw',  stage: 'load',      name: 'Raw Lake',         icon: 'inventory_2',    value: 400, status: 'ok',    eps: 720 },
+    { id: 'l_ods',  stage: 'load',      name: 'ODS Staging',      icon: 'storage',        value: 380, status: 'ok',    eps: 682 },
+    { id: 'l_dw',   stage: 'load',      name: 'Data Warehouse',   icon: 'database',       value: 230, status: 'ok',    eps: 440 },
+
+    // Store
+    { id: 'st_vec', stage: 'store',     name: 'Vector Store',     icon: 'hub',            value: 400, status: 'ok',    eps: 1042 },
+    { id: 'st_feat',stage: 'store',     name: 'Feature Store',    icon: 'hub',            value: 610, status: 'ok',    eps: 800  },
+  ];
+
+  // Flows (source -> target with value). Values determine ribbon thickness.
+  const FLOWS = [
+    // Sources -> Channels
+    { from: 's_call',  to: 'c_kafka', value: 320 },
+    { from: 's_doc',   to: 'c_rest',  value: 180 },
+    { from: 's_doc',   to: 'c_sftp',  value: 90  },
+    { from: 's_mail',  to: 'c_kafka', value: 140 },
+    { from: 's_video', to: 'c_sftp',  value: 220 },
+    { from: 's_sns',   to: 'c_rest',  value: 60  },
+
+    // Channels -> Transform (Schema)
+    { from: 'c_kafka', to: 't_schema', value: 460 },
+    { from: 'c_rest',  to: 't_schema', value: 250 },
+    { from: 'c_sftp',  to: 't_schema', value: 300 },
+
+    // Transform pipeline
+    { from: 't_schema', to: 't_pii',   value: 1010 },
+    { from: 't_pii',    to: 't_clean', value: 1010 },
+
+    // Transform -> Load
+    { from: 't_clean', to: 'l_raw', value: 400 },
+    { from: 't_clean', to: 'l_ods', value: 380 },
+    { from: 't_clean', to: 'l_dw',  value: 230 },
+
+    // Load -> Store
+    { from: 'l_raw', to: 'st_vec',  value: 240 },
+    { from: 'l_raw', to: 'st_feat', value: 160 },
+    { from: 'l_ods', to: 'st_vec',  value: 160 },
+    { from: 'l_ods', to: 'st_feat', value: 220 },
+    { from: 'l_dw',  to: 'st_feat', value: 230 },
+  ];
+
+  // Stage details for hover tooltips (extra info beyond NODES base)
+  const NODE_DETAIL = {
+    s_call:  { metric: '음성 → 텍스트 변환', latency: '1.2s', success: 99.8, queue: 0,   note: 'STT 정확도 96.4%' },
+    s_doc:   { metric: 'PDF·이미지 → 텍스트', latency: '3.4s', success: 96.1, queue: 524, note: '워커 풀 확장 권장' },
+    s_mail:  { metric: '본문·첨부 추출',     latency: '0.4s', success: 99.9, queue: 0,   note: '정상' },
+    s_video: { metric: '영상 → 프레임·메타', latency: '12s',  success: 99.4, queue: 12,  note: '대용량 처리 중' },
+    s_sns:   { metric: 'SNS·뉴스 크롤링',    latency: '-',    success: 0,    queue: 0,   note: 'X(Twitter) API rate limit 도달 · 인증키 교체 필요' },
+
+    c_kafka: { metric: '메시지 스트림',        latency: '8ms',  success: 99.99, queue: 0,    note: '파티션 12개 · Replica 3' },
+    c_rest:  { metric: 'REST 인입 (HTTPS)',    latency: '42ms', success: 99.92, queue: 18,   note: '평균 RPS 408' },
+    c_sftp:  { metric: '배치 파일 인입',        latency: '15s',  success: 99.86, queue: 4,    note: '5분 폴링' },
+
+    t_schema: { metric: 'JSON 스키마 검증',    latency: '12ms', success: 99.76, queue: 0,   note: '필드 142개 검증' },
+    t_pii:    { metric: 'PII 패턴·ML 탐지',   latency: '38ms', success: 99.99, queue: 0,   note: '주민번호·카드번호·전화 등 28종 패턴 + ML' },
+    t_clean:  { metric: '날짜·금액·문자 표준화', latency: '18ms', success: 99.96, queue: 0,   note: 'ISO 8601 · 원화 통일' },
+
+    l_raw:   { metric: 'Parquet 원본 적재',    latency: '120ms', success: 99.98, queue: 0,  note: 'HDFS · 압축 Snappy' },
+    l_ods:   { metric: 'PostgreSQL 적재',      latency: '60ms',  success: 99.97, queue: 0,  note: 'ODS · 24h 보관' },
+    l_dw:    { metric: 'BigQuery 적재',        latency: '200ms', success: 99.95, queue: 0,  note: '파티션·클러스터링' },
+
+    st_vec:  { metric: '벡터 임베딩 저장',     latency: '85ms', success: 99.99, queue: 0,   note: 'pgvector · 1536 차원' },
+    st_feat: { metric: 'Feature Engineering',  latency: '140ms', success: 99.96, queue: 0,  note: 'Online + Offline Store' },
+  };
+
+  // -------- LAYOUT --------
+  const NODE_W = 130;
+  const NODE_H_PER_VALUE = 0.18; // height per value unit
+  const NODE_MIN_H = 28;
+  const NODE_GAP = 14;
+  const STAGE_TOP = 70;
+  const STAGE_BOTTOM = 480;
+  const SVG_H = 520;
+
+  function layoutSankey() {
+    // Group by stage
+    const byStage = {};
+    STAGES.forEach(s => byStage[s.id] = []);
+    NODES.forEach(n => byStage[n.stage].push(n));
+
+    // Compute total flow value per node from FLOWS for sizing (use max of in/out)
+    NODES.forEach(n => {
+      const out = FLOWS.filter(f => f.from === n.id).reduce((a, f) => a + f.value, 0);
+      const inn = FLOWS.filter(f => f.to === n.id).reduce((a, f) => a + f.value, 0);
+      n._flow = Math.max(out, inn, n.value);
+      n._height = Math.max(NODE_MIN_H, n._flow * NODE_H_PER_VALUE);
+    });
+
+    // Vertical layout within each stage column
+    STAGES.forEach(stage => {
+      const list = byStage[stage.id];
+      const total = list.reduce((a, n) => a + n._height + NODE_GAP, -NODE_GAP);
+      let y = STAGE_TOP + ((STAGE_BOTTOM - STAGE_TOP) - total) / 2;
+      list.forEach(n => {
+        n._x = stage.x;
+        n._y = y;
+        n._w = NODE_W;
+        n._h = n._height;
+        // Track of allocated edge offsets
+        n._inOff = 0;
+        n._outOff = 0;
+        y += n._h + NODE_GAP;
+      });
+    });
+  }
+
+  // -------- COLORS --------
+  function statusColor(s) {
+    if (s === 'error') return { fill: '#FDE7E9', stroke: '#E30613', text: '#82030C' };
+    if (s === 'warn')  return { fill: '#FFF8E7', stroke: '#E8AC32', text: '#6E4B0C' };
+    return { fill: '#E5F4F2', stroke: '#00857A', text: '#00231F' };
+  }
+
+  function flowGradId(fromId) {
+    // Source-aware gradient
+    if (fromId === 's_call')  return 'url(#gradCall)';
+    if (fromId === 's_doc')   return 'url(#gradDoc)';
+    if (fromId === 's_mail')  return 'url(#gradMail)';
+    if (fromId === 's_video') return 'url(#gradVideo)';
+    if (fromId === 's_sns')   return 'url(#gradSns)';
+    if (fromId && fromId[0] === 'c') return 'url(#gradFlow)';
+    if (fromId && fromId[0] === 't') return 'url(#gradMid)';
+    if (fromId && fromId[0] === 'l') return 'url(#gradEnd)';
+    return 'url(#gradFlow)';
+  }
+
+  // -------- SVG RENDER --------
+  function renderSankey() {
+    layoutSankey();
+    const svg = document.getElementById('sankeySvg');
+    if (!svg) return;
+
+    const gStage     = document.getElementById('sankeyStageLabels');
+    const gFlows     = document.getElementById('sankeyFlows');
+    const gNodes     = document.getElementById('sankeyNodes');
+    const gAnomalies = document.getElementById('sankeyAnomalies');
+    const gPart      = document.getElementById('sankeyParticles');
+
+    gStage.innerHTML = '';
+    gFlows.innerHTML = '';
+    gNodes.innerHTML = '';
+    gAnomalies.innerHTML = '';
+    gPart.innerHTML = '';
+
+    // Stage column labels
+    STAGES.forEach(s => {
+      gStage.innerHTML += `
+        <text class="stage-label" x="${s.x + NODE_W/2}" y="36" text-anchor="middle">${s.label}</text>
+        <text class="stage-sub"   x="${s.x + NODE_W/2}" y="50" text-anchor="middle">${s.sub}</text>
+        <line x1="${s.x + NODE_W/2 - 14}" y1="56" x2="${s.x + NODE_W/2 + 14}" y2="56" stroke="#CACED4" stroke-width="1"/>
+      `;
+    });
+
+    // Build flows. For each flow, compute Y offsets on source-out and target-in based on accumulated values.
+    // Allocate edge slots proportional to value.
+    NODES.forEach(n => { n._inAcc = 0; n._outAcc = 0; });
+
+    // Sort flows for stable layout: source by source node y, then target node y
+    const sortedFlows = FLOWS.slice().sort((a, b) => {
+      const A = NODES.find(n => n.id === a.from)._y;
+      const B = NODES.find(n => n.id === b.from)._y;
+      if (A !== B) return A - B;
+      const A2 = NODES.find(n => n.id === a.to)._y;
+      const B2 = NODES.find(n => n.id === b.to)._y;
+      return A2 - B2;
+    });
+
+    sortedFlows.forEach((f, idx) => {
+      const src = NODES.find(n => n.id === f.from);
+      const tgt = NODES.find(n => n.id === f.to);
+      const srcTotalOut = FLOWS.filter(x => x.from === src.id).reduce((a, x) => a + x.value, 0);
+      const tgtTotalIn  = FLOWS.filter(x => x.to   === tgt.id).reduce((a, x) => a + x.value, 0);
+      const srcHperUnit = src._h / srcTotalOut;
+      const tgtHperUnit = tgt._h / tgtTotalIn;
+      const thickness   = Math.max(2, f.value * Math.min(srcHperUnit, tgtHperUnit));
+
+      const y0 = src._y + src._outAcc * srcHperUnit + (f.value * srcHperUnit) / 2;
+      const y1 = tgt._y + tgt._inAcc  * tgtHperUnit + (f.value * tgtHperUnit) / 2;
+      src._outAcc += f.value;
+      tgt._inAcc  += f.value;
+
+      const x0 = src._x + src._w;
+      const x1 = tgt._x;
+      const midX = (x0 + x1) / 2;
+
+      // Sankey ribbon: cubic bezier band
+      const half = thickness / 2;
+      const top    = `M ${x0} ${y0 - half} C ${midX} ${y0 - half}, ${midX} ${y1 - half}, ${x1} ${y1 - half}`;
+      const right  = ` L ${x1} ${y1 + half}`;
+      const bottom = ` C ${midX} ${y1 + half}, ${midX} ${y0 + half}, ${x0} ${y0 + half}`;
+      const left   = ` Z`;
+
+      const isError = (src.status === 'error' || tgt.status === 'error');
+      const grad = flowGradId(src.id);
+      const path = `<path class="flow ${isError ? 'error' : ''}" data-flow="${idx}" data-from="${src.id}" data-to="${tgt.id}"
+                          d="${top}${right}${bottom}${left}" fill="${grad}"/>`;
+      gFlows.insertAdjacentHTML('beforeend', path);
+
+      // Animated particle along path centerline
+      const cx0 = x0, cy0 = y0, cx1 = x1, cy1 = y1;
+      const particleClass = src.status === 'error' ? 'error' : (src.status === 'warn' || tgt.status === 'warn') ? 'warn' : 'ok';
+      const dur = 3 + Math.random() * 1.6;
+      const delay = Math.random() * 3.5;
+      const partPath = `M ${cx0} ${cy0} C ${midX} ${cy0}, ${midX} ${cy1}, ${cx1} ${cy1}`;
+      gPart.insertAdjacentHTML('beforeend', `
+        <circle class="flow-particle ${particleClass}" r="2.4">
+          <animateMotion dur="${dur}s" repeatCount="indefinite" begin="${delay}s" path="${partPath}"/>
+          <animate attributeName="opacity" values="0;1;1;0" dur="${dur}s" repeatCount="indefinite" begin="${delay}s"/>
+        </circle>
+      `);
+    });
+
+    // Nodes
+    NODES.forEach(n => {
+      const c = statusColor(n.status);
+      const isWide = n._h >= 50;
+      const labelY = n._y + (isWide ? 18 : 16);
+      const valueY = n._y + (isWide ? 34 : n._h - 4);
+
+      const dotColor = n.status === 'error' ? '#E30613' : n.status === 'warn' ? '#E8AC32' : '#00857A';
+
+      const labelHtml = isWide
+        ? `<text class="node-label" x="${n._x + 32}" y="${labelY}">${n.name}</text>
+           <text class="node-value" x="${n._x + 32}" y="${valueY}">${formatEps(n.eps)} EPS</text>`
+        : `<text class="node-label" x="${n._x + 32}" y="${n._y + n._h/2 + 4}" style="font-size:11.5px;">${n.name}</text>`;
+
+      gNodes.insertAdjacentHTML('beforeend', `
+        <g class="node-group" data-node="${n.id}" tabindex="0" role="button" aria-label="${n.name}">
+          <rect class="node-rect" x="${n._x}" y="${n._y}" width="${n._w}" height="${n._h}" rx="8" ry="8"
+                fill="${c.fill}" stroke="${c.stroke}" stroke-width="1.5" filter="url(#nodeShadow)"/>
+          <!-- Icon background -->
+          <rect x="${n._x + 8}" y="${n._y + n._h/2 - 10}" width="20" height="20" rx="5" ry="5"
+                fill="${c.stroke}" opacity="0.18"/>
+          <!-- Status dot top-right -->
+          <circle class="node-status" cx="${n._x + n._w - 8}" cy="${n._y + 8}" r="3.5" fill="${dotColor}">
+            ${n.status !== 'ok' ? `<animate attributeName="opacity" values="0.5;1;0.5" dur="1.6s" repeatCount="indefinite"/>` : ''}
+          </circle>
+          ${labelHtml}
+        </g>
+      `);
+
+      // Anomaly badge with cumulative count
+      if (n.anomaly) {
+        const bx = n._x + n._w - 4;
+        const by = n._y - 2;
+        gAnomalies.insertAdjacentHTML('beforeend', `
+          <g class="anomaly-badge" data-anomaly-for="${n.id}">
+            <circle class="badge-pulse" cx="${bx}" cy="${by}" r="11"/>
+            <circle class="badge-pulse" cx="${bx}" cy="${by}" r="11" style="animation-delay: 0.5s"/>
+            <circle class="badge-circle" cx="${bx}" cy="${by}" r="9"/>
+            <text class="badge-text" x="${bx}" y="${by + 0.5}">${n.anomaly.count}</text>
+          </g>
+        `);
+      }
+    });
+
+    attachSankeyEvents();
+  }
+
+  function formatEps(v) {
+    if (v >= 1000) return (v / 1000).toFixed(1) + 'k';
+    return Math.round(v).toLocaleString('ko-KR');
+  }
+
+  // -------- INTERACTION --------
+  function attachSankeyEvents() {
+    const svg = document.getElementById('sankeySvg');
+    const tooltip = document.getElementById('sankeyTooltip');
+    const wrap = document.getElementById('sankeyWrap');
+    if (!svg || !tooltip || !wrap) return;
+
+    const nodeGroups = svg.querySelectorAll('.node-group');
+    const flows = svg.querySelectorAll('.flow');
+
+    function dimAll() {
+      nodeGroups.forEach(g => g.classList.add('dimmed'));
+      flows.forEach(f => { f.classList.add('dimmed'); f.classList.remove('highlight'); });
+    }
+    function clearDim() {
+      nodeGroups.forEach(g => g.classList.remove('dimmed'));
+      flows.forEach(f => { f.classList.remove('dimmed'); f.classList.remove('highlight'); });
+    }
+
+    function highlightConnected(nodeId) {
+      dimAll();
+      // The node itself
+      const nodeEl = svg.querySelector(`.node-group[data-node="${nodeId}"]`);
+      if (nodeEl) nodeEl.classList.remove('dimmed');
+      // Find connected flows (BFS for visual coherence)
+      const upstream  = new Set([nodeId]);
+      const downstream = new Set([nodeId]);
+      let changed = true;
+      while (changed) {
+        changed = false;
+        FLOWS.forEach(f => {
+          if (downstream.has(f.from) && !downstream.has(f.to))     { downstream.add(f.to);   changed = true; }
+          if (upstream.has(f.to)     && !upstream.has(f.from))     { upstream.add(f.from);   changed = true; }
+        });
+      }
+      const all = new Set([...upstream, ...downstream]);
+      // Lighter highlight: only direct neighbors (cleaner)
+      const direct = new Set([nodeId]);
+      FLOWS.forEach(f => {
+        if (f.from === nodeId) direct.add(f.to);
+        if (f.to === nodeId)   direct.add(f.from);
+      });
+      direct.forEach(id => {
+        const el = svg.querySelector(`.node-group[data-node="${id}"]`);
+        if (el) el.classList.remove('dimmed');
+      });
+      flows.forEach(f => {
+        const from = f.dataset.from;
+        const to = f.dataset.to;
+        if (from === nodeId || to === nodeId) {
+          f.classList.remove('dimmed');
+          f.classList.add('highlight');
+        }
+      });
+    }
+
+    function showTooltipForNode(nodeEl) {
+      const id = nodeEl.dataset.node;
+      const n = NODES.find(x => x.id === id);
+      if (!n) return;
+      const d = NODE_DETAIL[id] || {};
+
+      const statusPill = n.status === 'error' ? 'error' : n.status === 'warn' ? 'warn' : '';
+      const statusText = n.status === 'error' ? '오류' : n.status === 'warn' ? '주의' : '정상';
+
+      // Compute throughput compared to baseline (random-ish but stable)
+      const trendPct = ((n.eps - n.value * 2) / (n.value * 2 + 1) * 5).toFixed(1);
+      const trendUp = +trendPct >= 0;
+
+      tooltip.innerHTML = `
+        <div class="tt-head">
+          <span class="material-icons">${n.icon}</span>
+          <span class="tt-title">${n.name}</span>
+          <span class="tt-pill ${statusPill}">${statusText}</span>
+        </div>
+        <div class="tt-row"><span class="k">단계</span><span class="v">${STAGES.find(s => s.id === n.stage).label}</span></div>
+        <div class="tt-row"><span class="k">처리량 (EPS)</span><span class="v ${trendUp?'up':'down'}">${formatEps(n.eps)} ${trendUp?'▲':'▼'} ${Math.abs(trendPct)}%</span></div>
+        <div class="tt-row"><span class="k">성공률</span><span class="v">${(d.success ?? 99.0).toFixed(2)}%</span></div>
+        <div class="tt-bar ${n.status==='error'?'error':n.status==='warn'?'warn':''}"><span style="width:${(d.success ?? 99).toFixed(1)}%"></span></div>
+        <div class="tt-row"><span class="k">평균 지연</span><span class="v">${d.latency || '-'}</span></div>
+        <div class="tt-row"><span class="k">대기 큐</span><span class="v ${d.queue>100?'down':''}">${(d.queue ?? 0).toLocaleString('ko-KR')}건</span></div>
+        ${n.anomaly ? `
+          <div class="tt-note">
+            <span class="material-icons">warning</span>
+            <b>이상 누적 ${n.anomaly.count}건</b> · ${n.anomaly.msg}
+          </div>
+        ` : (d.note ? `<div class="tt-note"><span class="material-icons" style="color: var(--teal-300)">info</span>${d.note}</div>` : '')}
+      `;
+
+      // Position tooltip relative to wrap
+      const wrapRect = wrap.getBoundingClientRect();
+      const svgRect  = svg.getBoundingClientRect();
+      const sx = svgRect.left - wrapRect.left;
+      const sy = svgRect.top  - wrapRect.top;
+      const scale = svgRect.width / 1080; // viewBox width
+      const cx = sx + (n._x + n._w/2) * scale;
+      const cy = sy + n._y * scale;
+      tooltip.style.left = cx + 'px';
+      tooltip.style.top  = cy + 'px';
+      tooltip.classList.add('visible');
+      tooltip.setAttribute('aria-hidden', 'false');
+    }
+
+    function hideTooltip() {
+      tooltip.classList.remove('visible');
+      tooltip.setAttribute('aria-hidden', 'true');
+      clearDim();
+    }
+
+    nodeGroups.forEach(g => {
+      g.addEventListener('mouseenter', () => {
+        highlightConnected(g.dataset.node);
+        showTooltipForNode(g);
+      });
+      g.addEventListener('mouseleave', hideTooltip);
+      g.addEventListener('focus', () => {
+        highlightConnected(g.dataset.node);
+        showTooltipForNode(g);
+      });
+      g.addEventListener('blur', hideTooltip);
+      g.addEventListener('click', () => {
+        const id = g.dataset.node;
+        openNodeDetailModal(id);
+      });
+    });
+
+    // Anomaly badge click → open dedicated modal
+    svg.querySelectorAll('.anomaly-badge').forEach(b => {
+      const nodeId = b.dataset.anomalyFor;
+      b.style.pointerEvents = 'auto';
+      b.style.cursor = 'pointer';
+      b.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // Switch to anomaly tab and filter by node
+        switchMonTab('anomaly');
+        const nodeName = NODES.find(n => n.id === nodeId)?.name || '';
+        const searchEl = document.getElementById('anomalySearch');
+        if (searchEl) { searchEl.value = nodeName; renderAnomalyTable(); }
+        if (typeof toast === 'function') toast(`${nodeName} 노드의 이상 항목을 표시합니다.`, 'info');
+      });
+    });
+
+    // Background click clears
+    svg.addEventListener('click', (e) => {
+      if (e.target === svg) { clearDim(); }
+    });
+  }
+
+  function openNodeDetailModal(nodeId) {
+    const n = NODES.find(x => x.id === nodeId);
+    if (!n) return;
+    const d = NODE_DETAIL[nodeId] || {};
+    const statusText = n.status === 'error' ? '오류' : n.status === 'warn' ? '주의' : '정상';
+    const statusTag = n.status === 'error' ? 'red' : n.status === 'warn' ? 'yellow' : 'green';
+
+    if (typeof openModal !== 'function') return;
+    openModal({
+      title: `${n.name} · 단계별 변환 상태`,
+      sub: `${STAGES.find(s => s.id === n.stage).label} 단계 · ${d.metric || ''}`,
+      body: `
+        <div class="deid-detail">
+          <div style="display:flex; align-items:center; gap:10px; margin-bottom:14px;">
+            <span class="tag ${statusTag}"><span class="dot"></span>${statusText}</span>
+            ${n.anomaly ? `<span class="tag red">이상 누적 ${n.anomaly.count}건</span>` : ''}
+            <span class="muted" style="font-size:12px;">실시간 업데이트</span>
+          </div>
+          <div class="grid-2col">
+            <div>
+              <h5>처리 지표</h5>
+              <div class="info-row"><span class="k">처리량 (EPS)</span><span class="v num">${formatEps(n.eps)}</span></div>
+              <div class="info-row"><span class="k">성공률</span><span class="v num">${(d.success ?? 99).toFixed(2)}%</span></div>
+              <div class="info-row"><span class="k">평균 지연</span><span class="v">${d.latency || '-'}</span></div>
+              <div class="info-row"><span class="k">대기 큐</span><span class="v num">${(d.queue ?? 0).toLocaleString('ko-KR')}건</span></div>
+            </div>
+            <div>
+              <h5>연결 관계</h5>
+              <div class="info-row"><span class="k">상위 노드</span><span class="v">${FLOWS.filter(f => f.to === n.id).map(f => NODES.find(x => x.id === f.from).name).join(', ') || '-'}</span></div>
+              <div class="info-row"><span class="k">하위 노드</span><span class="v">${FLOWS.filter(f => f.from === n.id).map(f => NODES.find(x => x.id === f.to).name).join(', ') || '-'}</span></div>
+              <div class="info-row"><span class="k">처리 메타</span><span class="v">${d.note || '-'}</span></div>
+            </div>
+          </div>
+          ${n.anomaly ? `
+            <h5 style="margin-top:14px;">최근 이상 발생 내역</h5>
+            <table class="data">
+              <thead><tr><th>시각</th><th>유형</th><th>메시지</th><th>상태</th></tr></thead>
+              <tbody>
+                ${generateNodeAnomalies(n).map(a => `
+                  <tr>
+                    <td class="num">${a.time}</td>
+                    <td><span class="tag ${a.tagClass}">${a.type}</span></td>
+                    <td>${a.msg}</td>
+                    <td><span class="tag ${a.statusTag}">${a.status}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          ` : ''}
+        </div>
+      `,
+      footer: `
+        <button class="btn btn-ghost" data-modal-close>닫기</button>
+        <button class="btn btn-primary" id="goAnomaly"><span class="material-icons">report</span>이상 탭으로 이동</button>
+      `
+    });
+    const goBtn = document.getElementById('goAnomaly');
+    if (goBtn) {
+      goBtn.addEventListener('click', () => {
+        if (typeof closeModal === 'function') closeModal();
+        switchMonTab('anomaly');
+      });
+    }
+  }
+
+  function generateNodeAnomalies(n) {
+    // Synthetic anomaly history per node (consistent demo data)
+    const list = [];
+    if (n.id === 's_doc') {
+      list.push({ time: '14:08', type: '수집량', msg: '처리 큐 적체 · 대기 524건 (임계치 300건 초과)', status: '확인 중', tagClass: 'anom-volume', statusTag: 'yellow' });
+      list.push({ time: '13:55', type: '형식',   msg: 'PDF 페이지 파싱 실패 · 14건 (스캔 품질 저하)', status: '확인 중', tagClass: 'anom-format', statusTag: 'yellow' });
+      list.push({ time: '11:42', type: '수집량', msg: 'OCR 처리 시간 평균 3.4s → 임계 2.0s 초과', status: '확인 중', tagClass: 'anom-volume', statusTag: 'yellow' });
+    } else if (n.id === 's_sns') {
+      list.push({ time: '13:42', type: '연결',     msg: 'X(Twitter) API rate limit 도달 · 인증키 점검 필요', status: '진행중', tagClass: 'anom-conn', statusTag: 'red' });
+      list.push({ time: '13:40', type: '연결',     msg: 'Instagram Basic Display API 401 Unauthorized', status: '진행중', tagClass: 'anom-conn', statusTag: 'red' });
+      list.push({ time: '13:38', type: '수집량',   msg: '직전 15분 수집량 0건 (정상 평균 1.2k)', status: '진행중', tagClass: 'anom-volume', statusTag: 'red' });
+    } else if (n.id === 't_pii') {
+      list.push({ time: '14:12', type: '개인정보', msg: '주민등록번호 패턴 · 콜센터 STT 8건 (마스킹 자동 적용)', status: '해결', tagClass: 'anom-pii', statusTag: 'green' });
+      list.push({ time: '13:50', type: '개인정보', msg: '카드번호 패턴 · 이메일 본문 2건 (격리 후 검토)', status: '확인 중', tagClass: 'anom-pii', statusTag: 'yellow' });
+      list.push({ time: '12:34', type: '개인정보', msg: '계좌번호 의심 패턴 · OCR 1건 (오탐 가능성)', status: '확인 중', tagClass: 'anom-pii', statusTag: 'yellow' });
+    }
+    return list;
+  }
+
+  // -------- TAB SWITCHING --------
+  function switchMonTab(tabId) {
+    const tabsEl = document.querySelectorAll('#page-monitoring .tabs .tab');
+    const panels = document.querySelectorAll('#page-monitoring .mon-tab-panel');
+    tabsEl.forEach(t => t.classList.toggle('active', t.dataset.monTab === tabId));
+    panels.forEach(p => p.classList.toggle('active', p.dataset.monPanel === tabId));
+    // Lazy init on first reveal
+    if (tabId === 'flow')      renderSankey();
+    if (tabId === 'transform') { renderStageGrid(); ensureTransformCharts(); }
+    if (tabId === 'anomaly')   renderAnomalyTable();
+    if (tabId === 'resource')  { renderResourceGrid(); ensureResourceChart(); }
+    if (tabId === 'deid')      { renderDeidTable(); ensureDeidCharts(); }
+  }
+
+  // -------- STAGE TRANSFORM PANEL --------
+  function renderStageGrid() {
+    const host = document.getElementById('stageGrid');
+    if (!host || host.dataset.done === '1') return;
+    const items = [
+      { stage: '소스 수집',   name: '비정형 데이터 원천',  icon: 'cloud_download', value: '5.2k', unit: 'EPS', success: 99.4, fail: 18, latency: '1.8s', queue: 524, status: 'warn' },
+      { stage: '채널 인입',   name: 'Kafka·REST·SFTP',      icon: 'bolt',           value: '1.84k', unit: 'EPS', success: 99.9, fail: 2,  latency: '24ms', queue: 22, status: 'ok' },
+      { stage: '검증·변환',   name: '스키마·PII·정제',     icon: 'transform',      value: '1.84k', unit: 'EPS', success: 99.8, fail: 3,  latency: '68ms', queue: 0,  status: 'warn' },
+      { stage: '적재',        name: 'Raw·Staging·DW',       icon: 'storage',        value: '1.84k', unit: 'EPS', success: 99.97, fail: 1, latency: '128ms', queue: 0, status: 'ok' },
+      { stage: '분석 저장',   name: 'Vector·Feature Store', icon: 'hub',            value: '1.84k', unit: 'EPS', success: 99.98, fail: 0, latency: '112ms', queue: 0, status: 'ok' },
+    ];
+    const spark = (pts) => {
+      const w = 100, h = 36;
+      const max = Math.max(...pts), min = Math.min(...pts);
+      const range = (max - min) || 1;
+      const step = w / (pts.length - 1);
+      const d = pts.map((p, i) => {
+        const x = (i * step).toFixed(1);
+        const y = (h - ((p - min) / range) * h).toFixed(1);
+        return `${i === 0 ? 'M' : 'L'} ${x} ${y}`;
+      }).join(' ');
+      return `<svg class="sc-spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none">
+        <defs><linearGradient id="sparkG" x1="0" x2="0" y1="0" y2="1"><stop offset="0%" stop-color="#00857A" stop-opacity="0.25"/><stop offset="100%" stop-color="#00857A" stop-opacity="0"/></linearGradient></defs>
+        <path d="${d} L ${w} ${h} L 0 ${h} Z" fill="url(#sparkG)"/>
+        <path d="${d}" fill="none" stroke="#00857A" stroke-width="1.6" stroke-linecap="round"/>
+      </svg>`;
+    };
+    host.innerHTML = items.map(i => {
+      const pts = Array.from({ length: 14 }, () => 60 + Math.random() * 40);
+      return `
+        <div class="stage-card ${i.status}">
+          <div class="sc-head">
+            <div class="sc-icon"><span class="material-icons">${i.icon}</span></div>
+            <div style="flex:1;">
+              <div class="sc-name">${i.stage}</div>
+              <div class="sc-stage">${i.name}</div>
+            </div>
+          </div>
+          <div class="sc-metric">
+            <span class="v">${i.value}</span><span class="u">${i.unit}</span>
+          </div>
+          ${spark(pts)}
+          <div class="sc-rows">
+            <div class="row"><span>성공률</span><span class="v ok">${i.success}%</span></div>
+            <div class="row"><span>실패</span><span class="v ${i.fail>5?'warn':'ok'}">${i.fail}건</span></div>
+            <div class="row"><span>평균 지연</span><span class="v">${i.latency}</span></div>
+            <div class="row"><span>대기 큐</span><span class="v ${i.queue>100?'warn':'ok'}">${i.queue.toLocaleString('ko-KR')}건</span></div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    host.dataset.done = '1';
+  }
+
+  let _transformChartsDone = false;
+  function ensureTransformCharts() {
+    if (_transformChartsDone) return;
+    if (!window.Chart) return;
+    const c = document.getElementById('chart-transform');
+    if (c) {
+      const labels = Array.from({ length: 30 }, (_, i) => `-${29 - i}m`);
+      new Chart(c, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label: '스키마 검증', data: labels.map(() => 1600 + Math.random() * 400), borderColor: '#00857A', backgroundColor: 'rgba(0,133,122,0.08)', tension: 0.35, borderWidth: 2.2, fill: true, pointRadius: 0 },
+            { label: 'PII 탐지',    data: labels.map(() => 1580 + Math.random() * 400), borderColor: '#E8AC32', backgroundColor: 'rgba(232,172,50,0.08)', tension: 0.35, borderWidth: 2.2, fill: true, pointRadius: 0 },
+            { label: '정제·표준화', data: labels.map(() => 1560 + Math.random() * 400), borderColor: '#677381', backgroundColor: 'rgba(103,115,129,0.06)', tension: 0.35, borderWidth: 2.2, fill: true, pointRadius: 0 },
+            { label: '적재',         data: labels.map(() => 1540 + Math.random() * 400), borderColor: '#E30613', backgroundColor: 'rgba(227,6,19,0.05)', tension: 0.35, borderWidth: 2.2, fill: true, pointRadius: 0 },
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 14 } }, tooltip: { mode: 'index', intersect: false, padding: 10, backgroundColor: '#111827' } },
+          scales: { x: { grid: { display: false }, ticks: { autoSkip: true, maxTicksLimit: 8 } }, y: { grid: { color: '#F3F4F6' }, ticks: { callback: v => v + ' EPS' } } }
+        }
+      });
+    }
+    const cq = document.getElementById('chart-queue');
+    if (cq) {
+      new Chart(cq, {
+        type: 'bar',
+        data: {
+          labels: ['수집 채널', '스키마 검증', 'PII 탐지', '정제', 'Raw 적재', 'ODS 적재', 'DW 적재', 'Vector', 'Feature'],
+          datasets: [
+            { label: '대기 큐', data: [22, 0, 0, 0, 0, 0, 0, 0, 0], backgroundColor: ['#5CBDB1','#5CBDB1','#5CBDB1','#5CBDB1','#5CBDB1','#5CBDB1','#5CBDB1','#5CBDB1','#5CBDB1'], borderRadius: 6 },
+            { label: 'OCR 워커 큐', data: [524, 0, 0, 0, 0, 0, 0, 0, 0], backgroundColor: '#E8AC32', borderRadius: 6 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 14 } } },
+          scales: { x: { grid: { display: false } }, y: { grid: { color: '#F3F4F6' }, ticks: { callback: v => v.toLocaleString('ko-KR') + '건' } } }
+        }
+      });
+    }
+    _transformChartsDone = true;
+  }
+
+  // -------- ANOMALY TABLE --------
+  const ANOMALY_DATA = [
+    { time: '14:12', sev: 'p2', type: 'pii',    typeLabel: '개인정보', tag: 'anom-pii',    component: 'PII 탐지',         node: 't_pii',    msg: '주민등록번호 패턴 · 콜센터 STT 8건 자동 마스킹', impact: 8,    status: 'resolved', statusLabel: '해결',     statusTag: 'green',  owner: '시스템' },
+    { time: '14:08', sev: 'p2', type: 'volume', typeLabel: '수집량',   tag: 'anom-volume', component: 'OCR Worker',       node: 's_doc',    msg: '처리 큐 적체 524건 (임계 300건 초과)',           impact: 524,  status: 'ack',      statusLabel: '확인 중',  statusTag: 'yellow', owner: '서형오' },
+    { time: '13:55', sev: 'p2', type: 'format', typeLabel: '형식',     tag: 'anom-format', component: '문서 OCR',          node: 's_doc',    msg: 'PDF 페이지 파싱 실패 · 14건 (스캔 품질 저하)',   impact: 14,   status: 'ack',      statusLabel: '확인 중',  statusTag: 'yellow', owner: '서형오' },
+    { time: '13:50', sev: 'p1', type: 'pii',    typeLabel: '개인정보', tag: 'anom-pii',    component: 'PII 탐지',         node: 't_pii',    msg: '카드번호 패턴 · 이메일 본문 2건 (수동 검토 필요)', impact: 2,    status: 'ack',      statusLabel: '확인 중',  statusTag: 'yellow', owner: '정광용' },
+    { time: '13:42', sev: 'p1', type: 'conn',   typeLabel: '연결',     tag: 'anom-conn',   component: 'SNS 크롤러',        node: 's_sns',    msg: 'X(Twitter) API rate limit · 인증키 점검 필요',    impact: 0,    status: 'open',     statusLabel: '진행중',   statusTag: 'red',    owner: '유연승' },
+    { time: '13:40', sev: 'p1', type: 'conn',   typeLabel: '연결',     tag: 'anom-conn',   component: 'SNS 크롤러',        node: 's_sns',    msg: 'Instagram API 401 Unauthorized',                  impact: 0,    status: 'open',     statusLabel: '진행중',   statusTag: 'red',    owner: '유연승' },
+    { time: '13:38', sev: 'p2', type: 'volume', typeLabel: '수집량',   tag: 'anom-volume', component: 'SNS 크롤러',        node: 's_sns',    msg: '직전 15분 수집량 0건 (정상 평균 1.2k)',          impact: 1200, status: 'open',     statusLabel: '진행중',   statusTag: 'red',    owner: '유연승' },
+    { time: '12:34', sev: 'p3', type: 'pii',    typeLabel: '개인정보', tag: 'anom-pii',    component: 'PII 탐지',         node: 't_pii',    msg: '계좌번호 의심 패턴 · OCR 1건 (오탐 가능성)',     impact: 1,    status: 'ack',      statusLabel: '확인 중',  statusTag: 'yellow', owner: '정광용' },
+    { time: '12:18', sev: 'p3', type: 'volume', typeLabel: '수집량',   tag: 'anom-volume', component: 'Catalog API',       node: 'c_rest',   msg: '일시적 응답 지연 (3분간)',                       impact: 0,    status: 'resolved', statusLabel: '해결',     statusTag: 'green',  owner: '시스템' },
+    { time: '11:42', sev: 'p2', type: 'volume', typeLabel: '수집량',   tag: 'anom-volume', component: '문서 OCR',          node: 's_doc',    msg: 'OCR 처리 시간 평균 3.4s → 임계 2.0s 초과',       impact: 0,    status: 'ack',      statusLabel: '확인 중',  statusTag: 'yellow', owner: '서형오' },
+    { time: '10:24', sev: 'p3', type: 'volume', typeLabel: '수집량',   tag: 'anom-volume', component: 'Backup',           node: null,       msg: 'VOC DW 일일 백업 완료 (3.2GB)',                  impact: 0,    status: 'resolved', statusLabel: '완료',     statusTag: 'green',  owner: '시스템' },
+    { time: '09:18', sev: 'p3', type: 'format', typeLabel: '형식',     tag: 'anom-format', component: '이메일·채팅',       node: 's_mail',   msg: 'EUC-KR 인코딩 메일 변환 실패 3건',               impact: 3,    status: 'resolved', statusLabel: '해결',     statusTag: 'green',  owner: '시스템' },
+    { time: '08:42', sev: 'p2', type: 'format', typeLabel: '형식',     tag: 'anom-format', component: '스키마 검증',       node: 't_schema', msg: '필수 필드 누락 · transaction_dt 12건',           impact: 12,   status: 'resolved', statusLabel: '해결',     statusTag: 'green',  owner: '시스템' },
+    { time: '08:10', sev: 'p3', type: 'format', typeLabel: '형식',     tag: 'anom-format', component: 'CCTV·영상',         node: 's_video',  msg: '코덱 미지원 H.265 → H.264 재인코딩',             impact: 2,    status: 'resolved', statusLabel: '해결',     statusTag: 'green',  owner: '시스템' },
+    { time: '07:55', sev: 'p3', type: 'volume', typeLabel: '수집량',   tag: 'anom-volume', component: '콜센터 STT',        node: 's_call',   msg: '야간 시간대 처리량 일시 급감 (정상 패턴)',       impact: 0,    status: 'resolved', statusLabel: '해결',     statusTag: 'green',  owner: '시스템' },
+    { time: '02:18', sev: 'p3', type: 'volume', typeLabel: '수집량',   tag: 'anom-volume', component: 'DW 적재',           node: 'l_dw',     msg: '일일 적재 임계치 도달 알림 (정상)',              impact: 0,    status: 'resolved', statusLabel: '완료',     statusTag: 'green',  owner: '시스템' },
+    { time: '01:02', sev: 'p3', type: 'format', typeLabel: '형식',     tag: 'anom-format', component: '문서 OCR',          node: 's_doc',    msg: '한글 폰트 임베딩 누락 PDF 4건 → 폴백 처리',     impact: 4,    status: 'resolved', statusLabel: '해결',     statusTag: 'green',  owner: '시스템' },
+  ];
+
+  function renderAnomalyTable() {
+    const tbody = document.getElementById('anomalyTbody');
+    if (!tbody) return;
+    const typeF = document.getElementById('anomalyTypeFilter')?.value || 'all';
+    const sevF  = document.getElementById('anomalySevFilter')?.value || 'all';
+    const stF   = document.getElementById('anomalyStatusFilter')?.value || 'all';
+    const q     = (document.getElementById('anomalySearch')?.value || '').trim().toLowerCase();
+
+    const rows = ANOMALY_DATA.filter(a => {
+      if (typeF !== 'all' && a.type !== typeF) return false;
+      if (sevF !== 'all' && a.sev !== sevF) return false;
+      if (stF !== 'all' && a.status !== stF) return false;
+      if (q && !(a.component.toLowerCase().includes(q) || a.msg.toLowerCase().includes(q))) return false;
+      return true;
+    });
+    const sevTag = { p0: 'red', p1: 'red', p2: 'yellow', p3: 'gray' };
+    tbody.innerHTML = rows.map((a, idx) => `
+      <tr data-anom-idx="${idx}">
+        <td class="num">${a.time}</td>
+        <td><span class="sev-dot ${a.sev}">${a.sev.toUpperCase()}</span></td>
+        <td><span class="tag ${a.tag}">${a.typeLabel}</span></td>
+        <td><b style="font-size:13px;">${a.component}</b>${a.node ? `<div class="muted" style="font-size:11px;">노드: ${a.node}</div>` : ''}</td>
+        <td>${a.msg}</td>
+        <td class="num">${a.impact ? a.impact.toLocaleString('ko-KR') + '건' : '-'}</td>
+        <td><span class="tag ${a.statusTag}">${a.statusLabel}</span></td>
+        <td>${a.owner}</td>
+        <td class="row-actions"><button class="btn-icon" data-anom-detail="${idx}"><span class="material-icons">arrow_forward</span></button></td>
+      </tr>
+    `).join('') || `<tr><td colspan="9" style="text-align:center; padding:24px; color:var(--text-tertiary);">조건에 맞는 이상이 없습니다.</td></tr>`;
+    document.getElementById('anomalyCountLabel').textContent = rows.length;
+    document.getElementById('anomalyTabBadge').textContent = ANOMALY_DATA.filter(a => a.status !== 'resolved').length;
+
+    // Row click → detail
+    tbody.querySelectorAll('[data-anom-detail]').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const idx = +btn.dataset.anomDetail;
+        const a = rows[idx];
+        if (!a) return;
+        if (typeof openModal !== 'function') return;
+        openModal({
+          title: `이상 상세 · ${a.component}`,
+          sub: `${a.time} · ${a.typeLabel} · ${a.sev.toUpperCase()}`,
+          body: `
+            <div class="deid-detail">
+              <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
+                <span class="tag ${a.tag}">${a.typeLabel}</span>
+                <span class="sev-dot ${a.sev}">${a.sev.toUpperCase()}</span>
+                <span class="tag ${a.statusTag}">${a.statusLabel}</span>
+              </div>
+              <div class="info-row"><span class="k">메시지</span><span class="v" style="text-align:right; max-width:60%;">${a.msg}</span></div>
+              <div class="info-row"><span class="k">영향 건수</span><span class="v num">${a.impact ? a.impact.toLocaleString('ko-KR') + '건' : '-'}</span></div>
+              <div class="info-row"><span class="k">관련 노드</span><span class="v">${a.node ? (NODES.find(n => n.id === a.node)?.name || a.node) : '-'}</span></div>
+              <div class="info-row"><span class="k">담당</span><span class="v">${a.owner}</span></div>
+              <h5 style="margin-top:14px;">권장 조치</h5>
+              <div style="background:var(--gray-50); padding:12px 14px; border-radius:var(--r-md); border-left:3px solid var(--teal-500); font-size:13px; line-height:1.6;">
+                ${recommendAction(a)}
+              </div>
+            </div>
+          `,
+          footer: `
+            <button class="btn btn-ghost" data-modal-close>닫기</button>
+            <button class="btn btn-primary"><span class="material-icons">task_alt</span>처리 완료</button>
+          `
+        });
+      });
+    });
+  }
+
+  function recommendAction(a) {
+    if (a.type === 'pii')    return 'PII 격리 큐 확인 후 데이터 오너 승인 절차로 진행하세요. 자동 마스킹이 적용된 건은 감사 로그에 기록되어 있습니다.';
+    if (a.type === 'volume') return '리소스 모니터링 탭에서 워커 풀 가용 자원을 확인하고, 필요시 오토스케일링 정책을 조정하세요.';
+    if (a.type === 'format') return '소스 시스템과 협의하여 스키마 변경 사항을 점검하고, 정제 규칙(Cleansing Rule)을 업데이트하세요.';
+    if (a.type === 'conn')   return '커넥터 인증키·토큰 유효성을 점검하고, 외부 API 상태 페이지를 확인하세요. 자동 재시도 정책이 활성화되어 있습니다.';
+    return '담당자가 검토 후 조치합니다.';
+  }
+
+  // Filter binding
+  function bindAnomalyFilters() {
+    ['anomalyTypeFilter','anomalySevFilter','anomalyStatusFilter','anomalySearch'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el || el.dataset.bound) return;
+      const ev = el.tagName === 'INPUT' ? 'input' : 'change';
+      el.addEventListener(ev, renderAnomalyTable);
+      el.dataset.bound = '1';
+    });
+  }
+
+  // -------- LIVE FEED --------
+  const LF_TEMPLATES = [
+    { cls: 'ok',    msg: 'Kafka Stream · 콜센터 STT 메시지 적재 완료',    meta: '파티션 4 · offset 482,193' },
+    { cls: 'ok',    msg: 'PII 탐지 완료 · 8건 자동 마스킹',                meta: '주민등록번호 패턴 · 콜센터' },
+    { cls: 'ok',    msg: '스키마 검증 통과 · 142개 필드',                  meta: 'transaction.v2.4' },
+    { cls: 'ok',    msg: 'Raw Lake 적재 · Parquet 2.4MB',                 meta: 'hdfs://lake/raw/2026-05-22' },
+    { cls: 'ok',    msg: 'Vector Store 임베딩 저장 · 1,024 chunks',        meta: 'pgvector · 1536-d' },
+    { cls: 'warn',  msg: 'OCR Worker 처리 지연 감지',                      meta: '평균 처리 3.4s · 임계 2.0s' },
+    { cls: 'ok',    msg: 'REST API 인입 · 218 req/s',                     meta: 'gateway.internal' },
+    { cls: 'ok',    msg: 'ODS Staging UPSERT 완료',                       meta: 'rows: 1,842' },
+    { cls: 'error', msg: 'SNS 크롤러 API 호출 실패 (429)',                meta: 'X API · rate limit' },
+    { cls: 'ok',    msg: 'STT 변환 완료 · 통화 12건',                      meta: '정확도 96.4%' },
+    { cls: 'warn',  msg: 'DW 적재 큐 깊이 증가 감지',                      meta: '깊이 142 · 임계 100' },
+    { cls: 'ok',    msg: 'Feature Store 동기화 완료',                      meta: 'features: 84' },
+  ];
+  let lfPaused = false;
+  let lfTimer = null;
+  function appendLiveItem(force) {
+    const list = document.getElementById('lfList');
+    if (!list || (lfPaused && !force)) return;
+    const t = LF_TEMPLATES[Math.floor(Math.random() * LF_TEMPLATES.length)];
+    const now = new Date();
+    const hh = String(now.getHours()).padStart(2,'0');
+    const mm = String(now.getMinutes()).padStart(2,'0');
+    const ss = String(now.getSeconds()).padStart(2,'0');
+    const item = document.createElement('div');
+    item.className = `lf-item ${t.cls}`;
+    item.innerHTML = `
+      <div class="lf-time">${hh}:${mm}:${ss}</div>
+      <div class="lf-content">
+        <div class="lf-msg">${t.msg}</div>
+        <div class="lf-meta">${t.meta}</div>
+      </div>
+    `;
+    list.insertBefore(item, list.firstChild);
+    // Keep max 50
+    while (list.children.length > 50) list.removeChild(list.lastChild);
+    const counter = document.getElementById('lfCounter');
+    if (counter) counter.textContent = `${list.children.length}건 표시`;
+  }
+  function startLiveFeed() {
+    if (lfTimer) return;
+    // Seed
+    for (let i = 0; i < 8; i++) appendLiveItem(true);
+    lfTimer = setInterval(() => appendLiveItem(false), 1800);
+  }
+  function bindLiveFeedControls() {
+    const btn = document.getElementById('lfPauseBtn');
+    if (!btn || btn.dataset.bound) return;
+    btn.addEventListener('click', () => {
+      lfPaused = !lfPaused;
+      btn.innerHTML = `<span class="material-icons">${lfPaused ? 'play_arrow' : 'pause'}</span>`;
+      btn.title = lfPaused ? '재개' : '일시정지';
+    });
+    btn.dataset.bound = '1';
+  }
+
+  // -------- RESOURCE GRID --------
+  const RESOURCES = [
+    { name: 'Ingest Gateway',     type: 'API · Load Balancer', icon: 'dns',          status: 'ok',   cpu: 38, mem: 52, disk: 24, net: 1.2 },
+    { name: 'Kafka Cluster',      type: 'Streaming · 6 nodes', icon: 'bolt',         status: 'ok',   cpu: 42, mem: 68, disk: 36, net: 8.4 },
+    { name: 'STT Worker Pool',    type: 'GPU · 4 nodes (A100)',icon: 'support_agent',status: 'ok',   cpu: 64, mem: 58, disk: 18, net: 0.8 },
+    { name: 'OCR Worker Pool',    type: 'GPU · 2 nodes',       icon: 'description',  status: 'warn', cpu: 88, mem: 82, disk: 42, net: 0.4 },
+    { name: 'Schema Validator',   type: 'Kubernetes Job',      icon: 'rule',         status: 'ok',   cpu: 22, mem: 18, disk: 8,  net: 2.1 },
+    { name: 'PII Detection ML',   type: 'TF Serving · 3 pods', icon: 'privacy_tip',  status: 'ok',   cpu: 56, mem: 64, disk: 12, net: 1.8 },
+    { name: 'HDFS / Raw Lake',    type: 'Storage · 24TB used', icon: 'inventory_2',  status: 'ok',   cpu: 12, mem: 28, disk: 64, net: 4.2 },
+    { name: 'PostgreSQL (ODS)',   type: 'Primary + 2 Replicas',icon: 'storage',      status: 'ok',   cpu: 34, mem: 72, disk: 58, net: 3.1 },
+    { name: 'BigQuery (DW)',      type: 'Cloud · 12TB',        icon: 'database',     status: 'ok',   cpu: 18, mem: 24, disk: 48, net: 2.4 },
+    { name: 'Vector DB (pgvector)', type: '3 nodes · 1536-d',  icon: 'hub',          status: 'ok',   cpu: 48, mem: 76, disk: 38, net: 2.0 },
+    { name: 'External Crawler',   type: 'Headless · 4 nodes',  icon: 'public',       status: 'error',cpu: 8,  mem: 22, disk: 12, net: 0.1 },
+    { name: 'Catalog API',        type: 'GraphQL · 3 pods',    icon: 'inventory_2',  status: 'ok',   cpu: 26, mem: 34, disk: 12, net: 1.6 },
+  ];
+  function renderResourceGrid() {
+    const host = document.getElementById('resourceGrid');
+    if (!host) return;
+    const statusLabel = { ok: '정상', warn: '주의', error: '오류' };
+    host.innerHTML = RESOURCES.map(r => `
+      <div class="resource-card ${r.status === 'ok' ? '' : r.status}">
+        <div class="rc-head">
+          <div class="rc-icon"><span class="material-icons">${r.icon}</span></div>
+          <div style="flex:1; min-width:0;">
+            <div class="rc-name">${r.name}</div>
+            <div class="muted" style="font-size:11px;">${r.type}</div>
+          </div>
+          <span class="rc-status">${statusLabel[r.status]}</span>
+        </div>
+        <div class="rc-rows">
+          ${barRow('CPU',  r.cpu,  '%', r.cpu  > 85 ? 'error' : r.cpu  > 70 ? 'warn' : '')}
+          ${barRow('Memory', r.mem, '%', r.mem > 85 ? 'error' : r.mem > 70 ? 'warn' : '')}
+          ${barRow('Disk', r.disk, '%', r.disk > 85 ? 'error' : r.disk > 70 ? 'warn' : '')}
+          ${barRow('Net',  r.net,  'Gbps', '', false)}
+        </div>
+      </div>
+    `).join('');
+  }
+  function barRow(label, value, unit, cls, isPct = true) {
+    const w = isPct ? Math.min(100, value) : Math.min(100, value * 10);
+    return `
+      <div class="rc-row">
+        <span class="l">${label}</span>
+        <div class="rc-bar ${cls}"><span style="width:${w}%"></span></div>
+        <span class="v">${value}${unit}</span>
+      </div>
+    `;
+  }
+
+  let _resourceChartDone = false;
+  function ensureResourceChart() {
+    if (_resourceChartDone) return;
+    if (!window.Chart) return;
+    const c7 = document.getElementById('chart-resource');
+    if (!c7) return;
+    // If a chart already exists on this canvas (initCharts already ran), skip
+    const existing = window.Chart.getChart ? window.Chart.getChart(c7) : null;
+    if (existing) { _resourceChartDone = true; return; }
+    const lbls = Array.from({ length: 24 }, (_, i) => i + ':00');
+    new Chart(c7, {
+      type: 'line',
+      data: {
+        labels: lbls,
+        datasets: [
+          { label: 'CPU %',     data: lbls.map(() => 30 + Math.random() * 40), borderColor: '#00857A', backgroundColor: 'rgba(0,133,122,0.1)', tension: 0.4, borderWidth: 2.5, pointRadius: 0, fill: true },
+          { label: 'Memory %',  data: lbls.map(() => 40 + Math.random() * 30), borderColor: '#E8AC32', backgroundColor: 'rgba(232,172,50,0.1)', tension: 0.4, borderWidth: 2.5, pointRadius: 0, fill: true },
+          { label: 'Disk I/O %',data: lbls.map(() => 20 + Math.random() * 30), borderColor: '#677381', backgroundColor: 'rgba(103,115,129,0.08)', tension: 0.4, borderWidth: 2.5, pointRadius: 0, fill: true },
+        ]
+      },
+      options: {
+        responsive: true, maintainAspectRatio: false,
+        plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 14 } }, tooltip: { mode: 'index', intersect: false, padding: 10, backgroundColor: '#111827' } },
+        scales: { x: { grid: { display: false }, ticks: { autoSkip: true, maxTicksLimit: 8 } }, y: { grid: { color: '#F3F4F6' }, ticks: { callback: v => v + '%' }, min: 0, max: 100 } }
+      }
+    });
+    _resourceChartDone = true;
+  }
+
+  // -------- DE-ID TABLE --------
+  const DEID_DATA = [
+    { id: 'DEID-20260522-0142', dataset: '콜센터 STT 일일 적재',    datasetKey: 'callcenter', method: '가명화', methodKey: 'pseudo',   pii: ['주민번호', '전화번호', '계좌번호'], count: 12420, time: '00:12~00:18', duration: '5m 42s',  requester: '데이터거버넌스팀', status: 'done',    statusLabel: '완료',  statusTag: 'green' },
+    { id: 'DEID-20260522-0138', dataset: '문서 OCR 신용카드 신청서',datasetKey: 'ocr',        method: '마스킹', methodKey: 'mask',     pii: ['주민번호', '카드번호', '이름'],     count: 3842,  time: '08:42~08:52', duration: '9m 18s',  requester: '카드사업본부',     status: 'done',    statusLabel: '완료',  statusTag: 'green' },
+    { id: 'DEID-20260522-0134', dataset: '이메일·채팅 상담 데이터', datasetKey: 'email',      method: '가명화', methodKey: 'pseudo',   pii: ['이메일', '전화번호'],              count: 8642,  time: '10:18~10:32', duration: '13m 22s', requester: '마케팅분석팀',     status: 'done',    statusLabel: '완료',  statusTag: 'green' },
+    { id: 'DEID-20260522-0128', dataset: 'CCTV 영업점 출입 영상',   datasetKey: 'cctv',       method: '삭제',   methodKey: 'suppress', pii: ['얼굴', '차량번호'],                 count: 1080,  time: '11:02~11:18', duration: '15m 48s', requester: '리스크관리팀',     status: 'done',    statusLabel: '완료',  statusTag: 'green' },
+    { id: 'DEID-20260522-0124', dataset: '콜센터 STT 야간 배치',    datasetKey: 'callcenter', method: '일반화', methodKey: 'general',  pii: ['생년월일', '주소'],                 count: 2840,  time: '11:42~11:54', duration: '11m 30s', requester: '데이터거버넌스팀', status: 'done',    statusLabel: '완료',  statusTag: 'green' },
+    { id: 'DEID-20260522-0118', dataset: '문서 OCR 대출 신청서',    datasetKey: 'ocr',        method: '마스킹', methodKey: 'mask',     pii: ['주민번호', '이름', '계좌번호'],     count: 5998,  time: '12:18~12:32', duration: '14m 12s', requester: '여신본부',         status: 'done',    statusLabel: '완료',  statusTag: 'green' },
+    { id: 'DEID-20260522-0114', dataset: '이메일 마케팅 응답',       datasetKey: 'email',      method: '가명화', methodKey: 'pseudo',   pii: ['이메일', '전화번호'],              count: 7358,  time: '13:02~13:14', duration: '11m 48s', requester: '마케팅분석팀',     status: 'done',    statusLabel: '완료',  statusTag: 'green' },
+    { id: 'DEID-20260522-0108', dataset: '콜센터 STT 실시간',        datasetKey: 'callcenter', method: '마스킹', methodKey: 'mask',     pii: ['주민번호', '카드번호'],            count: 0,     time: '14:00~진행중',duration: '진행중',  requester: '데이터거버넌스팀', status: 'running', statusLabel: '처리중',statusTag: 'yellow' },
+    { id: 'DEID-20260521-2354', dataset: '전일 콜센터 STT 보존',     datasetKey: 'callcenter', method: '가명화', methodKey: 'pseudo',   pii: ['주민번호', '전화번호'],            count: 8420,  time: '23:54~00:02', duration: '7m 58s',  requester: '데이터거버넌스팀', status: 'done',    statusLabel: '완료',  statusTag: 'green' },
+    { id: 'DEID-20260521-2240', dataset: '전일 문서 OCR',            datasetKey: 'ocr',        method: '마스킹', methodKey: 'mask',     pii: ['주민번호', '카드번호', '이름'],     count: 4280,  time: '22:40~22:52', duration: '11m 02s', requester: '카드사업본부',     status: 'done',    statusLabel: '완료',  statusTag: 'green' },
+    { id: 'DEID-20260521-1842', dataset: 'CCTV 야간 보존 처리',      datasetKey: 'cctv',       method: '삭제',   methodKey: 'suppress', pii: ['얼굴'],                            count: 920,   time: '18:42~19:08', duration: '25m 48s', requester: '리스크관리팀',     status: 'failed',  statusLabel: '실패',  statusTag: 'red' },
+    { id: 'DEID-20260521-1430', dataset: '이메일 첨부 OCR',          datasetKey: 'email',      method: '가명화', methodKey: 'pseudo',   pii: ['이메일', '전화번호', '주민번호'],   count: 1842,  time: '14:30~14:42', duration: '11m 12s', requester: '마케팅분석팀',     status: 'done',    statusLabel: '완료',  statusTag: 'green' },
+  ];
+
+  function renderDeidTable() {
+    const tbody = document.getElementById('deidTbody');
+    if (!tbody) return;
+    const m = document.getElementById('deidMethodFilter')?.value || 'all';
+    const d = document.getElementById('deidDatasetFilter')?.value || 'all';
+    const s = document.getElementById('deidStatusFilter')?.value || 'all';
+    const q = (document.getElementById('deidSearch')?.value || '').trim().toLowerCase();
+
+    const rows = DEID_DATA.filter(r => {
+      if (m !== 'all' && r.methodKey !== m) return false;
+      if (d !== 'all' && r.datasetKey !== d) return false;
+      if (s !== 'all' && r.status !== s) return false;
+      if (q && !(r.id.toLowerCase().includes(q) || r.dataset.toLowerCase().includes(q))) return false;
+      return true;
+    });
+
+    tbody.innerHTML = rows.map((r, idx) => `
+      <tr>
+        <td><b class="num" style="font-size:12px;">${r.id}</b></td>
+        <td>${r.dataset}</td>
+        <td><span class="tag ${r.methodKey === 'pseudo' ? 'teal' : r.methodKey === 'mask' ? 'yellow' : r.methodKey === 'general' ? 'gray' : 'red'}">${r.method}</span></td>
+        <td>${r.pii.map(p => `<span class="pii-pill"><span class="material-icons">privacy_tip</span>${p}</span>`).join('')}</td>
+        <td class="num">${r.count ? r.count.toLocaleString('ko-KR') : '-'}</td>
+        <td><div style="font-size:12px;">${r.time}</div><div class="muted" style="font-size:11px;">${r.duration}</div></td>
+        <td>${r.requester}</td>
+        <td><span class="tag ${r.statusTag}">${r.statusLabel}</span></td>
+        <td class="row-actions"><button class="btn-icon" data-deid-detail="${idx}"><span class="material-icons">visibility</span></button></td>
+      </tr>
+    `).join('') || `<tr><td colspan="9" style="text-align:center; padding:24px; color:var(--text-tertiary);">조건에 맞는 작업이 없습니다.</td></tr>`;
+    const countLabel = document.getElementById('deidCountLabel');
+    if (countLabel) countLabel.textContent = rows.length;
+
+    tbody.querySelectorAll('[data-deid-detail]').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const r = rows[+btn.dataset.deidDetail];
+        if (!r || typeof openModal !== 'function') return;
+        openModal({
+          title: `비식별화 작업 상세 · ${r.id}`,
+          sub: `${r.dataset} · ${r.method}`,
+          body: `
+            <div class="deid-detail">
+              <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:14px;">
+                <span class="tag ${r.statusTag}"><span class="dot"></span>${r.statusLabel}</span>
+                <span class="tag teal">${r.method}</span>
+                <span class="muted" style="font-size:12px;">처리시간 ${r.duration}</span>
+              </div>
+              <div class="grid-2col">
+                <div>
+                  <h5>작업 정보</h5>
+                  <div class="info-row"><span class="k">작업 ID</span><span class="v num">${r.id}</span></div>
+                  <div class="info-row"><span class="k">대상 데이터셋</span><span class="v">${r.dataset}</span></div>
+                  <div class="info-row"><span class="k">처리 방식</span><span class="v">${r.method}</span></div>
+                  <div class="info-row"><span class="k">요청자</span><span class="v">${r.requester}</span></div>
+                </div>
+                <div>
+                  <h5>처리 결과</h5>
+                  <div class="info-row"><span class="k">대상 건수</span><span class="v num">${r.count ? r.count.toLocaleString('ko-KR') + '건' : '-'}</span></div>
+                  <div class="info-row"><span class="k">실행 구간</span><span class="v">${r.time}</span></div>
+                  <div class="info-row"><span class="k">소요 시간</span><span class="v">${r.duration}</span></div>
+                  <div class="info-row"><span class="k">결과 상태</span><span class="v">${r.statusLabel}</span></div>
+                </div>
+              </div>
+              <h5 style="margin-top:14px;">처리된 PII 항목</h5>
+              <table class="data">
+                <thead><tr><th>PII 유형</th><th>탐지 건수</th><th>처리 방식</th><th>샘플 (마스킹 전 → 후)</th></tr></thead>
+                <tbody>
+                  ${r.pii.map(p => deidSampleRow(p, r.method, r.count)).join('')}
+                </tbody>
+              </table>
+              <h5 style="margin-top:14px;">감사 추적 (Audit Trail)</h5>
+              <div style="background:var(--gray-50); padding:12px 14px; border-radius:var(--r-md); font-size:12px; line-height:1.8; font-family: 'SF Mono', Monaco, monospace; color:var(--gray-700);">
+                <div>[${r.time.split('~')[0]}] 작업 시작 · 요청자: ${r.requester}</div>
+                <div>[${r.time.split('~')[0]}] 정책 검증 통과 · DEID-POLICY-v2.4</div>
+                <div>[${r.time.split('~')[0]}] PII 탐지 시작 · 패턴 28종 + ML 모델</div>
+                <div>[${r.time.split('~')[1] || '진행중'}] 처리 ${r.status === 'done' ? '완료' : r.status === 'failed' ? '실패' : '진행중'} · ${r.count.toLocaleString('ko-KR')}건</div>
+                <div>[${r.time.split('~')[1] || '진행중'}] 감사 로그 기록 · audit_log.deid</div>
+              </div>
+            </div>
+          `,
+          footer: `
+            <button class="btn btn-ghost" data-modal-close>닫기</button>
+            <button class="btn btn-ghost"><span class="material-icons">download</span> 결과 다운로드</button>
+            <button class="btn btn-primary"><span class="material-icons">replay</span> 재실행</button>
+          `
+        });
+      });
+    });
+  }
+
+  function deidSampleRow(pii, method, count) {
+    const samples = {
+      '주민번호':   { before: '900101-1234567',   afterPseudo: 'P-A8F2K9LX',     afterMask: '900101-1******' },
+      '카드번호':   { before: '4521-1234-5678-9012', afterPseudo: 'C-P92HJ4K8X', afterMask: '4521-12**-****-9012' },
+      '전화번호':   { before: '010-1234-5678',    afterPseudo: 'T-X8K2P4',       afterMask: '010-****-5678' },
+      '이메일':     { before: 'hong@hanabank.com',afterPseudo: 'E-Q9F3K7',       afterMask: 'h***@hanabank.com' },
+      '계좌번호':   { before: '123-456789-01-234',afterPseudo: 'A-B7M3K9X',      afterMask: '123-******-01-234' },
+      '이름':       { before: '홍길동',           afterPseudo: 'N-K8X9',         afterMask: '홍**' },
+      '생년월일':   { before: '1990-01-01',       afterPseudo: '1990년대 출생',  afterMask: '1990-**-**' },
+      '주소':       { before: '서울시 강남구 ...',  afterPseudo: '서울 강남권',    afterMask: '서울시 ***구 ***' },
+      '얼굴':       { before: '얼굴 영상',        afterPseudo: '블러 처리',      afterMask: '얼굴 마스킹' },
+      '차량번호':   { before: '12가 3456',        afterPseudo: 'V-K8X9',         afterMask: '**가 ****' },
+    };
+    const s = samples[pii] || { before: '...', afterPseudo: '...', afterMask: '...' };
+    const after = method === '가명화' ? s.afterPseudo : method === '마스킹' ? s.afterMask : method === '일반화' ? s.afterPseudo : '[삭제됨]';
+    const detected = Math.round((count || 100) * (0.3 + Math.random() * 0.7));
+    return `
+      <tr>
+        <td><span class="pii-pill"><span class="material-icons">privacy_tip</span>${pii}</span></td>
+        <td class="num">${detected.toLocaleString('ko-KR')}건</td>
+        <td><span class="tag teal">${method}</span></td>
+        <td style="font-family: 'SF Mono', Monaco, monospace; font-size:12px;">
+          <span style="color:var(--hana-red);">${s.before}</span>
+          <span style="color:var(--gray-400); margin:0 8px;">→</span>
+          <span style="color:var(--teal-700); font-weight:600;">${after}</span>
+        </td>
+      </tr>
+    `;
+  }
+
+  function bindDeidFilters() {
+    ['deidMethodFilter','deidDatasetFilter','deidStatusFilter','deidSearch'].forEach(id => {
+      const el = document.getElementById(id);
+      if (!el || el.dataset.bound) return;
+      const ev = el.tagName === 'INPUT' ? 'input' : 'change';
+      el.addEventListener(ev, renderDeidTable);
+      el.dataset.bound = '1';
+    });
+  }
+
+  let _deidChartsDone = false;
+  function ensureDeidCharts() {
+    if (_deidChartsDone) return;
+    if (!window.Chart) return;
+
+    const cpii = document.getElementById('chart-pii-type');
+    if (cpii && !window.Chart.getChart?.(cpii)) {
+      new Chart(cpii, {
+        type: 'bar',
+        data: {
+          labels: ['주민번호','카드번호','전화번호','이메일','계좌번호','이름','생년월일','주소'],
+          datasets: [
+            { label: '탐지', data: [12420, 8642, 18420, 22840, 9842, 14820, 7842, 6420], backgroundColor: 'rgba(0,133,122,0.85)', borderRadius: 4, barThickness: 14 },
+            { label: '마스킹 적용', data: [12420, 8642, 18420, 22840, 9842, 14820, 7842, 6420].map(v => Math.round(v * (0.95 + Math.random() * 0.05))), backgroundColor: 'rgba(232,172,50,0.85)', borderRadius: 4, barThickness: 14 }
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 14 } } },
+          scales: { x: { grid: { color: '#F3F4F6' }, ticks: { callback: v => v.toLocaleString('ko-KR') } }, y: { grid: { display: false } } }
+        }
+      });
+    }
+
+    const cd = document.getElementById('chart-deid-daily');
+    if (cd && !window.Chart.getChart?.(cd)) {
+      const labels = Array.from({ length: 14 }, (_, i) => `5/${9 + i}`);
+      new Chart(cd, {
+        type: 'line',
+        data: {
+          labels,
+          datasets: [
+            { label: '가명화', data: labels.map(() => 18000 + Math.random() * 12000), borderColor: '#00857A', backgroundColor: 'rgba(0,133,122,0.10)', tension: 0.35, borderWidth: 2.4, fill: true, pointRadius: 0 },
+            { label: '마스킹', data: labels.map(() => 6000 + Math.random() * 6000),   borderColor: '#E8AC32', backgroundColor: 'rgba(232,172,50,0.08)', tension: 0.35, borderWidth: 2.4, fill: true, pointRadius: 0 },
+            { label: '일반화', data: labels.map(() => 1000 + Math.random() * 3000),   borderColor: '#677381', backgroundColor: 'rgba(103,115,129,0.06)', tension: 0.35, borderWidth: 2.4, fill: true, pointRadius: 0 },
+          ]
+        },
+        options: {
+          responsive: true, maintainAspectRatio: false,
+          plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, padding: 14 } }, tooltip: { mode: 'index', intersect: false, padding: 10, backgroundColor: '#111827' } },
+          scales: { x: { grid: { display: false } }, y: { grid: { color: '#F3F4F6' }, ticks: { callback: v => v.toLocaleString('ko-KR') + '건' } } }
+        }
+      });
+    }
+    _deidChartsDone = true;
+  }
+
+  // -------- KPI LIVE UPDATES --------
+  let _kpiTimer = null;
+  function startKpiTicker() {
+    if (_kpiTimer) return;
+    let eps = 1842, vol = 3.84, deid = 42180;
+    _kpiTimer = setInterval(() => {
+      eps  += Math.round((Math.random() - 0.4) * 60);
+      eps = Math.max(1500, Math.min(2400, eps));
+      vol  += Math.random() * 0.008;
+      deid += Math.round(Math.random() * 12);
+      const epsEl = document.getElementById('kpiEps');
+      if (epsEl) epsEl.textContent = eps.toLocaleString('ko-KR');
+      const volEl = document.getElementById('kpiVolume');
+      if (volEl) volEl.textContent = vol.toFixed(2);
+      const deidEl = document.getElementById('kpiDeid');
+      if (deidEl) deidEl.textContent = deid.toLocaleString('ko-KR');
+      // Update flow today count
+      const tc = document.getElementById('flowTodayCount');
+      if (tc) {
+        const v = (9.42 + (Date.now() % 100) / 10000).toFixed(2);
+        tc.textContent = v + 'M';
+      }
+    }, 2200);
+  }
+
+  // -------- TAB BINDING --------
+  function bindMonTabs() {
+    const tabs = document.querySelectorAll('#page-monitoring .tabs .tab[data-mon-tab]');
+    tabs.forEach(t => {
+      if (t.dataset.bound) return;
+      t.addEventListener('click', () => switchMonTab(t.dataset.monTab));
+      t.dataset.bound = '1';
+    });
+  }
+
+  // -------- REFRESH / NOTIFICATION --------
+  function bindActions() {
+    const refresh = document.getElementById('monRefreshBtn');
+    if (refresh && !refresh.dataset.bound) {
+      refresh.addEventListener('click', () => {
+        // Re-render sankey + tables + feed
+        document.getElementById('stageGrid')?.removeAttribute('data-done');
+        renderSankey();
+        renderStageGrid();
+        renderAnomalyTable();
+        renderResourceGrid();
+        renderDeidTable();
+        if (typeof toast === 'function') toast('실시간 데이터를 다시 불러왔습니다.', 'success');
+      });
+      refresh.dataset.bound = '1';
+    }
+    const notif = document.getElementById('monNotifBtn');
+    if (notif && !notif.dataset.bound) {
+      notif.addEventListener('click', () => {
+        if (typeof openModal !== 'function') return;
+        openModal({
+          title: '모니터링 알림 채널',
+          sub: '이상 발생 시 알림 수신 채널을 관리합니다',
+          body: `
+            <div class="stack-v" style="gap:0;">
+              <div class="setting-row"><div class="info"><div class="title">이메일 알림</div><div class="desc">P0~P1 발생 시 즉시 발송</div></div><div class="switch on"></div></div>
+              <div class="setting-row"><div class="info"><div class="title">Slack #data-platform</div><div class="desc">모든 우선순위 알림</div></div><div class="switch on"></div></div>
+              <div class="setting-row"><div class="info"><div class="title">SMS 긴급 알림</div><div class="desc">P0 발생 시 SMS 발송</div></div><div class="switch on"></div></div>
+              <div class="setting-row"><div class="info"><div class="title">PagerDuty 연동</div><div class="desc">P0~P1 자동 에스컬레이션</div></div><div class="switch"></div></div>
+              <div class="setting-row"><div class="info"><div class="title">일일 요약 리포트</div><div class="desc">매일 08:00 발송</div></div><div class="switch on"></div></div>
+            </div>
+          `,
+          footer: `<button class="btn btn-ghost" data-modal-close>닫기</button><button class="btn btn-primary" data-modal-close>저장</button>`
+        });
+      });
+      notif.dataset.bound = '1';
+    }
+  }
+
+  // -------- INIT --------
+  function initMonitoring() {
+    bindMonTabs();
+    bindAnomalyFilters();
+    bindDeidFilters();
+    bindLiveFeedControls();
+    bindActions();
+    renderSankey();
+    startLiveFeed();
+    startKpiTicker();
+    // Pre-render others so navigating tabs is instant
+    setTimeout(() => {
+      renderStageGrid();
+      renderAnomalyTable();
+      renderResourceGrid();
+      renderDeidTable();
+    }, 150);
+  }
+
+  // Hook into navigation. The page may not exist on load; defer until nav click.
+  function maybeInit() {
+    const page = document.getElementById('page-monitoring');
+    if (!page) return;
+    if (page._monInited) return;
+    page._monInited = true;
+    initMonitoring();
+  }
+
+  // Initial wiring
+  document.addEventListener('DOMContentLoaded', () => {
+    // Click nav-item[data-page=monitoring] → init
+    document.querySelectorAll('.nav-item[data-page="monitoring"]').forEach(it => {
+      it.addEventListener('click', () => {
+        setTimeout(() => {
+          maybeInit();
+          // Lazy ensure transform/deid charts are ready when their tab is shown
+          if (document.querySelector('#page-monitoring .mon-tab-panel[data-mon-panel="resource"].active')) ensureResourceChart();
+          if (document.querySelector('#page-monitoring .mon-tab-panel[data-mon-panel="transform"].active')) ensureTransformCharts();
+          if (document.querySelector('#page-monitoring .mon-tab-panel[data-mon-panel="deid"].active'))      ensureDeidCharts();
+        }, 80);
+      });
+    });
+    // Also handle direct page activation (e.g. from notifications)
+    const observer = new MutationObserver(() => {
+      const page = document.getElementById('page-monitoring');
+      if (page && page.classList.contains('active')) maybeInit();
+    });
+    const app = document.getElementById('app');
+    if (app) observer.observe(app, { attributes: true, subtree: true, attributeFilter: ['class'] });
+  });
+
+  // Expose for debugging / external triggers
+  window.__monitoring = {
+    init: maybeInit,
+    switchTab: switchMonTab,
+    renderSankey: renderSankey
+  };
 })();
 </script>
 </body>
